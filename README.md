@@ -1,4 +1,8 @@
-# JoeBro Mobile
+<p align="center">
+  <img src="README_assets/logo.png" alt="JoeBro Mobile" width="160">
+</p>
+
+<h1 align="center">JoeBro Mobile</h1>
 
 The phone half of [JoeBro](https://github.com/joexk1/JoeBro). It talks to your own Mac running JoeBro 1.3 or later. No cloud in the middle, no account to make, and nothing goes through anyone else's server.
 
