@@ -91,7 +91,9 @@ The phone agent is JoeBro, on your phone, with a memory and a to-do list. All of
 
 **Tasks.** On the Mac, **Tasks > Phone agent** lists tasks that run in the background and say nothing. Each run ends with either the text you want to be notified about, or the word `NOTHING`. Only that text goes to the chat. If the result hasn't changed since last time, it isn't sent again. Two starters are built in, a morning briefing and an evening wrap-up. They only get created when you press them.
 
-**Heartbeat.** Off by default. Every 30 minutes (you set it) it collects what changed: calendar, reminders, task results. It reduces each to a fingerprint. If nothing changed, it does not call a model at all. If something did, it asks a cheap background model whether it's worth your attention. If yes, the message is posted into the phone chat as a normal message and pushed. You answer yes or no in that chat. There is no approval queue. It respects quiet hours (23:00 to 08:00 by default), spaces notices out, backs off, and has a daily cap (2 by default).
+**Heartbeat.** Off by default. Every 30 minutes (you set it) it collects what changed: calendar, reminders, task results. It reduces each to a fingerprint. If nothing changed, it does not call a model at all. If something did, it asks a cheap background model whether it's worth your attention. If yes, the message is posted into the phone chat as a normal message and pushed. You answer yes or no in that chat. There is no approval queue.
+
+It has two separate limits. Notifications: at most 2 a day by default, at least 3 hours apart. Model calls: background checks stop for the day after 40 calls (the `background_daily_cap` pref), and the Inbox tells you once when that happens. Quiet hours are 23:00 to 08:00 by default, and after empty runs it waits 30, then 60, then 120 minutes. The background model is the `background_model` pref if you've set one, otherwise your default model.
 
 **Pulse and reminders.** Pulse wakes the agent on a checklist you write in plain English, also off by default. Reminders fire once.
 
@@ -105,7 +107,7 @@ The phone agent is JoeBro, on your phone, with a memory and a to-do list. All of
 
 **Moving files.** The agent moves files through an artifact store: a staging area on the Mac. It can pull from a URL, an upload or a document, and put things into your Documents or Downloads, or email them. Anything that sends something out shows a preview and needs a confirmation first.
 
-**The janitor.** A daily sweep that deletes old staging files and caches. Only those. It never touches your memory files, uploads or documents.
+**The janitor.** Off by default. If you turn it on (the `janitor_enabled` pref), a daily sweep deletes staging files and `/tmp/joebro-*` scratch files unused for 7 days, and image captions untouched for 30. Only those. It never touches your memory files, uploads or documents.
 
 **Tools.** The agent starts with the built-in ones. Anything else is something you add. It loads extra tools on demand, so a long list of MCPs doesn't bloat every request.
 

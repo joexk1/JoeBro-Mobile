@@ -3,3 +3,6 @@ DerivedData/
 build/
 Local.xcconfig
 .DS_Store
+Secrets.xcconfig
+*.p8
+*.xcuserstate
