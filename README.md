@@ -4,7 +4,16 @@
 
 <h1 align="center">JoeBro Mobile</h1>
 
-The phone half of [JoeBro](https://github.com/joexk1/JoeBro). It talks to your own Mac running JoeBro 1.3 or later. No cloud in the middle, no account to make, and nothing goes through anyone else's server.
+<p align="center">
+  JoeBro in your pocket.<br>
+  Talks to your own Mac. No cloud in the middle.
+</p>
+
+**Sister repo:** the Mac app is **[JoeBro](https://github.com/joexk1/JoeBro)**. You need it running (1.3 or later) for this app to do anything.
+
+---
+
+The phone half of JoeBro. No account to make, and nothing goes through anyone else's server.
 
 You get your chats, your agents, your documents and a phone agent that works in the background and pings you when something needs you.
 
