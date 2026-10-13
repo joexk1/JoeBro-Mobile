@@ -261,14 +261,15 @@ struct MobileNotificationInbox: View {
                 }
                 .disabled(items.isEmpty || deleting)
             }
-            ToolbarItemGroup(placement: .bottomBar) {
+            // ponytail: top bar, not .bottomBar - the bottom bar never shows under the tab bar/sheet
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 if selecting {
-                    Button("Select all") { selected = Set(items.map(\.id)); deleteAll = true }
+                    Button("All") { selected = Set(items.map(\.id)); deleteAll = true }
                         .disabled(deleting)
-                    Spacer()
-                    Button(deleteAll ? "Delete all" : "Delete selected", role: .destructive) {
-                        Task { await deleteSelection() }
+                    Button(role: .destructive) { Task { await deleteSelection() } } label: {
+                        Label(deleteAll ? "Delete all" : "Delete selected", systemImage: "trash")
                     }
+                    .tint(.red)
                     .disabled(selected.isEmpty || deleting)
                 }
             }
