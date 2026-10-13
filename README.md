@@ -19,6 +19,13 @@ You get your chats, your agents, your documents and a phone agent that works in 
 
 This is a source release. There is no App Store build. Your bundle ID, your signing team and your push key are yours, so you build it yourself.
 
+<p align="center">
+  <img src="README_assets/phone-agent.png" alt="The phone agent chat" width="23%">
+  <img src="README_assets/tasks.png" alt="Phone agent tasks that run in the background" width="23%">
+  <img src="README_assets/memory.png" alt="Memory files the agent reads" width="23%">
+  <img src="README_assets/inbox.png" alt="The inbox of notices from the phone agent" width="23%">
+</p>
+
 ---
 
 ## What you need
@@ -48,6 +55,10 @@ This is a source release. There is no App Store build. Your bundle ID, your sign
 1. On the Mac, open **Settings > Mobile** and turn on **Let my phone connect**.
 2. Open the app on the phone. It shows a short intro, then a scan screen.
 3. Scan the QR code on the Mac.
+
+<p align="center">
+  <img src="README_assets/pairing.png" alt="The pairing screen" width="260">
+</p>
 
 If you can't scan, use **Copy link** on the Mac and open it on the phone, or paste the URL and token by hand. The app checks the address and token before it saves anything. If the Mac is too old, it tells you to update to 1.3.0.
 
