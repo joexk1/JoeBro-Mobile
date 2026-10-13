@@ -1,0 +1,17 @@
+// Committed defaults. Put your own values in Config/Local.xcconfig (gitignored);
+// see Local.xcconfig.example.
+
+// Reverse-DNS prefix for every identifier. Everything derives from it:
+//   app    $(BUNDLE_ID_PREFIX)
+//   widget $(BUNDLE_ID_PREFIX).island
+//   share  $(BUNDLE_ID_PREFIX).share
+//   group  group.$(BUNDLE_ID_PREFIX)
+//   push   topic = the app's bundle id
+BUNDLE_ID_PREFIX = com.example.joebro
+JOEBRO_BUNDLE_ID = $(BUNDLE_ID_PREFIX)
+
+// Your Apple Developer team. Empty builds only unsigned or for the simulator.
+DEVELOPMENT_TEAM =
+
+// Must stay last so Local.xcconfig overrides the values above.
+#include? "Local.xcconfig"

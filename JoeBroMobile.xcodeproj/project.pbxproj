@@ -1,0 +1,877 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		037D6FA1A7724BC4282F6B7D /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A674851B2FC565645280B00D /* DocumentEditorView.swift */; };
+		0482243D9ED53F21259BB4A6 /* VoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BC3E210A510965AB430362 /* VoiceCapture.swift */; };
+		07D5BF455DFD2576F6F2AEE9 /* DocsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82D9F2112ADAFE7FC8A620C /* DocsView.swift */; };
+		1C71116B54B123EE670ADCC8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C706D471115CE38CC4D544FE /* OnboardingView.swift */; };
+		1DDAFAF3298A8FCB691B3FA8 /* AgentsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF45F303FD8562BC86DAA4EC /* AgentsTabView.swift */; };
+		249778B903FBFA6570D4E691 /* CalendarAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBC1855BEF0716A3627EE1 /* CalendarAPI.swift */; };
+		26FD5B412A204C610054CCE4 /* AgentsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA6F2DF4595D10D1BE90604 /* AgentsAPI.swift */; };
+		344B08460E97534D9C09D5D9 /* JoeBroActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EEDCA7819D5BB5D50FF867 /* JoeBroActivityController.swift */; };
+		3739D49433A29A659B436D7E /* ProviderLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6549851E9BE1FF60F84C0F6 /* ProviderLogoView.swift */; };
+		3C8743A91F215CDE1BF5BD23 /* JoeBroAgentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758B0DBC65C2013CE8BC03A1 /* JoeBroAgentAPI.swift */; };
+		3DBC49683C04E9A01073001A /* SessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AAF4516CEC16E22C81A1357 /* SessionListView.swift */; };
+		4232EBF46AF58A8561C70FCE /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FA61AD47E34C22C83220314 /* TasksView.swift */; };
+		5126CF638E488ED7E2B8AA3E /* WorkdirView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6BA7869B3FCC8D17DD9C95 /* WorkdirView.swift */; };
+		5370A6E7F8B335C8CD79CB7D /* JoeBroMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C32CD0E64403F1EB3C779B1 /* JoeBroMobileApp.swift */; };
+		598938DF2749A910DD62BCBF /* JoeBroAgentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7FAAB930CDB213B908FA6D /* JoeBroAgentView.swift */; };
+		5C03460A6F959A9DD0A367DA /* ResearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0622C943CF64EF7D8D695B6 /* ResearchView.swift */; };
+		5C163E44683399373BE97A9C /* PrefsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF234C079B1C3C199EAEB3D /* PrefsAPI.swift */; };
+		6009C7AD22E6A45E3A725D0B /* ChatTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27405540B650883A498D53F2 /* ChatTranscriptView.swift */; };
+		68C2DB35BBDB58221D24AA6F /* ChatToolCallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76506FA69B0EACE9E9117742 /* ChatToolCallCard.swift */; };
+		6B8A2C74277D2964AAC3EFC3 /* LocationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FCA356677F83B729A10A /* LocationReporter.swift */; };
+		7292490A96C3E11EDF17C6BB /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26F34AAC0F9CBB8BC5710494 /* RootView.swift */; };
+		7360F7CE5E715133F9B53DCC /* Pairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B2722697036FB8AA254D89 /* Pairing.swift */; };
+		74D65781B60E663914A14B8F /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2209B087BF55E1CB590861E /* ServerConfig.swift */; };
+		79F73F5D022F2581061AD317 /* JoeBroTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD736832ACE4E0CE0B14710 /* JoeBroTheme.swift */; };
+		7C49B6C033083972B6A344FC /* JoeBroIsland.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 61BD3CFAAEE36A9A3306717B /* JoeBroIsland.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		89B36454A2D4EC9E2CA53BBE /* BrainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638BFB80C004303D809C2127 /* BrainView.swift */; };
+		979C4397D8219EB407094C4E /* JoeBroShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A5A14AAFA984932A9DBED5C /* JoeBroShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9808374E016D7D284B574B6B /* AICheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA2879163442B511A401097 /* AICheckView.swift */; };
+		98D6CD05FF663D6011985A03 /* JoeBroModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF8EE136361078E10E1DE40 /* JoeBroModels.swift */; };
+		9F6D667D0118DAA1D97F7FAE /* SkillsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C04C8EA10F93A6C7575F78 /* SkillsView.swift */; };
+		A32765DC7F9513899349BD03 /* EmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C89D8035B332CCA58CADAFE /* EmailView.swift */; };
+		A37F3C71A8B80CEF095A4BD9 /* JoeBroActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44BB9EE761BFA7F8C5A8AFB5 /* JoeBroActivityAttributes.swift */; };
+		A9FA51CA01FAE469752E64FC /* ShareInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D92F1B91250D9BB3F2ABAE /* ShareInbox.swift */; };
+		ADFBAEC11092EA1DCDF71846 /* MuseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890D672F3EC2802DD092CA70 /* MuseView.swift */; };
+		BA1F0B1A7B96C69EE41955A5 /* ToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D121943C4ACA9A4D0DBBA74D /* ToolsView.swift */; };
+		BC757BD59DD115E58BF648B6 /* ChatComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095391D6A43851D63176131A /* ChatComposerView.swift */; };
+		BCDB19F2A5111A6E379B1521 /* ChatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7ED4F66A6FB0C3FEF139F50 /* ChatsView.swift */; };
+		BEC52DA761E724D85F301F47 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4F7A9161DD1B51203C389B3 /* IntroView.swift */; };
+		BF0608D2C0DC8E3E296A134F /* JoeBroIslandWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D2E4F83154BB38F1E5D600 /* JoeBroIslandWidget.swift */; };
+		C7C4829F6E862A17F991E21A /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C706D22E59021287539CE759 /* MarkdownText.swift */; };
+		C8E5C7202204CD4E98645F35 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97B729009E95182141C74C61 /* CredentialStore.swift */; };
+		C919A7CE25B4FB28C9BA8C98 /* CalendarTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FD567332394C9F4F1B592B /* CalendarTime.swift */; };
+		C9C6776DE599EFF747CD4D61 /* JoeBroActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44BB9EE761BFA7F8C5A8AFB5 /* JoeBroActivityAttributes.swift */; };
+		CF8AB61CC636EA8DCEE44AE3 /* DocsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6853B251C7FBDF1F7ACA767A /* DocsStore.swift */; };
+		D6672C726914FE93CAED2596 /* ChatMessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A3CFAD0FF4B37813820FD /* ChatMessageRow.swift */; };
+		D6EF3A1FF87BD55BA111B4F1 /* WorkspaceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3983DEDCA5FF26AEF218373A /* WorkspaceAPI.swift */; };
+		EE140CCD602A4EA0409EE849 /* JoeBroAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D0C77230253FC459D33EC9 /* JoeBroAPI.swift */; };
+		EE39E01BD46DF8A4B9D08F64 /* CalendarAgendaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56DFFA7EBA74ADEAEA48608E /* CalendarAgendaView.swift */; };
+		F0CADD82005BEC849F06A61F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98CBB2E9173E8ADF0DF136A7 /* Assets.xcassets */; };
+		F26A0776DB894AB398C267D9 /* WorkspaceHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A40451803FAC51E4F3B07EC /* WorkspaceHubView.swift */; };
+		F5EF268984791E9BAA8EE707 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7377EF4459D1B3CFEBD147F7 /* ShareViewController.swift */; };
+		F9DB13F7D56488CE96AA5430 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B01939DE7D71335C8535AD3 /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		29DDF8781E80E93386368A1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71FC4CC464E955F05C888B69 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F6876EAF38867D3BC0C6987F;
+			remoteInfo = JoeBroShare;
+		};
+		D6F28EB75F3D2E77268E9672 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71FC4CC464E955F05C888B69 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 60A52187C324B0478D6E8D83;
+			remoteInfo = JoeBroIsland;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8A613C5393256CCA1B9CE421 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7C49B6C033083972B6A344FC /* JoeBroIsland.appex in Embed Foundation Extensions */,
+				979C4397D8219EB407094C4E /* JoeBroShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		095391D6A43851D63176131A /* ChatComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerView.swift; sourceTree = "<group>"; };
+		0A40451803FAC51E4F3B07EC /* WorkspaceHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHubView.swift; sourceTree = "<group>"; };
+		0CF3FCA356677F83B729A10A /* LocationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationReporter.swift; sourceTree = "<group>"; };
+		1A5A14AAFA984932A9DBED5C /* JoeBroShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = JoeBroShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AAF4516CEC16E22C81A1357 /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
+		1C32CD0E64403F1EB3C779B1 /* JoeBroMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroMobileApp.swift; sourceTree = "<group>"; };
+		22E63A4FB6CA6D5448B491D9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		26F34AAC0F9CBB8BC5710494 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		27405540B650883A498D53F2 /* ChatTranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTranscriptView.swift; sourceTree = "<group>"; };
+		27D92F1B91250D9BB3F2ABAE /* ShareInbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareInbox.swift; sourceTree = "<group>"; };
+		2C89D8035B332CCA58CADAFE /* EmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailView.swift; sourceTree = "<group>"; };
+		2E5A3CFAD0FF4B37813820FD /* ChatMessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageRow.swift; sourceTree = "<group>"; };
+		2FA6F2DF4595D10D1BE90604 /* AgentsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsAPI.swift; sourceTree = "<group>"; };
+		31D0C77230253FC459D33EC9 /* JoeBroAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroAPI.swift; sourceTree = "<group>"; };
+		3983DEDCA5FF26AEF218373A /* WorkspaceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceAPI.swift; sourceTree = "<group>"; };
+		3A6BA7869B3FCC8D17DD9C95 /* WorkdirView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkdirView.swift; sourceTree = "<group>"; };
+		41C04C8EA10F93A6C7575F78 /* SkillsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillsView.swift; sourceTree = "<group>"; };
+		42EEDCA7819D5BB5D50FF867 /* JoeBroActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroActivityController.swift; sourceTree = "<group>"; };
+		44BB9EE761BFA7F8C5A8AFB5 /* JoeBroActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroActivityAttributes.swift; sourceTree = "<group>"; };
+		56DFFA7EBA74ADEAEA48608E /* CalendarAgendaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarAgendaView.swift; sourceTree = "<group>"; };
+		61BD3CFAAEE36A9A3306717B /* JoeBroIsland.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = JoeBroIsland.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		638BFB80C004303D809C2127 /* BrainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainView.swift; sourceTree = "<group>"; };
+		64F1ABC08391F8B846EBD3E5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6853B251C7FBDF1F7ACA767A /* DocsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocsStore.swift; sourceTree = "<group>"; };
+		6FA61AD47E34C22C83220314 /* TasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksView.swift; sourceTree = "<group>"; };
+		7377EF4459D1B3CFEBD147F7 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		758B0DBC65C2013CE8BC03A1 /* JoeBroAgentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroAgentAPI.swift; sourceTree = "<group>"; };
+		76506FA69B0EACE9E9117742 /* ChatToolCallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatToolCallCard.swift; sourceTree = "<group>"; };
+		7B01939DE7D71335C8535AD3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7CF8EE136361078E10E1DE40 /* JoeBroModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroModels.swift; sourceTree = "<group>"; };
+		890D672F3EC2802DD092CA70 /* MuseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuseView.swift; sourceTree = "<group>"; };
+		96BC0605BC9DC640B0C933EF /* JoeBroMobile.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JoeBroMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		97B729009E95182141C74C61 /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
+		98CBB2E9173E8ADF0DF136A7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9CD736832ACE4E0CE0B14710 /* JoeBroTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroTheme.swift; sourceTree = "<group>"; };
+		9DF234C079B1C3C199EAEB3D /* PrefsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsAPI.swift; sourceTree = "<group>"; };
+		A0622C943CF64EF7D8D695B6 /* ResearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchView.swift; sourceTree = "<group>"; };
+		A365595DB4A380F36D113937 /* JoeBroMobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JoeBroMobile.entitlements; sourceTree = "<group>"; };
+		A674851B2FC565645280B00D /* DocumentEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditorView.swift; sourceTree = "<group>"; };
+		A82D9F2112ADAFE7FC8A620C /* DocsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocsView.swift; sourceTree = "<group>"; };
+		AA2E9D7BD1A3936D001EA6BD /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		AC7FAAB930CDB213B908FA6D /* JoeBroAgentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroAgentView.swift; sourceTree = "<group>"; };
+		B3FBC1855BEF0716A3627EE1 /* CalendarAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarAPI.swift; sourceTree = "<group>"; };
+		B6FD567332394C9F4F1B592B /* CalendarTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTime.swift; sourceTree = "<group>"; };
+		BBA2879163442B511A401097 /* AICheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AICheckView.swift; sourceTree = "<group>"; };
+		BF45F303FD8562BC86DAA4EC /* AgentsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsTabView.swift; sourceTree = "<group>"; };
+		C4F7A9161DD1B51203C389B3 /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
+		C706D22E59021287539CE759 /* MarkdownText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownText.swift; sourceTree = "<group>"; };
+		C706D471115CE38CC4D544FE /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		D121943C4ACA9A4D0DBBA74D /* ToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsView.swift; sourceTree = "<group>"; };
+		D7ED4F66A6FB0C3FEF139F50 /* ChatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsView.swift; sourceTree = "<group>"; };
+		E3BC3E210A510965AB430362 /* VoiceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCapture.swift; sourceTree = "<group>"; };
+		E5B2722697036FB8AA254D89 /* Pairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pairing.swift; sourceTree = "<group>"; };
+		E6549851E9BE1FF60F84C0F6 /* ProviderLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLogoView.swift; sourceTree = "<group>"; };
+		F2209B087BF55E1CB590861E /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
+		F3D2E4F83154BB38F1E5D600 /* JoeBroIslandWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeBroIslandWidget.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		018A01DED930C627A998CAD5 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				BC2AD1DEDAC88CBAB055DA40 /* Agents */,
+				589E19605F5AE703945855F2 /* Calendar */,
+				366CFE50D2ABBA718D850FBF /* Docs */,
+				B57C18A2370991469E579817 /* Shared */,
+				2472D02FC1F5138564CAEDF4 /* Work */,
+				79D6095C4AC830F7E438231F /* Workspace */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		121644B4C09718F34C66F9F8 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				0CF3FCA356677F83B729A10A /* LocationReporter.swift */,
+				9DF234C079B1C3C199EAEB3D /* PrefsAPI.swift */,
+				7B01939DE7D71335C8535AD3 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		24674E20E2EA9A4985AC843C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				61BD3CFAAEE36A9A3306717B /* JoeBroIsland.appex */,
+				96BC0605BC9DC640B0C933EF /* JoeBroMobile.app */,
+				1A5A14AAFA984932A9DBED5C /* JoeBroShare.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2472D02FC1F5138564CAEDF4 /* Work */ = {
+			isa = PBXGroup;
+			children = (
+				2C89D8035B332CCA58CADAFE /* EmailView.swift */,
+				A0622C943CF64EF7D8D695B6 /* ResearchView.swift */,
+			);
+			path = Work;
+			sourceTree = "<group>";
+		};
+		366CFE50D2ABBA718D850FBF /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				6853B251C7FBDF1F7ACA767A /* DocsStore.swift */,
+				A82D9F2112ADAFE7FC8A620C /* DocsView.swift */,
+				A674851B2FC565645280B00D /* DocumentEditorView.swift */,
+				3A6BA7869B3FCC8D17DD9C95 /* WorkdirView.swift */,
+			);
+			path = Docs;
+			sourceTree = "<group>";
+		};
+		45BF65BFB890351D1AD7DC6C /* App */ = {
+			isa = PBXGroup;
+			children = (
+				42EEDCA7819D5BB5D50FF867 /* JoeBroActivityController.swift */,
+			);
+			name = App;
+			path = Island/App;
+			sourceTree = "<group>";
+		};
+		567A23CA4F4D80E4C5C0BA0D /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AA2E9D7BD1A3936D001EA6BD /* Base.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		589E19605F5AE703945855F2 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				B3FBC1855BEF0716A3627EE1 /* CalendarAPI.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		58DC5B6F8210425CCF3879FE /* JoeBro */ = {
+			isa = PBXGroup;
+			children = (
+				758B0DBC65C2013CE8BC03A1 /* JoeBroAgentAPI.swift */,
+				AC7FAAB930CDB213B908FA6D /* JoeBroAgentView.swift */,
+			);
+			path = JoeBro;
+			sourceTree = "<group>";
+		};
+		68EF9C8EE44C5FF7583D8B76 /* JoeBroMobile */ = {
+			isa = PBXGroup;
+			children = (
+				98CBB2E9173E8ADF0DF136A7 /* Assets.xcassets */,
+				64F1ABC08391F8B846EBD3E5 /* Info.plist */,
+				C4F7A9161DD1B51203C389B3 /* IntroView.swift */,
+				A365595DB4A380F36D113937 /* JoeBroMobile.entitlements */,
+				1C32CD0E64403F1EB3C779B1 /* JoeBroMobileApp.swift */,
+				C706D471115CE38CC4D544FE /* OnboardingView.swift */,
+				26F34AAC0F9CBB8BC5710494 /* RootView.swift */,
+				C919C228F3E0320FB8E3487F /* Core */,
+				8DFD55F4C2D572A9C58F8E5F /* Features */,
+				C503B91F61894227CC92ECDF /* Theme */,
+			);
+			path = JoeBroMobile;
+			sourceTree = "<group>";
+		};
+		7284A402D439EE0A455C0AA0 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				095391D6A43851D63176131A /* ChatComposerView.swift */,
+				2E5A3CFAD0FF4B37813820FD /* ChatMessageRow.swift */,
+				D7ED4F66A6FB0C3FEF139F50 /* ChatsView.swift */,
+				76506FA69B0EACE9E9117742 /* ChatToolCallCard.swift */,
+				27405540B650883A498D53F2 /* ChatTranscriptView.swift */,
+				E6549851E9BE1FF60F84C0F6 /* ProviderLogoView.swift */,
+				1AAF4516CEC16E22C81A1357 /* SessionListView.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		79D6095C4AC830F7E438231F /* Workspace */ = {
+			isa = PBXGroup;
+			children = (
+				BBA2879163442B511A401097 /* AICheckView.swift */,
+				638BFB80C004303D809C2127 /* BrainView.swift */,
+				890D672F3EC2802DD092CA70 /* MuseView.swift */,
+				41C04C8EA10F93A6C7575F78 /* SkillsView.swift */,
+				6FA61AD47E34C22C83220314 /* TasksView.swift */,
+				D121943C4ACA9A4D0DBBA74D /* ToolsView.swift */,
+				3983DEDCA5FF26AEF218373A /* WorkspaceAPI.swift */,
+				0A40451803FAC51E4F3B07EC /* WorkspaceHubView.swift */,
+			);
+			path = Workspace;
+			sourceTree = "<group>";
+		};
+		8DFD55F4C2D572A9C58F8E5F /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				91437D201B20771298C68FBD /* Calendar */,
+				DAEFF7EF34D80E5EE0E45892 /* Capture */,
+				7284A402D439EE0A455C0AA0 /* Chat */,
+				58DC5B6F8210425CCF3879FE /* JoeBro */,
+				121644B4C09718F34C66F9F8 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		91437D201B20771298C68FBD /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				56DFFA7EBA74ADEAEA48608E /* CalendarAgendaView.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		B57C18A2370991469E579817 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B6FD567332394C9F4F1B592B /* CalendarTime.swift */,
+				C706D22E59021287539CE759 /* MarkdownText.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		BC2AD1DEDAC88CBAB055DA40 /* Agents */ = {
+			isa = PBXGroup;
+			children = (
+				2FA6F2DF4595D10D1BE90604 /* AgentsAPI.swift */,
+				BF45F303FD8562BC86DAA4EC /* AgentsTabView.swift */,
+			);
+			path = Agents;
+			sourceTree = "<group>";
+		};
+		C31C0944DD2D85A02D1EA422 /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				7377EF4459D1B3CFEBD147F7 /* ShareViewController.swift */,
+			);
+			path = Share;
+			sourceTree = "<group>";
+		};
+		C503B91F61894227CC92ECDF /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				9CD736832ACE4E0CE0B14710 /* JoeBroTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		C919C228F3E0320FB8E3487F /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				97B729009E95182141C74C61 /* CredentialStore.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		DAEFF7EF34D80E5EE0E45892 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				27D92F1B91250D9BB3F2ABAE /* ShareInbox.swift */,
+				E3BC3E210A510965AB430362 /* VoiceCapture.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
+		DFB9B2D0DCBAE8CD2A1C6B13 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				44BB9EE761BFA7F8C5A8AFB5 /* JoeBroActivityAttributes.swift */,
+			);
+			name = Shared;
+			path = Island/Shared;
+			sourceTree = "<group>";
+		};
+		E83AEDBDD794829863823F1A /* WidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				22E63A4FB6CA6D5448B491D9 /* Info.plist */,
+				F3D2E4F83154BB38F1E5D600 /* JoeBroIslandWidget.swift */,
+			);
+			name = WidgetExtension;
+			path = Island/WidgetExtension;
+			sourceTree = "<group>";
+		};
+		F2F86780BD75F495DA37B0DE /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				31D0C77230253FC459D33EC9 /* JoeBroAPI.swift */,
+				7CF8EE136361078E10E1DE40 /* JoeBroModels.swift */,
+				E5B2722697036FB8AA254D89 /* Pairing.swift */,
+				F2209B087BF55E1CB590861E /* ServerConfig.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		F61E031CFD381FC8DCEC742B = {
+			isa = PBXGroup;
+			children = (
+				45BF65BFB890351D1AD7DC6C /* App */,
+				567A23CA4F4D80E4C5C0BA0D /* Config */,
+				F2F86780BD75F495DA37B0DE /* Core */,
+				018A01DED930C627A998CAD5 /* Features */,
+				68EF9C8EE44C5FF7583D8B76 /* JoeBroMobile */,
+				C31C0944DD2D85A02D1EA422 /* Share */,
+				DFB9B2D0DCBAE8CD2A1C6B13 /* Shared */,
+				E83AEDBDD794829863823F1A /* WidgetExtension */,
+				24674E20E2EA9A4985AC843C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		60A52187C324B0478D6E8D83 /* JoeBroIsland */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9CD33C766723B18A1AC65C3C /* Build configuration list for PBXNativeTarget "JoeBroIsland" */;
+			buildPhases = (
+				C4777B99306DEDE8CFF7FA17 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JoeBroIsland;
+			packageProductDependencies = (
+			);
+			productName = JoeBroIsland;
+			productReference = 61BD3CFAAEE36A9A3306717B /* JoeBroIsland.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		716211ABE544F68F1B789B10 /* JoeBroMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 180B69B75D632D450C864A66 /* Build configuration list for PBXNativeTarget "JoeBroMobile" */;
+			buildPhases = (
+				EACD57670AD3F5AFEC6295B9 /* Sources */,
+				8FAB2C76007C9C0E324F35E3 /* Resources */,
+				8A613C5393256CCA1B9CE421 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				253FA32C870DA7512626A37A /* PBXTargetDependency */,
+				464EABF18927EC9796F3D09B /* PBXTargetDependency */,
+			);
+			name = JoeBroMobile;
+			packageProductDependencies = (
+			);
+			productName = JoeBroMobile;
+			productReference = 96BC0605BC9DC640B0C933EF /* JoeBroMobile.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F6876EAF38867D3BC0C6987F /* JoeBroShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BCF8941047B64526BF0BD0A /* Build configuration list for PBXNativeTarget "JoeBroShare" */;
+			buildPhases = (
+				A4E51E0AB391D4B1B4094046 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JoeBroShare;
+			packageProductDependencies = (
+			);
+			productName = JoeBroShare;
+			productReference = 1A5A14AAFA984932A9DBED5C /* JoeBroShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		71FC4CC464E955F05C888B69 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					60A52187C324B0478D6E8D83 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					716211ABE544F68F1B789B10 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = "[\"com.apple.Push\": [\"enabled\": 1]]";
+					};
+					F6876EAF38867D3BC0C6987F = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C80E84CC39555E3787567835 /* Build configuration list for PBXProject "JoeBroMobile" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F61E031CFD381FC8DCEC742B;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 24674E20E2EA9A4985AC843C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				716211ABE544F68F1B789B10 /* JoeBroMobile */,
+				60A52187C324B0478D6E8D83 /* JoeBroIsland */,
+				F6876EAF38867D3BC0C6987F /* JoeBroShare */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8FAB2C76007C9C0E324F35E3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0CADD82005BEC849F06A61F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A4E51E0AB391D4B1B4094046 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5EF268984791E9BAA8EE707 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4777B99306DEDE8CFF7FA17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A37F3C71A8B80CEF095A4BD9 /* JoeBroActivityAttributes.swift in Sources */,
+				BF0608D2C0DC8E3E296A134F /* JoeBroIslandWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EACD57670AD3F5AFEC6295B9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9808374E016D7D284B574B6B /* AICheckView.swift in Sources */,
+				26FD5B412A204C610054CCE4 /* AgentsAPI.swift in Sources */,
+				1DDAFAF3298A8FCB691B3FA8 /* AgentsTabView.swift in Sources */,
+				89B36454A2D4EC9E2CA53BBE /* BrainView.swift in Sources */,
+				249778B903FBFA6570D4E691 /* CalendarAPI.swift in Sources */,
+				EE39E01BD46DF8A4B9D08F64 /* CalendarAgendaView.swift in Sources */,
+				C919A7CE25B4FB28C9BA8C98 /* CalendarTime.swift in Sources */,
+				BC757BD59DD115E58BF648B6 /* ChatComposerView.swift in Sources */,
+				D6672C726914FE93CAED2596 /* ChatMessageRow.swift in Sources */,
+				68C2DB35BBDB58221D24AA6F /* ChatToolCallCard.swift in Sources */,
+				6009C7AD22E6A45E3A725D0B /* ChatTranscriptView.swift in Sources */,
+				BCDB19F2A5111A6E379B1521 /* ChatsView.swift in Sources */,
+				C8E5C7202204CD4E98645F35 /* CredentialStore.swift in Sources */,
+				CF8AB61CC636EA8DCEE44AE3 /* DocsStore.swift in Sources */,
+				07D5BF455DFD2576F6F2AEE9 /* DocsView.swift in Sources */,
+				037D6FA1A7724BC4282F6B7D /* DocumentEditorView.swift in Sources */,
+				A32765DC7F9513899349BD03 /* EmailView.swift in Sources */,
+				BEC52DA761E724D85F301F47 /* IntroView.swift in Sources */,
+				EE140CCD602A4EA0409EE849 /* JoeBroAPI.swift in Sources */,
+				C9C6776DE599EFF747CD4D61 /* JoeBroActivityAttributes.swift in Sources */,
+				344B08460E97534D9C09D5D9 /* JoeBroActivityController.swift in Sources */,
+				3C8743A91F215CDE1BF5BD23 /* JoeBroAgentAPI.swift in Sources */,
+				598938DF2749A910DD62BCBF /* JoeBroAgentView.swift in Sources */,
+				5370A6E7F8B335C8CD79CB7D /* JoeBroMobileApp.swift in Sources */,
+				98D6CD05FF663D6011985A03 /* JoeBroModels.swift in Sources */,
+				79F73F5D022F2581061AD317 /* JoeBroTheme.swift in Sources */,
+				6B8A2C74277D2964AAC3EFC3 /* LocationReporter.swift in Sources */,
+				C7C4829F6E862A17F991E21A /* MarkdownText.swift in Sources */,
+				ADFBAEC11092EA1DCDF71846 /* MuseView.swift in Sources */,
+				1C71116B54B123EE670ADCC8 /* OnboardingView.swift in Sources */,
+				7360F7CE5E715133F9B53DCC /* Pairing.swift in Sources */,
+				5C163E44683399373BE97A9C /* PrefsAPI.swift in Sources */,
+				3739D49433A29A659B436D7E /* ProviderLogoView.swift in Sources */,
+				5C03460A6F959A9DD0A367DA /* ResearchView.swift in Sources */,
+				7292490A96C3E11EDF17C6BB /* RootView.swift in Sources */,
+				74D65781B60E663914A14B8F /* ServerConfig.swift in Sources */,
+				3DBC49683C04E9A01073001A /* SessionListView.swift in Sources */,
+				F9DB13F7D56488CE96AA5430 /* SettingsView.swift in Sources */,
+				A9FA51CA01FAE469752E64FC /* ShareInbox.swift in Sources */,
+				9F6D667D0118DAA1D97F7FAE /* SkillsView.swift in Sources */,
+				4232EBF46AF58A8561C70FCE /* TasksView.swift in Sources */,
+				BA1F0B1A7B96C69EE41955A5 /* ToolsView.swift in Sources */,
+				0482243D9ED53F21259BB4A6 /* VoiceCapture.swift in Sources */,
+				5126CF638E488ED7E2B8AA3E /* WorkdirView.swift in Sources */,
+				D6EF3A1FF87BD55BA111B4F1 /* WorkspaceAPI.swift in Sources */,
+				F26A0776DB894AB398C267D9 /* WorkspaceHubView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		253FA32C870DA7512626A37A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 60A52187C324B0478D6E8D83 /* JoeBroIsland */;
+			targetProxy = D6F28EB75F3D2E77268E9672 /* PBXContainerItemProxy */;
+		};
+		464EABF18927EC9796F3D09B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F6876EAF38867D3BC0C6987F /* JoeBroShare */;
+			targetProxy = 29DDF8781E80E93386368A1D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		228395C6BBD09066BBB6549C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA2E9D7BD1A3936D001EA6BD /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2D3070D991E0801D01B17EEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Island/WidgetExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID).island";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		67C83C75EEAFF0EFE68AB090 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Island/WidgetExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID).island";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9A9E55CDCA6491DB673C7D18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Share/Share.entitlements;
+				INFOPLIST_FILE = Share/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID).share";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9F7D56D435BE962E0EB897C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JoeBroMobile/JoeBroMobile.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = JoeBroMobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A02977A3B0EC3EE19E8400B9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JoeBroMobile/JoeBroMobile.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = JoeBroMobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B6EEA6EE2D852CF8FB404F89 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Share/Share.entitlements;
+				INFOPLIST_FILE = Share/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JOEBRO_BUNDLE_ID).share";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ECFF8F4D2AC925C3630DCE56 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA2E9D7BD1A3936D001EA6BD /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		180B69B75D632D450C864A66 /* Build configuration list for PBXNativeTarget "JoeBroMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A02977A3B0EC3EE19E8400B9 /* Debug */,
+				9F7D56D435BE962E0EB897C4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5BCF8941047B64526BF0BD0A /* Build configuration list for PBXNativeTarget "JoeBroShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B6EEA6EE2D852CF8FB404F89 /* Debug */,
+				9A9E55CDCA6491DB673C7D18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9CD33C766723B18A1AC65C3C /* Build configuration list for PBXNativeTarget "JoeBroIsland" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67C83C75EEAFF0EFE68AB090 /* Debug */,
+				2D3070D991E0801D01B17EEA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C80E84CC39555E3787567835 /* Build configuration list for PBXProject "JoeBroMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECFF8F4D2AC925C3630DCE56 /* Debug */,
+				228395C6BBD09066BBB6549C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 71FC4CC464E955F05C888B69 /* Project object */;
+}

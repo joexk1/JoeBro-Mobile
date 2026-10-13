@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleDevelopmentRegion</key><string>en</string>
+<key>CFBundleDisplayName</key><string>JoeBro</string>
+<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+<key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+<key>JoeBroAppGroup</key><string>group.$(JOEBRO_BUNDLE_ID)</string>
+<key>LSRequiresIPhoneOS</key><true/>
+<key>UIUserInterfaceStyle</key><string>Dark</string>
+<key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBlack</string><key>UIImageName</key><string>JoeBroLaunchLogo</string></dict>
+<key>UIRequiresFullScreen</key><false/>
+<key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
+<key>UISupportedInterfaceOrientations~ipad</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
+<key>NSSupportsLiveActivities</key><true/>
+<key>NSCameraUsageDescription</key><string>Capture a photo to discuss with JoeBro.</string>
+<key>NSCalendarsFullAccessUsageDescription</key><string>Show and edit the calendars already connected to this iPhone.</string>
+<key>NSPhotoLibraryUsageDescription</key><string>Choose a wallpaper or a photo for your conversation.</string>
+<key>NSMicrophoneUsageDescription</key><string>Speak a message to JoeBro.</string>
+<key>NSSpeechRecognitionUsageDescription</key><string>Transcribe your voice into a message on this device.</string>
+<key>NSLocationWhenInUseUsageDescription</key><string>Optional. Shares your location with your own JoeBro backend for local weather and context.</string>
+<key>NSFaceIDUsageDescription</key><string>Keep your JoeBro conversations private.</string>
+<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string><key>CFBundleURLSchemes</key><array><string>joebro</string></array></dict></array>
+<key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/><key>NSExceptionDomains</key><dict><key>ts.net</key><dict><key>NSIncludesSubdomains</key><true/><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict></dict></dict>
+<key>NSLocalNetworkUsageDescription</key><string>JoeBro connects to JoeBro running on your Mac on your local network.</string>
+</dict></plist>
