@@ -253,19 +253,21 @@ struct MobileNotificationInbox: View {
             if values != Set(items.map(\.id)) { deleteAll = false }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItemGroup(placement: .topBarLeading) {
                 Button(selecting ? "Cancel" : "Select") {
                     selecting.toggle()
                     selected = []
                     deleteAll = false
                 }
                 .disabled(items.isEmpty || deleting)
+                if selecting {
+                    Button("All") { selected = Set(items.map(\.id)); deleteAll = true }
+                        .disabled(deleting)
+                }
             }
             // ponytail: top bar, not .bottomBar - the bottom bar never shows under the tab bar/sheet
             ToolbarItemGroup(placement: .topBarTrailing) {
                 if selecting {
-                    Button("All") { selected = Set(items.map(\.id)); deleteAll = true }
-                        .disabled(deleting)
                     Button(role: .destructive) { Task { await deleteSelection() } } label: {
                         Label(deleteAll ? "Delete all" : "Delete selected", systemImage: "trash")
                     }

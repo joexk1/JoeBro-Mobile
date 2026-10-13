@@ -85,7 +85,7 @@ struct RootView: View {
         .sheet(isPresented: $showPushInbox) {
             NavigationStack {
                 MobileNotificationInbox(api: runtime.api)
-                    .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { showPushInbox = false } } }
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showPushInbox = false } } }
             }
             .environment(theme)
         }
