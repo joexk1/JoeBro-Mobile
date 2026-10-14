@@ -9,6 +9,8 @@
   Talks to your own Mac. No cloud in the middle.
 </p>
 
+<p align="center"><a href="https://joexk1.github.io/joebro/"><b>joexk1.github.io/joebro</b></a></p>
+
 **Sister repo:** the Mac app is **[JoeBro](https://github.com/joexk1/JoeBro)**. You need it running (1.3 or later) for this app to do anything.
 
 ---
