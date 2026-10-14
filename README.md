@@ -19,12 +19,7 @@ You get your chats, your agents, your documents and a phone agent that works in 
 
 This is a source release. There is no App Store build. Your bundle ID, your signing team and your push key are yours, so you build it yourself.
 
-<p align="center">
-  <img src="README_assets/phone-agent.png" alt="The phone agent chat" width="23%">
-  <img src="README_assets/tasks.png" alt="Phone agent tasks that run in the background" width="23%">
-  <img src="README_assets/memory.png" alt="Memory files the agent reads" width="23%">
-  <img src="README_assets/inbox.png" alt="The inbox of notices from the phone agent" width="23%">
-</p>
+![The phone agent: one chat that follows you, running on your own Mac](README_assets/phone-agent.png)
 
 ---
 
@@ -56,9 +51,7 @@ This is a source release. There is no App Store build. Your bundle ID, your sign
 2. Open the app on the phone. It shows a short intro, then a scan screen.
 3. Scan the QR code on the Mac.
 
-<p align="center">
-  <img src="README_assets/pairing.png" alt="The pairing screen" width="260">
-</p>
+![Pairing: scan the QR code on your Mac](README_assets/pairing.png)
 
 If you can't scan, use **Copy link** on the Mac and open it on the phone, or paste the URL and token by hand. The app checks the address and token before it saves anything. If the Mac is too old, it tells you to update to 1.3.0.
 
@@ -113,7 +106,11 @@ The phone agent is JoeBro, on your phone, with a memory and a to-do list. All of
 
 **Memory files.** Plain Markdown files in JoeBro's data folder, under `muse/`. You can read them and edit them, on the Mac (**Brain > Phone memory**) or on the phone. `about-me` is always in the prompt. Every other file only contributes the lines that overlap with your message. The agent writes to them with its remember and forget tools. If **Learn durable facts into phone memory** is on, a light pass after a turn can add lasting facts, with duplicates and anything that looks like a secret filtered out. Memory is data, never instructions. It is separate from the Brain.
 
+![Memory files the phone agent reads and you can edit](README_assets/memory.png)
+
 **Tasks.** On the Mac, **Tasks > Phone agent** lists tasks that run in the background and say nothing. Each run ends with either the text you want to be notified about, or the word `NOTHING`. Only that text goes to the chat. If the result hasn't changed since last time, it isn't sent again. Two starters are built in, a morning briefing and an evening wrap-up. They only get created when you press them.
+
+![Tasks that run in the background and only speak up when it matters](README_assets/tasks.png)
 
 **Heartbeat.** Off by default. Every 30 minutes (you set it) it collects what changed: calendar, reminders, task results. It reduces each to a fingerprint. If nothing changed, it does not call a model at all. If something did, it asks a cheap background model whether it's worth your attention. If yes, the message is posted into the phone chat as a normal message and pushed. You answer yes or no in that chat. There is no approval queue.
 
@@ -122,6 +119,8 @@ It has two separate limits. Notifications: at most 2 a day by default, at least 
 **Pulse and reminders.** Pulse wakes the agent on a checklist you write in plain English, also off by default. Reminders fire once.
 
 **Notifications and inbox.** Every notice is written to the Inbox first, then pushed if push is set up, then sent to Telegram if you've set that up, otherwise it stays in the Inbox. The Mac has an **Inbox** tab. You can hide preview text on the lock screen in the app's settings.
+
+![The inbox of notices from the phone agent](README_assets/inbox.png)
 
 **Live Activities.** While the agent is working, it shows on the Lock Screen and Dynamic Island. With push configured, the Mac ends it when the work finishes. Without push, it updates while the app is open.
 
