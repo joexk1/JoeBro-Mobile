@@ -29,6 +29,8 @@ struct MobileSettingsView: View {
                 modelSection
                 subagentSection
                 joeBroSection
+                ProactiveModeSection(api: client())
+                HealthSettingsSection(api: client())
                 appearanceSection
                 pushSection
                 privacySection

@@ -111,6 +111,7 @@ struct RootView: View {
                 if ShareInbox.hasPending { selectedTab = .chats; Task { await importSharedCapture() } }
                 Task { await runtime.chat.reconcileAfterResume() }
                 Task { await runtime.joeBro.reconcileAfterResume() }
+                Task { await HealthSync.shared.syncIfDue(api: runtime.api) }
                 if faceIDGate { Task { await authenticate() } }
             }
             if phase == .background, faceIDGate { unlocked = false; showPushInbox = false }
@@ -127,8 +128,8 @@ struct RootView: View {
             while !Task.isCancelled {
                 // Keep the island in sync even when the Agents tab is not open.
                 // This GET does not start an agent or use model tokens.
-                if let runs = try? await runtime.api.agentRegistry() {
-                    await activities.reconcileAgents(runs)
+                if let snap = try? await runtime.api.agentSnapshot() {
+                    await activities.reconcileAgents(snap.agents, activeTurns: snap.activeTurns)
                 }
                 try? await Task.sleep(for: .seconds(5))
             }

@@ -32,6 +32,8 @@ targets:
       SystemCapabilities:
         com.apple.Push:
           enabled: 1
+        com.apple.HealthKit:
+          enabled: 1
     dependencies:
       - target: JoeBroIsland
         embed: true

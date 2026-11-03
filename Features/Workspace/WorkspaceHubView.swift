@@ -21,6 +21,7 @@ struct WorkspaceHubView: View {
                 Section("Mail & calendar") {
                     row("envelope", "Email", "Read your inbox") { EmailView(api: api) }
                     row("calendar", "Calendar", "Today and what's coming") { CalendarAgendaView(api: api) }
+                    row("cart", "Shopping", "Your list — tick things off") { ShoppingListView(api: api) }
                 }
                 Section("Work") {
                     row("bell", "Notifications", "Reminders and updates from JoeBro") { MobileNotificationInbox(api: api) }

@@ -9,7 +9,7 @@ import Foundation
 // failing the whole list.
 
 public enum JBAgentKind: String, Decodable, Sendable, CaseIterable {
-    case research, chat, task, briefing, subagent, unknown
+    case research, chat, task, briefing, subagent, coding, unknown
 
     public init(from decoder: Decoder) throws {
         let raw = (try? String(from: decoder))?.lowercased() ?? ""
@@ -23,6 +23,7 @@ public enum JBAgentKind: String, Decodable, Sendable, CaseIterable {
         case .task: "Task"
         case .briefing: "Briefing"
         case .subagent: "Subagent"
+        case .coding: "Coding"
         case .unknown: "Agent"
         }
     }
@@ -34,6 +35,7 @@ public enum JBAgentKind: String, Decodable, Sendable, CaseIterable {
         case .task: "clock.arrow.circlepath"
         case .briefing: "sun.max.fill"
         case .subagent: "arrow.triangle.branch"
+        case .coding: "chevron.left.forwardslash.chevron.right"
         case .unknown: "sparkles"
         }
     }
@@ -144,7 +146,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
 
     public var displayTitle: String { (title?.isEmpty == false ? title : nil) ?? "Untitled agent" }
     public var isSessionOnly: Bool { id.hasPrefix("session:") }
-    public var isLive: Bool { live == true || ["running", "queued", "working"].contains(status ?? "") }
+    public var isLive: Bool { live == true || ["running", "queued", "working", "waiting"].contains(status ?? "") }
     public var failed: Bool { ["error", "failed"].contains(status ?? "") }
 }
 
@@ -169,19 +171,29 @@ extension JoeBroAPI {
     // The backend wraps these in an envelope: {"ok", "agents"} or {"ok", "agent"}.
     private struct AgentsEnvelope: Decodable {
         let agents: [JBAgentRecord]?
+        var activeTurns: [String]? = nil
         /// Also tolerates a bare array, which earlier builds returned.
         init(from decoder: Decoder) throws {
             if let list = try? [JBAgentRecord](from: decoder) { agents = list; return }
             let box = try decoder.container(keyedBy: CodingKeys.self)
             agents = try? box.decode([JBAgentRecord].self, forKey: .agents)
+            activeTurns = try? box.decode([String].self, forKey: .activeTurns)
         }
-        enum CodingKeys: String, CodingKey { case agents }
+        enum CodingKeys: String, CodingKey { case agents, activeTurns = "active_turns" }
     }
     private struct AgentEnvelope: Decodable { let agent: JBAgentRecord }
 
     /// Every agent in the registry, newest first.
     public func agentRegistry() async throws -> [JBAgentRecord] {
-        try await fetch(AgentsEnvelope.self, "api/agents").agents ?? []
+        // include=coding: Claude Code / Codex / OpenCode sessions on your linked computers,
+        // reported by the harness hooks, listed alongside JoeBro's own agents.
+        try await fetch(AgentsEnvelope.self, "api/agents", query: [URLQueryItem(name: "include", value: "coding")]).agents ?? []
+    }
+
+    /// Registry plus the chat turns the server is still streaming (nil on older backends).
+    public func agentSnapshot() async throws -> (agents: [JBAgentRecord], activeTurns: [String]?) {
+        let env = try await fetch(AgentsEnvelope.self, "api/agents", query: [URLQueryItem(name: "include", value: "coding")])
+        return (env.agents ?? [], env.activeTurns)
     }
 
     /// One agent with its full result text, rather than the list's preview.

@@ -72,6 +72,7 @@ struct JoeBroMobileApp: App {
 final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().setNotificationCategories(MobilePushNotifications.categories)
         return true
     }
 
@@ -90,8 +91,16 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         // UIKit's response completion can update state restoration; it must run on the main thread.
+        let action = response.actionIdentifier
+        let info = response.notification.request.content.userInfo["joebro"] as? [String: Any]
+        let agent = info?["agent"] as? String
         Task { @MainActor in
-            MobilePushNotifications.shared.openInbox = true
+            if let agent, action == MobilePushNotifications.approveAction || action == MobilePushNotifications.denyAction {
+                // Answered from the lock screen / banner: no app UI, just tell the backend.
+                await MobilePushNotifications.shared.decide(agent: agent, approve: action == MobilePushNotifications.approveAction)
+            } else {
+                MobilePushNotifications.shared.openInbox = true
+            }
             completionHandler()
         }
     }
@@ -210,6 +219,28 @@ final class MobilePushNotifications {
     }
 
     private struct PushServerStatus: Decodable { let configured: Bool }
+
+    // MARK: coding-agent approvals from the lock screen
+    static let approvalCategory = "CODING_APPROVAL"
+    static let approveAction = "CODING_APPROVE"
+    static let denyAction = "CODING_DENY"
+    static var categories: Set<UNNotificationCategory> {
+        // Approving runs a command on the PC/Mac, so it needs Face ID; denying is always safe.
+        let approve = UNNotificationAction(identifier: approveAction, title: "Approve",
+                                           options: [.authenticationRequired],
+                                           icon: UNNotificationActionIcon(systemImageName: "checkmark.circle"))
+        let deny = UNNotificationAction(identifier: denyAction, title: "Deny", options: [.destructive],
+                                        icon: UNNotificationActionIcon(systemImageName: "xmark.circle"))
+        return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny], intentIdentifiers: [],
+                                       options: [])]
+    }
+
+    func decide(agent: String, approve: Bool) async {
+        guard let api = client() else { return }
+        let id = agent.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))) ?? agent
+        _ = try? await api.send(JoeBroAPI.OK.self, "/api/coding-agents/\(id)/decide",
+                                json: ["decision": approve ? "approve" : "deny"])
+    }
 }
 
 

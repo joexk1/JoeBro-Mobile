@@ -29,6 +29,9 @@ import SwiftUI
         let existingSessions = Set(sessions.map(\.id))
         let validRegistry = agents.filter { agent in
             if agent.kind == .briefing || agent.id == "brf_current" { return false }
+            // The main JoeBro has its own card (mainJoeBro); its turns' registry
+            // rows would otherwise count it twice.
+            if agent.sessionID == "joebro_ios_main" { return false }
             guard sessionsLoaded, let session = agent.sessionID, !session.isEmpty else { return true }
             if existingSessions.contains(session) { return true }
             // A running or queued run is live whether or not the (concurrently
@@ -106,7 +109,7 @@ import SwiftUI
         case .task: 0
         case .research: 1
         case .chat: 2
-        case .subagent, .briefing, .unknown: 3
+        case .subagent, .coding, .briefing, .unknown: 3
         }
     }
 
@@ -355,7 +358,7 @@ struct AgentsTabView: View {
             }
             .padding(.horizontal, 3)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 10)], spacing: 10) {
-                ForEach([JBAgentKind.chat, .research, .task, .subagent], id: \.self) { kind in
+                ForEach([JBAgentKind.chat, .coding, .research, .task, .subagent], id: \.self) { kind in
                     kindCard(kind)
                 }
             }
@@ -680,13 +683,15 @@ private func statusLabel(_ agent: JBAgentRecord) -> String {
     case "cancelled": return "Stopped"
     case "queued": return "Queued"
     case "running", "working": return "Running"
+    case "waiting": return "Needs you"
+    case "stale": return "Went quiet"
     default: return (agent.status ?? "Unknown").capitalized
     }
 }
 
 private func statusColor(_ agent: JBAgentRecord) -> Color {
     if agent.failed { return .red }
-    if agent.isLive { return agent.status == "queued" ? .orange : .yellow }
+    if agent.isLive { return agent.status == "queued" || agent.status == "waiting" ? .orange : .yellow }
     if agent.status == "cancelled" { return .gray }
     return .green
 }

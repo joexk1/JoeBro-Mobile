@@ -32,19 +32,31 @@ final class JoeBroActivityController {
     private static var agents: [JBAgentRecord] = []
     private static var chatTurns: [String: String] = [:]   // sessionID -> title
     private static var chatOrder: [String] = []
+    private static var chatBegan: [String: Date] = [:]
     private static var keepAlive: Task<Void, Never>?
     private static var lastLive: [String: String] = [:]   // live agent id -> title, to name the outcome
     private static var failedTurn = false
 
     /// A failed GET must not call this (the caller only reconciles on success),
     /// so being offline never dismisses a still-running activity.
-    func reconcileAgents(_ agents: [JBAgentRecord]) async {
+    func reconcileAgents(_ agents: [JBAgentRecord], activeTurns: [String]? = nil) async {
         await endLegacyBriefings()
+        // A turn whose stream was lost (backgrounded, network drop) never calls
+        // chatTurnEnded; the server is the truth about which turns still run.
+        if let activeTurns {
+            let live = Set(activeTurns)
+            for id in Self.chatOrder where !live.contains(id)
+                && Date().timeIntervalSince(Self.chatBegan[id] ?? .distantPast) > 30 {
+                Self.chatTurns[id] = nil
+                Self.chatBegan[id] = nil
+            }
+            Self.chatOrder.removeAll { Self.chatTurns[$0] == nil }
+        }
         // Anything that was live and is now failed makes the finish state "failed".
         for (id, _) in Self.lastLive {
             if let r = agents.first(where: { $0.id == id }), r.status == "failed" { Self.failedTurn = true }
         }
-        Self.agents = agents.filter { $0.kind != .briefing && !$0.isSessionOnly && $0.isLive }
+        Self.agents = Self.uniqueBySession(agents.filter { $0.kind != .briefing && !$0.isSessionOnly && $0.isLive })
         Self.lastLive = Dictionary(Self.agents.map { ($0.id, $0.displayTitle) }, uniquingKeysWith: { a, _ in a })
         await sync()
     }
@@ -54,6 +66,7 @@ final class JoeBroActivityController {
     func chatTurnBegan(sessionID: String, title: String) async {
         let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
         Self.chatTurns[sessionID] = clean.isEmpty ? "JoeBro" : clean
+        Self.chatBegan[sessionID] = .now
         if !Self.chatOrder.contains(sessionID) { Self.chatOrder.append(sessionID) }
         Self.startKeepAlive()
         await sync()
@@ -63,6 +76,7 @@ final class JoeBroActivityController {
     func chatTurnEnded(sessionID: String, failed: Bool = false) async {
         if failed { Self.failedTurn = true }
         Self.chatTurns[sessionID] = nil
+        Self.chatBegan[sessionID] = nil
         Self.chatOrder.removeAll { $0 == sessionID }
         await sync()
     }
@@ -105,12 +119,19 @@ final class JoeBroActivityController {
             return
         }
         guard isAvailable else { return }
+        // A streaming chat turn is also registered by the backend as a "chat" agent
+        // with the same session: show it once (as the reply), never twice.
+        let chatSessions = Set(chats.map(\.0))
+        let agentRuns = Self.agents.filter { agent in
+            guard let s = agent.sessionID, !s.isEmpty else { return true }
+            return !chatSessions.contains(s)
+        }
         let chatRuns = chats.map { id, title in
             JoeBroActivityAttributes.Run(id: "chat-" + id, title: title, kind: "reply",
                                          detail: "", queued: false)
         }
-        let all = chatRuns + Self.agents.map(Self.run)
-        let headline: String? = Self.agents.isEmpty
+        let all = chatRuns + agentRuns.map(Self.run)
+        let headline: String? = agentRuns.isEmpty
             ? (chats.count == 1 ? "JoeBro is replying" : "\(chats.count) chats replying")
             : nil
         let state = JoeBroActivityAttributes.ContentState(
@@ -157,6 +178,16 @@ final class JoeBroActivityController {
               let ent = plist["Entitlements"] as? [String: Any],
               let env = ent["aps-environment"] as? String else { return nil }
         return env
+    }
+
+    /// One live entry per session; agents without a session (coding agents,
+    /// research) are each their own work and kept as-is.
+    static func uniqueBySession(_ agents: [JBAgentRecord]) -> [JBAgentRecord] {
+        var seen = Set<String>()
+        return agents.filter { agent in
+            guard let s = agent.sessionID?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return true }
+            return seen.insert(s).inserted
+        }
     }
 
     private static func run(_ agent: JBAgentRecord) -> JoeBroActivityAttributes.Run {

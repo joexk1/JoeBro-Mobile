@@ -157,6 +157,7 @@ private struct JoeBroRunRow: View {
         case "chat": "Chat"
         case "reply": "Replying"
         case "task": "Task"
+        case "coding": "Coding"
         default: "Agent"
         }
     }
@@ -167,6 +168,7 @@ private struct JoeBroRunRow: View {
         case "chat": "bubble.left.and.bubble.right"
         case "reply": "ellipsis.bubble"
         case "task": "clock.arrow.circlepath"
+        case "coding": "chevron.left.forwardslash.chevron.right"
         default: "sparkles"
         }
     }
