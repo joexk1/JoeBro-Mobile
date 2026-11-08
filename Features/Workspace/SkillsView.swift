@@ -72,7 +72,7 @@ struct SkillsView: View {
         SkillRow(skill: skill) { on in
             Task { await act { try await ws.setSkillActive(id: skill.id, active: on) } }
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .contentShape(Rectangle())
         .onTapGesture { editing = skill }
         .contextMenu {
@@ -154,7 +154,7 @@ private struct SkillRow: View {
         HStack(spacing: 11) {
             WSStatusDot(on: skill.isActive)
             VStack(alignment: .leading, spacing: 3) {
-                Text(skill.name).foregroundStyle(.white).lineLimit(1)
+                Text(skill.name).foregroundStyle(.joeInk).lineLimit(1)
                 if !skill.description.isEmpty {
                     Text(skill.description).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
@@ -199,13 +199,13 @@ private struct SkillEditor: View {
                     TextField("Description", text: $description, axis: .vertical).lineLimit(2...4)
                     TextField("When to use", text: $whenToUse, axis: .vertical).lineLimit(2...4)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 Section("Procedure (markdown)") {
                     TextEditor(text: $content)
                         .frame(minHeight: 220)
                         .scrollContentBackground(.hidden)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             .scrollContentBackground(.hidden)
             .jbWallpaper()

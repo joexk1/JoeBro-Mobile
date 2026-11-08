@@ -31,13 +31,13 @@ struct ChatMessageRow: View {
         .padding(.vertical, 13)
         .background(bubbleFill, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(.white.opacity(isUser ? 0.22 : 0.13), lineWidth: 1))
+            .strokeBorder(.joeInk.opacity(isUser ? 0.22 : 0.13), lineWidth: 1))
     }
 
     // The user speaks in a tinted bubble, JoeBro in plain glass — the clearest
     // distinction that still reads as one material.
     private var bubbleFill: Color {
-        isUser ? Color.accentTint.opacity(0.22) : Color.white.opacity(0.07)
+        isUser ? Color.accentTint.opacity(0.22) : Color.joeInk.opacity(0.07)
     }
 
     @ViewBuilder
@@ -46,7 +46,7 @@ struct ChatMessageRow: View {
             if isUser {
                 Text(line.text)
                     .font(.body)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .lineSpacing(3)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,7 +75,7 @@ struct ChatMessageRow: View {
         DisclosureGroup {
             Text(line.thinking)
                 .font(.footnote)
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(.joeInk.opacity(0.75))
                 .lineSpacing(2)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -83,7 +83,7 @@ struct ChatMessageRow: View {
         } label: {
             Label("Thinking", systemImage: "sparkles")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(.joeInk.opacity(0.8))
         }
         .tint(.accentTint)
     }
@@ -102,7 +102,7 @@ struct ChatMessageRow: View {
         ForEach(line.attachments, id: \.self) { name in
             Label(name, systemImage: "paperclip")
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(.joeInk.opacity(0.7))
                 .lineLimit(1)
         }
     }
@@ -111,13 +111,13 @@ struct ChatMessageRow: View {
         Button { onOpenDocument(document) } label: {
             HStack(spacing: 10) {
                 Image(systemName: "doc.text.fill").foregroundStyle(.accentTint)
-                Text(document.title).font(.subheadline.weight(.semibold)).foregroundStyle(.white).lineLimit(1)
+                Text(document.title).font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk).lineLimit(1)
                 Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.white.opacity(0.5))
+                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.5))
             }
             .padding(.horizontal, 12)
             .frame(minHeight: 44)
-            .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(.joeInk.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

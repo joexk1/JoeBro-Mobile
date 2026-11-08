@@ -26,7 +26,7 @@ struct TasksView: View {
                 if personalTasks.isEmpty && !loading {
                     Text("No personal tasks yet. They run silently and only notify you when there is news.")
                         .font(.footnote).foregroundStyle(.secondary)
-                        .listRowBackground(Color.white.opacity(0.06))
+                        .listRowBackground(Color.joeInk.opacity(0.06))
                 }
                 ForEach(personalTasks) { task in row(task) }
             } header: {
@@ -86,7 +86,7 @@ struct TasksView: View {
     private func row(_ task: WSTask) -> some View {
         Button { editing = task } label: { TaskRow(task: task, running: running == task.id) }
             .buttonStyle(.plain)
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             .contextMenu { menu(task) }
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 Button("Delete", systemImage: "trash") { deleteTarget = task }.tint(.red)
@@ -128,7 +128,7 @@ struct TasksView: View {
         NavigationStack {
             ScrollView {
                 Text(text)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
@@ -177,13 +177,13 @@ private struct TaskRow: View {
             WSStatusDot(on: !task.isPaused)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(task.name).foregroundStyle(.white).lineLimit(1)
+                    Text(task.name).foregroundStyle(.joeInk).lineLimit(1)
                     if task.isPaused {
                         Text("Paused")
                             .font(.caption2)
                             .padding(.horizontal, 7).padding(.vertical, 2)
-                            .background(.white.opacity(0.15), in: Capsule())
-                            .foregroundStyle(.white.opacity(0.8))
+                            .background(.joeInk.opacity(0.15), in: Capsule())
+                            .foregroundStyle(.joeInk.opacity(0.8))
                     }
                     Spacer(minLength: 0)
                     if running { ProgressView().controlSize(.mini).tint(Color.accentTint) }
@@ -229,7 +229,7 @@ struct TaskEditor: View {
                     TextField("Name", text: $name)
                     TextField("Prompt", text: $prompt, axis: .vertical).lineLimit(3...8)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 Section("Schedule") {
                     Picker("Repeats", selection: $schedule) {
                         Text("Daily").tag("daily")
@@ -251,7 +251,7 @@ struct TaskEditor: View {
                     TextField("Time (HH:MM)", text: $time).keyboardType(.numbersAndPunctuation)
                     WSPermissionPicker(title: "Agent access", mode: $permissionMode)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             .scrollContentBackground(.hidden)
             .jbWallpaper()

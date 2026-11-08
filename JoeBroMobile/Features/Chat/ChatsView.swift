@@ -791,7 +791,7 @@ struct ChatsView: View {
     private func toolbarIcon(_ symbol: String) -> some View {
         Image(systemName: symbol)
             .font(.body.weight(.medium))
-            .foregroundStyle(.white)
+            .foregroundStyle(.joeInk)
     }
 
     private var chatDetail: some View {

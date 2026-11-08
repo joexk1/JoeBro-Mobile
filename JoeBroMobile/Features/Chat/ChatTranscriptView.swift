@@ -23,9 +23,12 @@ struct ChatTranscriptView<Composer: View>: View {
     private static var bottomID: String { "chat-bottom" }
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(JoeBroTheme.self) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @State private var contentBottom: CGFloat = 0
     @State private var viewportBottom: CGFloat = 0
     @State private var followingLatest = true
+    @State private var layoutTask: Task<Void, Never>?
 
     /// Both probes use global coordinates. The last message is considered
     /// visible once its bottom is within a short swipe of the viewport edge.
@@ -37,9 +40,17 @@ struct ChatTranscriptView<Composer: View>: View {
         ScrollViewReader { proxy in
             VStack(spacing: 0) {
                 scroll(proxy)
+                    .clipped()
                     .overlay(alignment: .bottom) { viewportProbe }
                     .overlay(alignment: .bottom) { jumpButton(proxy) }
                 composer()
+                    .background {
+                        if theme.preset == .monochrome {
+                            colorScheme == .dark ? Color.black : Color.white
+                        }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .zIndex(1)
             }
                 .onChange(of: store.lines.count) { _, _ in
                     // A submitted message should be visible immediately. The
@@ -75,6 +86,7 @@ struct ChatTranscriptView<Composer: View>: View {
                     jumpAfterLayout(proxy)
                 }
         }
+        .onDisappear { layoutTask?.cancel() }
     }
 
     private func scroll(_ proxy: ScrollViewProxy) -> some View {
@@ -102,13 +114,13 @@ struct ChatTranscriptView<Composer: View>: View {
             // Correct both an undershoot and an overshoot using the laid-out
             // anchor, only while the user is following the newest message.
             guard followingLatest, bottom > 0, viewportBottom > 0,
-                  abs(bottom - viewportBottom) > 24 else { return }
+                  bottom - viewportBottom > 24 else { return }
             jump(proxy, animated: false)
         }
         .onPreferenceChange(ViewportBottomKey.self) { bottom in
             viewportBottom = bottom
             guard followingLatest, contentBottom > 0, bottom > 0,
-                  abs(contentBottom - bottom) > 24 else { return }
+                  contentBottom - bottom > 24 else { return }
             jump(proxy, animated: false)
         }
         .onChange(of: scrolledUp) { _, isUp in
@@ -143,10 +155,10 @@ struct ChatTranscriptView<Composer: View>: View {
             } label: {
                 Image(systemName: "arrow.down")
                     .font(.headline.bold())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .frame(width: 44, height: 44)
                     .background(.ultraThinMaterial, in: Circle())
-                    .overlay(Circle().strokeBorder(.white.opacity(0.25)))
+                    .overlay(Circle().strokeBorder(.joeInk.opacity(0.25)))
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
                     .contentShape(Circle())
             }
@@ -169,9 +181,10 @@ struct ChatTranscriptView<Composer: View>: View {
 
     private func jumpAfterLayout(_ proxy: ScrollViewProxy) {
         let sessionID = store.selectedSessionID
-        Task { @MainActor in
+        layoutTask?.cancel()
+        layoutTask = Task { @MainActor in
             // Lazy rows (markdown) keep growing for a while; re-pin a few times.
-            for ms in [120, 250, 500, 900] {
+            for ms in [80, 180, 350] {
                 try? await Task.sleep(for: .milliseconds(ms))
                 guard !Task.isCancelled, followingLatest, store.selectedSessionID == sessionID else { return }
                 jump(proxy, animated: false)
@@ -186,12 +199,12 @@ struct ChatEmptyState: View {
         VStack(spacing: 16) {
             if !isMainJoeBro {
                 Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72)
-                Text("What can I help with?").font(.title2.bold()).foregroundStyle(.white)
+                Text("What can I help with?").font(.title2.bold()).foregroundStyle(.joeInk)
                 Text("Ask a question or put JoeBro to work.")
                     .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
             } else {
                 Text("Say hello, or give me something to take care of.")
-                    .font(.subheadline).foregroundStyle(.white.opacity(0.7))
+                    .font(.subheadline).foregroundStyle(.joeInk.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }

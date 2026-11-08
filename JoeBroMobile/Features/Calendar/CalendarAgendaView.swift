@@ -104,7 +104,7 @@ struct CalendarAgendaView: View {
                 }
             }
             Spacer(minLength: 0)
-            if loading { ProgressView().tint(.white) }
+            if loading { ProgressView().tint(.joeInk) }
         }
         .padding(16).jbGlass(20)
     }
@@ -195,11 +195,11 @@ struct CalendarAgendaView: View {
             VStack(spacing: 3) {
                 if !compact { Text(day.formatted(.dateTime.weekday(.narrow))).font(.caption2) }
                 Text(day.formatted(.dateTime.day())).font(.subheadline.weight(selected ? .bold : .medium))
-                    .foregroundStyle(cal.isDate(day, equalTo: anchor, toGranularity: .month) ? .white : .secondary)
+                    .foregroundStyle(cal.isDate(day, equalTo: anchor, toGranularity: .month) ? .joeInk : .secondary)
                 Circle().fill(count > 0 ? Color.cyan : .clear).frame(width: 4, height: 4)
             }
             .frame(maxWidth: .infinity, minHeight: compact ? 43 : 52)
-            .background(selected ? Color.white.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 11))
+            .background(selected ? Color.joeInk.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 11))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(count) events")
@@ -232,7 +232,7 @@ struct CalendarAgendaView: View {
             }
             .foregroundStyle(.secondary).frame(width: 72, alignment: .leading)
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title).font(.headline).foregroundStyle(.white)
+                Text(event.title).font(.headline).foregroundStyle(.joeInk)
                 if !event.location.isEmpty { Label(event.location, systemImage: "mappin").font(.caption).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 0)

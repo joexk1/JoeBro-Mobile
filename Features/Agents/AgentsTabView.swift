@@ -13,9 +13,9 @@ import SwiftUI
     var search = ""
     var loading = true
     private var hasLoaded = false
+    private var loadTask: Task<Void, Never>?
     var error: String?
     private var poll: Task<Void, Never>?
-    private let activities = JoeBroActivityController()
 
     init(api: JoeBroAPI, chatStore: ChatStore, mainJoeBro: ChatStore) {
         self.api = api
@@ -114,17 +114,47 @@ import SwiftUI
     }
 
     func load() async {
+        if let loadTask { await loadTask.value; return }
         loading = !hasLoaded
-        defer { loading = false; hasLoaded = true }
-        async let sessionRequest = api.sessions()
-        async let registryRequest = api.agentRegistry()
+        let task = Task { @MainActor in
+            defer { loading = false; loadTask = nil }
+            async let sessionRequest = loadSessions()
+            do {
+                let result = try await api.agentRegistry()
+                try Task.checkCancellation()
+                agents = result
+                loading = false
+                hasLoaded = true
+                error = nil
+                // RootView owns Live Activity updates. Refresh must finish as
+                // soon as its data requests finish, independently of WidgetKit.
+            } catch {
+                if !Task.isCancelled { self.error = error.localizedDescription }
+            }
+            await sessionRequest
+        }
+        loadTask = task
+        await task.value
+    }
+
+    /// A user pull supersedes a poll instead of silently returning or waiting
+    /// for a stale request to finish. Keep the last good rows during refresh.
+    func refresh() async {
+        if let task = loadTask {
+            task.cancel()
+            await task.value
+        }
+        guard !Task.isCancelled else { return }
+        await load()
+    }
+
+    private func loadSessions() async {
         do {
-            sessions = try await sessionRequest
+            let result = try await api.sessions()
+            try Task.checkCancellation()
+            sessions = result
             sessionsLoaded = true
-            agents = try await registryRequest
-            await activities.reconcileAgents(agents)
-            error = nil
-        } catch { self.error = error.localizedDescription }
+        } catch { /* Registry results remain useful when session lookup fails. */ }
     }
 
     /// Poll only while this tab is visible. A new job can start elsewhere in
@@ -139,7 +169,7 @@ import SwiftUI
         }
     }
 
-    func stopPolling() { poll?.cancel(); poll = nil }
+    func stopPolling() { poll?.cancel(); poll = nil; loadTask?.cancel() }
 
     func cancel(_ agent: JBAgentRecord) async {
         do {
@@ -148,7 +178,7 @@ import SwiftUI
             } else {
                 try await api.cancelAgent(id: agent.id)
             }
-            await load()
+            await refresh()
         }
         catch { self.error = error.localizedDescription }
     }
@@ -178,18 +208,23 @@ struct AgentsTabView: View {
     }
 
     private var scroller: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 14) {
+        List {
+            Group {
                 filters
                 content
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .listRowInsets(EdgeInsets(top: 7, leading: 16, bottom: 7, trailing: 16))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
         }
+        .listStyle(.plain)
+        .environment(\.defaultMinListRowHeight, 0)
+        .scrollContentBackground(.hidden)
+        .scrollBounceBehavior(.always, axes: .vertical)
         .scrollIndicators(.hidden)
+        .refreshable { await store.refresh() }
         .jbWallpaper()
         .searchable(text: Bindable(store).search, prompt: "Search agents")
-        .refreshable { await store.load() }
     }
 
     var body: some View {
@@ -211,8 +246,8 @@ struct AgentsTabView: View {
                 AgentDetailView(api: api, agent: agent, chatStore: chatStore)
             }
             .task {
-                if mainJoeBro.selectedSessionID == nil { await mainJoeBro.load() }
                 store.startPolling()
+                if mainJoeBro.selectedSessionID == nil { await mainJoeBro.load() }
             }
             .onAppear { symbolsReady = true }
             .onDisappear { store.stopPolling() }
@@ -239,7 +274,7 @@ struct AgentsTabView: View {
     private var content: some View {
         if store.loading {
             ProgressView("Loading agents…")
-                .tint(.white)
+                .tint(.joeInk)
                 .frame(maxWidth: .infinity, minHeight: 180)
         } else if store.visible.isEmpty && !showJoeBroCard {
             emptyState
@@ -268,7 +303,7 @@ struct AgentsTabView: View {
             HStack(spacing: 15) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(.white)
+                        .fill(.joeInk)
                         .frame(width: 49, height: 49)
                     Image(systemName: "face.smiling")
                         .font(.system(size: 29, weight: .light))
@@ -278,7 +313,7 @@ struct AgentsTabView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("JoeBro")
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                     HStack(spacing: 6) {
                         Circle()
                             .fill(mainJoeBro.busy ? Color.yellow :
@@ -287,18 +322,18 @@ struct AgentsTabView: View {
                         Text(mainJoeBro.busy ? "Working now" :
                              mainJoeBro.mainConnectionIssue == nil ? "Standing by" : "Offline")
                             .font(.caption)
-                            .foregroundStyle(.white.opacity(0.72))
+                            .foregroundStyle(.joeInk.opacity(0.72))
                     }
                 }
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right")
                     .font(.caption2.bold())
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.joeInk.opacity(0.55))
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.accentTint.opacity(0.22), in: RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.white.opacity(0.2)))
+            .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.joeInk.opacity(0.2)))
             .contentShape(Rectangle())
         }
         .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
@@ -310,11 +345,11 @@ struct AgentsTabView: View {
         HStack {
             Text(store.activeOnly ? "RUNNING NOW" : "RECENT ACTIVITY")
                 .font(.caption2.weight(.bold)).tracking(1.5)
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(.joeInk.opacity(0.6))
             Spacer()
             Text("\(store.visible.count + (showJoeBroCard ? 1 : 0))")
                 .font(.caption.monospacedDigit())
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.joeInk.opacity(0.55))
                 .contentTransition(.numericText())
         }
         .padding(.horizontal, 3)
@@ -346,14 +381,14 @@ struct AgentsTabView: View {
             HStack {
                 Text("KIND")
                     .font(.caption2.weight(.bold)).tracking(1.5)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(.joeInk.opacity(0.6))
                 Spacer()
                 if store.filter != nil {
                     Button("Show all") { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
                         store.filter = nil
                     } }
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                 }
             }
             .padding(.horizontal, 3)
@@ -377,26 +412,26 @@ struct AgentsTabView: View {
                 Image(systemName: kind.symbol)
                     .font(.system(size: 17, weight: .medium))
                     .frame(width: 28)
-                    .foregroundStyle(selected ? .white : .white.opacity(0.72))
+                    .foregroundStyle(selected ? .joeInk : .joeInk.opacity(0.72))
                     .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
                     .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(kind.label).font(.subheadline.weight(.semibold))
                     Text(store.activeOnly ? "active" : "total")
-                        .font(.caption2).foregroundStyle(.white.opacity(0.55))
+                        .font(.caption2).foregroundStyle(.joeInk.opacity(0.55))
                 }
                 Spacer(minLength: 2)
                 Text("\(store.count(for: kind))")
                     .font(.subheadline.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.78))
+                    .foregroundStyle(.joeInk.opacity(0.78))
                     .contentTransition(.numericText())
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.joeInk)
             .padding(.horizontal, 13)
             .frame(height: 63)
-            .background(selected ? .white.opacity(0.22) : .white.opacity(0.085), in: RoundedRectangle(cornerRadius: 17))
-            .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(.white.opacity(selected ? 0.32 : 0.1)))
+            .background(selected ? .joeInk.opacity(0.22) : .joeInk.opacity(0.085), in: RoundedRectangle(cornerRadius: 17))
+            .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(.joeInk.opacity(selected ? 0.32 : 0.1)))
         }
         .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
         .accessibilityLabel("\(kind.label), \(store.count(for: kind)) \(store.activeOnly ? "active" : "total")")
@@ -417,13 +452,13 @@ struct AgentsTabView: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: (agent.kind ?? .unknown).symbol)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .frame(width: 40, height: 40)
-                    .background(.white.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
+                    .background(.joeInk.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
                 VStack(alignment: .leading, spacing: 5) {
                     Text(agent.displayTitle)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     spawnedByLabel(agent)
@@ -438,30 +473,30 @@ struct AgentsTabView: View {
                         }
                     }
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.66))
+                    .foregroundStyle(.joeInk.opacity(0.66))
                 }
                 Spacer(minLength: 5)
-                if agent.isLive { ProgressView().controlSize(.small).tint(.white) }
-                else { Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.white.opacity(0.4)) }
+                if agent.isLive { ProgressView().controlSize(.small).tint(.joeInk) }
+                else { Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.4)) }
             }
             if let preview = agent.isLive ? agent.progress : (agent.failed ? agent.error : agent.result),
                !preview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(preview.trimmingCharacters(in: .whitespacesAndNewlines))
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.joeInk.opacity(0.7))
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
             if let date = [agent.finishedAt, agent.startedAt, agent.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
                 Text(agentRelativeDate(date))
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.48))
+                    .foregroundStyle(.joeInk.opacity(0.48))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(15)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.11)))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.joeInk.opacity(0.11)))
         .contentShape(Rectangle())
     }
 
@@ -469,25 +504,25 @@ struct AgentsTabView: View {
         VStack(alignment: .leading, spacing: 13) {
             Image(systemName: store.activeOnly ? "circle.dotted.circle" : "person.3.sequence")
                 .font(.system(size: 30, weight: .light))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(.joeInk.opacity(0.8))
             Text(store.search.isEmpty ? (store.activeOnly ? "Quiet right now" : "No agents yet") : "No matches")
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
             if !store.search.isEmpty || !store.activeOnly {
                 Text(store.search.isEmpty ? "Completed work will collect here." : "Try another search or kind.")
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(.joeInk.opacity(0.65))
             }
             if store.filter != nil {
                 Button("Show all kinds") { store.filter = nil }
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(21)
-        .background(.white.opacity(0.075), in: RoundedRectangle(cornerRadius: 22))
-        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.white.opacity(0.1)))
+        .background(.joeInk.opacity(0.075), in: RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.joeInk.opacity(0.1)))
     }
 }
 
@@ -532,7 +567,7 @@ struct AgentDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 if loading && full == nil {
-                    ProgressView().tint(.white).frame(maxWidth: .infinity).padding(.vertical, 30)
+                    ProgressView().tint(.joeInk).frame(maxWidth: .infinity).padding(.vertical, 30)
                 }
                 if let error = current.error, !error.isEmpty {
                     Text(error)
@@ -563,19 +598,19 @@ struct AgentDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Transcript")
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.joeInk)
                         ForEach(Array(displayedMessages.enumerated()), id: \.offset) { index, message in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(message.role.capitalized)
                                     .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.white.opacity(0.55))
+                                    .foregroundStyle(.joeInk.opacity(0.55))
                                 Text(message.content)
                                     .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.88))
+                                    .foregroundStyle(.joeInk.opacity(0.88))
                                     .textSelection(.enabled)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            if index < displayedMessages.count - 1 { Divider().overlay(.white.opacity(0.1)) }
+                            if index < displayedMessages.count - 1 { Divider().overlay(.joeInk.opacity(0.1)) }
                         }
                     }
                     .padding(16)
@@ -648,7 +683,7 @@ struct AgentDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(current.displayTitle)
                 .font(.title2.weight(.bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
             HStack(spacing: 8) {
                 Image(systemName: (current.kind ?? .unknown).symbol)
                 Text((current.kind ?? .unknown).label)
@@ -666,7 +701,7 @@ struct AgentDetailView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             if current.isLive, let progress = current.progress, !progress.isEmpty {
-                Text(progress).font(.subheadline).foregroundStyle(.white.opacity(0.8))
+                Text(progress).font(.subheadline).foregroundStyle(.joeInk.opacity(0.8))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

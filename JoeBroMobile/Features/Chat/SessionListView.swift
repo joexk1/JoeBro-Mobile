@@ -101,7 +101,7 @@ struct SessionListView: View {
             HStack(spacing: 10) {
                 Image(systemName: "chevron.right")
                     .font(.caption.bold())
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(.joeInk.opacity(0.65))
                     .rotationEffect(.degrees(collapsed ? 0 : 90))
                     .frame(width: 12)
                 Image(systemName: collapsed ? "folder.fill" : "folder")
@@ -109,23 +109,23 @@ struct SessionListView: View {
                     .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
                     .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
-                Text(folder).lineLimit(1).foregroundStyle(.white)
+                Text(folder).lineLimit(1).foregroundStyle(.joeInk)
                 if store.pinnedFolders.contains(folder) {
                     Image(systemName: "pin.fill").font(.caption2).foregroundStyle(.orange)
                 }
                 Spacer(minLength: 6)
                 Text("\(count)")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.joeInk.opacity(0.7))
                     .padding(.horizontal, 8).padding(.vertical, 2)
-                    .background(.white.opacity(0.12), in: Capsule())
+                    .background(.joeInk.opacity(0.12), in: Capsule())
             }
             .font(.subheadline.weight(.semibold))
             .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
         .buttonStyle(SessionPressStyle(reduceMotion: reduceMotion))
-        .listRowBackground(Color.white.opacity(0.12))
+        .listRowBackground(Color.joeInk.opacity(0.12))
         .accessibilityLabel("Folder \(folder), \(count) chats")
         .accessibilityValue("\(store.pinnedFolders.contains(folder) ? "Pinned, " : "")\(collapsed ? "collapsed" : "expanded")")
         .accessibilityHint(collapsed ? "Expands the folder" : "Collapses the folder")
@@ -171,13 +171,13 @@ struct SessionListView: View {
             HStack(spacing: 12) {
                 Image(systemName: session.mode == "agent" ? "hammer.fill" : "bubble.left")
                     .font(.footnote)
-                    .foregroundStyle(session.mode == "agent" ? .orange : .white.opacity(0.55))
+                    .foregroundStyle(session.mode == "agent" ? .orange : .joeInk.opacity(0.55))
                     .frame(width: 18)
                     .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
                     .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(session.name).lineLimit(1).foregroundStyle(.white)
+                    Text(session.name).lineLimit(1).foregroundStyle(.joeInk)
                     if let model = session.model, !model.isEmpty {
                         Text(model.components(separatedBy: "/").last ?? model)
                             .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
@@ -185,13 +185,13 @@ struct SessionListView: View {
                 }
                 Spacer(minLength: 6)
                 if session.isImportant == true { Image(systemName: "pin.fill").font(.caption2).foregroundStyle(.orange) }
-                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.white.opacity(0.35))
+                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.35))
             }
             .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
         .buttonStyle(SessionPressStyle(reduceMotion: reduceMotion))
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive) { deleteTargetID = session.id }
             Button("Archive", systemImage: "archivebox") { Task { await store.archiveSession(session.id) } }
@@ -235,7 +235,7 @@ struct SessionListView: View {
     private var emptyState: some View {
         VStack(spacing: 10) {
             Image(systemName: "bubble.left.and.bubble.right").font(.largeTitle).foregroundStyle(.secondary)
-            Text("No chats yet").font(.headline).foregroundStyle(.white)
+            Text("No chats yet").font(.headline).foregroundStyle(.joeInk)
             Text("Tap the pencil to start one.").font(.footnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)

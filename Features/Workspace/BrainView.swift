@@ -59,7 +59,7 @@ struct BrainView: View {
     private func row(_ memory: JBMemory) -> some View {
         Button { editing = memory } label: { MemoryRow(memory: memory) }
             .buttonStyle(.plain)
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             .contextMenu {
                 Button("Edit memory", systemImage: "pencil") { editing = memory }
                 Button(memory.pinned == true ? "Unpin" : "Pin", systemImage: memory.pinned == true ? "pin.slash" : "pin") {
@@ -117,7 +117,7 @@ private struct MemoryRow: View {
                     .accessibilityLabel("Pinned")
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(memory.displayText).foregroundStyle(.white).lineLimit(4)
+                Text(memory.displayText).foregroundStyle(.joeInk).lineLimit(4)
                 Text(memory.category ?? "general").font(.caption2).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
@@ -154,11 +154,11 @@ private struct MemoryEditor: View {
                 Section("Memory") {
                     TextField("What should JoeBro remember?", text: $text, axis: .vertical).lineLimit(3...10)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 Section("Category") {
                     TextField("Topic", text: $category).textInputAutocapitalization(.never)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             .scrollContentBackground(.hidden)
             .jbWallpaper()

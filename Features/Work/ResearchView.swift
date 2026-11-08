@@ -68,8 +68,8 @@ struct ResearchView: View {
         Section("New run") {
             TextField("What should JoeBro research?", text: $query, axis: .vertical)
                 .lineLimit(1...4)
-                .foregroundStyle(.white)
-                .listRowBackground(Color.white.opacity(0.06))
+                .foregroundStyle(.joeInk)
+                .listRowBackground(Color.joeInk.opacity(0.06))
             if !models.isEmpty {
                 Picker("Model", selection: $model) {
                     Text("Default").tag(JBModelChoice?.none)
@@ -78,7 +78,7 @@ struct ResearchView: View {
                     }
                 }
                 .tint(Color.accentTint)
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             Button {
                 Task { await start() }
@@ -93,7 +93,7 @@ struct ResearchView: View {
                 .frame(minHeight: 44)
             }
             .disabled(starting || query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
         }
     }
 
@@ -106,14 +106,14 @@ struct ResearchView: View {
                     HStack(spacing: 13) {
                         ProgressView().controlSize(.small).tint(Color.accentTint)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(run.query).foregroundStyle(.white).lineLimit(2)
+                            Text(run.query).foregroundStyle(.joeInk).lineLimit(2)
                             Text(phases[run.id] ?? "Working…")
                                 .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         }
                     }
                     .frame(minHeight: 48)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 .contextMenu {
                     Button("Stop run", systemImage: "stop.circle", role: .destructive) { cancelTarget = run }
                 }
@@ -136,7 +136,7 @@ struct ResearchView: View {
                 } label: {
                     ReportRow(report: report)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 .contextMenu {
                     Button("Delete report", systemImage: "trash", role: .destructive) { deleteTarget = report }
                 }
@@ -197,7 +197,7 @@ private struct ReportRow: View {
                 .foregroundStyle(tint)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
-                Text(report.query).foregroundStyle(.white).lineLimit(2)
+                Text(report.query).foregroundStyle(.joeInk).lineLimit(2)
                 Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
         }
@@ -243,7 +243,7 @@ private struct ResearchReportView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(report?.query ?? title).font(.title2.bold()).foregroundStyle(.white)
+                Text(report?.query ?? title).font(.title2.bold()).foregroundStyle(.joeInk)
                 content
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -355,7 +355,7 @@ struct ResearchSourcesView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Sources · \(sources.count)")
                 .font(.title3.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
             ForEach(Array(sources.enumerated()), id: \.offset) { index, source in
                 if let url = URL(string: source.url) {
                     Link(destination: url) {
@@ -367,7 +367,7 @@ struct ResearchSourcesView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(source.title)
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.joeInk)
                             Text(url.host() ?? source.url)
                                 .font(.caption)
                                 .foregroundStyle(Color.accentTint)
@@ -378,7 +378,7 @@ struct ResearchSourcesView: View {
                                 .foregroundStyle(Color.accentTint)
                         }
                         .padding(12)
-                        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                        .background(.joeInk.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
             }

@@ -22,7 +22,7 @@ struct DocsView: View {
             ForEach(store.library) { doc in
                 Button { openDoc = doc } label: { row(doc) }
                     .buttonStyle(.plain)
-                    .listRowBackground(Color.white.opacity(0.06))
+                    .listRowBackground(Color.joeInk.opacity(0.06))
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button("Archive", systemImage: "archivebox", role: .destructive) { deleteTarget = doc }
                     }
@@ -74,9 +74,9 @@ struct DocsView: View {
     private func row(_ doc: JBDocSummary) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon(doc.language))
-                .foregroundStyle(.white.opacity(0.6)).frame(width: 20)
+                .foregroundStyle(.joeInk.opacity(0.6)).frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
-                Text(doc.displayTitle).lineLimit(1).foregroundStyle(.white)
+                Text(doc.displayTitle).lineLimit(1).foregroundStyle(.joeInk)
                 if let updated = doc.updatedAt, !updated.isEmpty {
                     Text(updated.prefix(16).replacingOccurrences(of: "T", with: " "))
                         .font(.caption2).foregroundStyle(.secondary)
@@ -100,7 +100,7 @@ struct DocsView: View {
 
     private var loadingState: some View {
         HStack(spacing: 10) {
-            ProgressView().tint(.white)
+            ProgressView().tint(.joeInk)
             Text("Loading documents…").font(.footnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 40)

@@ -64,7 +64,7 @@ struct ProactiveModeSection: View {
             Text(error ?? descriptions[mode] ?? "How much JoeBro may do in the background without being asked.")
                 .foregroundStyle(error == nil ? Color.secondary : Color.red)
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .task { await load() }
     }
 
@@ -108,9 +108,9 @@ struct ShoppingListView: View {
                         .focused($adding)
                         .submitLabel(.done)
                         .onSubmit(add)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let error {
                 Text(error).font(.footnote).foregroundStyle(.red).listRowBackground(Color.clear)
@@ -150,7 +150,7 @@ struct ShoppingListView: View {
             HStack(spacing: 12) {
                 Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 21))
-                    .foregroundStyle(item.checked ? Color.accentTint : .white.opacity(0.45))
+                    .foregroundStyle(item.checked ? Color.accentTint : .joeInk.opacity(0.45))
                     .contentTransition(.symbolEffect(.replace))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.text)
@@ -169,7 +169,7 @@ struct ShoppingListView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .accessibilityLabel("\(item.text)\(item.quantity.isEmpty ? "" : ", \(item.quantity)")")
         .accessibilityValue(item.checked ? "Ticked off" : "To get")
         .accessibilityAddTraits(.isButton)
@@ -377,7 +377,7 @@ struct HealthSettingsSection: View {
         } footer: {
             Text(footer)
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     private var footer: String {

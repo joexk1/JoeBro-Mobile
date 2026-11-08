@@ -20,16 +20,16 @@ struct MuseView: View {
                     NavigationLink(destination: MuseFileView(ws: ws, name: file.name, onSaved: { Task { await load() } })) {
                         HStack(spacing: 13) {
                             Image(systemName: file.always ? "person.crop.circle" : "doc.text")
-                                .foregroundStyle(.white.opacity(0.85)).frame(width: 28)
+                                .foregroundStyle(.joeInk.opacity(0.85)).frame(width: 28)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(file.name).foregroundStyle(.white)
+                                Text(file.name).foregroundStyle(.joeInk)
                                 Text(file.always ? "Always in the prompt · \(file.lines) lines" : "\(file.lines) lines")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
                         .frame(minHeight: 48)
                     }
-                    .listRowBackground(Color.white.opacity(0.06))
+                    .listRowBackground(Color.joeInk.opacity(0.06))
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if !file.always {
                             Button("Delete", systemImage: "trash") { deleteTarget = file }.tint(.red)
@@ -99,10 +99,10 @@ private struct MuseFileView: View {
     var body: some View {
         TextEditor(text: $text)
             .font(.system(.callout, design: .monospaced))
-            .foregroundStyle(.white)
+            .foregroundStyle(.joeInk)
             .scrollContentBackground(.hidden)
             .padding(12)
-            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.joeInk.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
             .padding(16)
             .jbWallpaper()
             .navigationTitle(name)

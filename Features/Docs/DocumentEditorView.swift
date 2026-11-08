@@ -40,9 +40,9 @@ struct DocumentEditorView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(.black.opacity(0.16))
-            Divider().overlay(.white.opacity(0.10))
+            Divider().overlay(.joeInk.opacity(0.10))
             content
-            Divider().overlay(.white.opacity(0.12))
+            Divider().overlay(.joeInk.opacity(0.12))
             DocumentStatusBar(store: store)
         }
         .background(Color.black.opacity(0.22))
@@ -80,7 +80,7 @@ struct DocumentEditorView: View {
 
     private var loadingState: some View {
         VStack(spacing: 12) {
-            ProgressView().tint(.white)
+            ProgressView().tint(.joeInk)
             Text("Loading \(fallbackTitle)…")
                 .font(.footnote).foregroundStyle(.secondary)
         }
@@ -91,14 +91,14 @@ struct DocumentEditorView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle).foregroundStyle(Color.accentTint)
-            Text("Couldn't open this document").font(.headline).foregroundStyle(.white)
+            Text("Couldn't open this document").font(.headline).foregroundStyle(.joeInk)
             Text(message)
                 .font(.footnote).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button("Try again") { Task { await store.load() } }
                 .buttonStyle(.borderedProminent)
                 .tint(Color.accentTint)
-                .foregroundStyle(.black)
+                .foregroundStyle(Color.joeInverseInk)
                 .padding(.top, 2)
         }
         .padding(28)
@@ -122,7 +122,7 @@ private struct DocumentModeSwitch: View {
         .frame(maxWidth: 248)
         .background(.black.opacity(0.26), in: RoundedRectangle(cornerRadius: 17, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 17, style: .continuous)
-            .strokeBorder(.white.opacity(0.19), lineWidth: 1))
+            .strokeBorder(.joeInk.opacity(0.19), lineWidth: 1))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Document mode")
     }
@@ -136,7 +136,7 @@ private struct DocumentModeSwitch: View {
                 Image(systemName: icon).font(.system(size: 14, weight: .semibold))
                 Text(label).font(.system(size: 14, weight: .semibold))
             }
-            .foregroundStyle(active ? Color.black.opacity(0.9) : .white.opacity(0.76))
+            .foregroundStyle(active ? Color.joeInverseInk.opacity(0.9) : .joeInk.opacity(0.76))
             .frame(maxWidth: .infinity)
             .frame(height: 42)
             .background(active ? AnyShapeStyle(Color.accentTint) : AnyShapeStyle(Color.clear),
@@ -162,7 +162,7 @@ private struct DocumentPreview: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(title)
                     .font(.title2.bold())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .textSelection(.enabled)
                 body(for: store.text)
             }
@@ -187,7 +187,7 @@ private struct DocumentPreview: View {
             Text(text)
                 .font(.body)
                 .lineSpacing(6)
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -198,13 +198,13 @@ private struct DocumentPreview: View {
             Text(text)
                 .font(.system(.footnote, design: .monospaced))
                 .lineSpacing(3)
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
                 .textSelection(.enabled)
                 .padding(14)
         }
         .background(.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .stroke(.white.opacity(0.1), lineWidth: 1))
+            .stroke(.joeInk.opacity(0.1), lineWidth: 1))
     }
 
     private var emptyBody: some View {
@@ -229,18 +229,18 @@ private struct DocumentEditorBody: View {
             if store.isLibrary {
                 TextField("Document title", text: $store.title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.joeInk)
                     .tint(Color.accentTint)
                     .submitLabel(.done)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 13)
                     .onChange(of: store.title) { _, _ in store.titleChanged() }
-                Divider().overlay(.white.opacity(0.12))
+                Divider().overlay(.joeInk.opacity(0.12))
             }
             TextEditor(text: $store.text)
                 .font(store.isMonospaced ? .system(.body, design: .monospaced) : .body)
                 .lineSpacing(store.isMonospaced ? 2 : 5)
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
                 .tint(Color.accentTint)
                 .scrollContentBackground(.hidden)
                 .autocorrectionDisabled(store.isMonospaced)
@@ -273,10 +273,10 @@ private struct DocumentStatusBar: View {
         HStack(spacing: 10) {
             Text(store.language.isEmpty ? "text" : store.language)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(.joeInk.opacity(0.75))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(.white.opacity(0.1), in: Capsule())
+                .background(.joeInk.opacity(0.1), in: Capsule())
             Text(store.countSummary)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -293,7 +293,7 @@ private struct DocumentStatusBar: View {
     private var saveState: some View {
         HStack(spacing: 5) {
             if store.saving {
-                ProgressView().controlSize(.mini).tint(.white)
+                ProgressView().controlSize(.mini).tint(.joeInk)
                 Text("Saving…")
             } else if store.dirty {
                 Image(systemName: "circle.fill")

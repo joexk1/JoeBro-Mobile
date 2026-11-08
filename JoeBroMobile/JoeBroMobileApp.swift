@@ -58,7 +58,7 @@ struct JoeBroMobileApp: App {
             } message: {
                 Text("This replaces the backend this phone is currently paired with.")
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(theme.preset == .monochrome ? nil : .dark)
             .task { if ServerConfig.isPaired { await MobilePushNotifications.shared.refresh(); LocationReporter.shared.start() } }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await MobilePushNotifications.shared.refresh() }; LocationReporter.shared.start() }

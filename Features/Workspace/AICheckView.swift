@@ -35,7 +35,7 @@ struct AICheckView: View {
     private var editor: some View {
         TextEditor(text: $text)
             .frame(minHeight: 200)
-            .foregroundStyle(.white)
+            .foregroundStyle(.joeInk)
             .scrollContentBackground(.hidden)
             .padding(10)
             .jbGlass(16)
@@ -68,7 +68,7 @@ struct AICheckView: View {
         }
         .buttonStyle(.borderedProminent)
         .tint(Color.accentTint)
-        .foregroundStyle(.black)
+        .foregroundStyle(Color.joeInverseInk)
         .disabled(wordCount < 20 || checking)
     }
 
@@ -97,8 +97,8 @@ private struct ScoreCard: View {
                  + (result.provider.map { " · \($0)" } ?? ""))
                 .font(.caption).foregroundStyle(.secondary)
             if !result.flaggedSentences.isEmpty {
-                Divider().overlay(.white.opacity(0.2))
-                Text("Flagged sentences").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                Divider().overlay(.joeInk.opacity(0.2))
+                Text("Flagged sentences").font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
                 ForEach(result.flaggedSentences.indices, id: \.self) { index in
                     Text(result.flaggedSentences[index])
                         .font(.footnote).foregroundStyle(.secondary)

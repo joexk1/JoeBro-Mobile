@@ -75,13 +75,13 @@ struct EmailView: View {
                 ForEach(folders, id: \.self) { name in Text(name).tag(name) }
             }
             .tint(Color.accentTint)
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
 
             Toggle(isOn: $unreadOnly) {
-                Label("Unread only", systemImage: "envelope.badge").foregroundStyle(.white)
+                Label("Unread only", systemImage: "envelope.badge").foregroundStyle(.joeInk)
             }
             .tint(Color.accentTint)
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
         } footer: {
             if let list, list.total > list.emails.count {
                 Text("Showing \(list.emails.count) of \(list.total).")
@@ -101,7 +101,7 @@ struct EmailView: View {
             if let message = list?.error ?? error, !message.isEmpty {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .font(.subheadline).foregroundStyle(.orange)
-                    .listRowBackground(Color.white.opacity(0.06))
+                    .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let list, list.emails.isEmpty, !loading, (list.error ?? "").isEmpty {
                 empty("tray", unreadOnly ? "No unread mail" : "No messages",
@@ -121,7 +121,7 @@ struct EmailView: View {
         } label: {
             EmailRow(message: message, busy: actionUID == message.uid)
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .contextMenu {
             Button(message.isRead ? "Mark unread" : "Mark read",
                    systemImage: message.isRead ? "envelope.badge" : "envelope.open") {
@@ -214,7 +214,7 @@ private struct EmailRow: View {
                 HStack(spacing: 6) {
                     Text(from)
                         .font(message.isRead ? .subheadline : .subheadline.bold())
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     if message.isFlagged {
@@ -224,7 +224,7 @@ private struct EmailRow: View {
                     if busy { ProgressView().controlSize(.mini).tint(Color.accentTint) }
                 }
                 Text(message.subject.isEmpty ? "(no subject)" : message.subject)
-                    .font(.subheadline).foregroundStyle(.white.opacity(0.9)).lineLimit(2)
+                    .font(.subheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(2)
                 if let date = message.date, !date.isEmpty {
                     Text(date).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
@@ -261,9 +261,9 @@ private struct EmailMessageView: View {
             VStack(alignment: .leading, spacing: 16) {
                 if let detail = message?.detail {
                     header(detail)
-                    Divider().overlay(.white.opacity(0.2))
+                    Divider().overlay(.joeInk.opacity(0.2))
                     Text(Self.readableBody(detail.body ?? ""))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     attachments(detail)
@@ -324,9 +324,9 @@ private struct EmailMessageView: View {
     private func header(_ detail: JBEmailDetail) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(detail.subject.isEmpty ? "(no subject)" : detail.subject)
-                .font(.title3.bold()).foregroundStyle(.white)
+                .font(.title3.bold()).foregroundStyle(.joeInk)
             Text(detail.fromName?.isEmpty == false ? detail.fromName! : (detail.fromAddress ?? "Unknown sender"))
-                .font(.subheadline.weight(.semibold)).foregroundStyle(.white.opacity(0.9))
+                .font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk.opacity(0.9))
             VStack(alignment: .leading, spacing: 2) {
                 if let address = detail.fromAddress, detail.fromName?.isEmpty == false { Text(address) }
                 if let to = detail.to, !to.isEmpty { Text("To: \(to)") }
@@ -339,8 +339,8 @@ private struct EmailMessageView: View {
     @ViewBuilder
     private func attachments(_ detail: JBEmailDetail) -> some View {
         if !detail.attachments.isEmpty {
-            Divider().overlay(.white.opacity(0.2))
-            Text("Attachments").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+            Divider().overlay(.joeInk.opacity(0.2))
+            Text("Attachments").font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
             ForEach(detail.attachments) { file in
                 Label(file.filename ?? "Attachment", systemImage: "paperclip")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -409,19 +409,19 @@ private struct EmailComposeView: View {
                         .textInputAutocapitalization(.never)
                     TextField("Subject", text: $subject)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 Section("Message") {
                     TextEditor(text: $bodyText)
                         .frame(minHeight: 220)
                         .scrollContentBackground(.hidden)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 if let reply {
                     Section("Original message") {
                         Text(reply.detail.body ?? "")
                             .font(.footnote).foregroundStyle(.secondary).lineLimit(8)
                     }
-                    .listRowBackground(Color.white.opacity(0.06))
+                    .listRowBackground(Color.joeInk.opacity(0.06))
                 }
             }
             .scrollContentBackground(.hidden)

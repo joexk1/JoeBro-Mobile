@@ -64,7 +64,7 @@ struct MobileSettingsView: View {
         } footer: {
             Text("The app keeps recent content visible when it cannot connect. Away from home, Tailscale on both devices is the simplest way to stay reachable.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .task { await testConnection() }
         .fullScreenCover(isPresented: $repairing) {
             OnboardingView(theme: theme, allowCancel: true,
@@ -104,7 +104,7 @@ struct MobileSettingsView: View {
         } footer: {
             Text("Used for new chats and for agents that don't pick their own.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
         .task { await loadModels() }
     }
 
@@ -118,7 +118,7 @@ struct MobileSettingsView: View {
             HStack(spacing: 10) {
                 if let current = models.first(where: { $0.id == defaultModelID }) {
                     ProviderLogoView(model: current.modelID, size: 18)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.joeInk)
                 }
                 Picker("Default model", selection: $defaultModelID) {
                     Text("Not set").tag("")
@@ -151,7 +151,7 @@ struct MobileSettingsView: View {
             Text("Subagents are helpers JoeBro spawns for side tasks. When JoeBro chooses, it picks a model for each task and the fixed model below is not used.")
         }
         .tint(Color.accentTint)
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     @ViewBuilder private var subagentModelRow: some View {
@@ -205,7 +205,7 @@ struct MobileSettingsView: View {
         } footer: {
             Text("Soul sets how JoeBro sounds and behaves in every new turn.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     // MARK: Appearance
@@ -232,22 +232,30 @@ struct MobileSettingsView: View {
         } header: {
             Text("Appearance")
         } footer: {
-            Text("Pick a colour wallpaper or use one of your own photos.")
+            Text("Pick a colour wallpaper or use one of your own photos. Black & White follows the system light or dark setting.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     private var wallpaperSwatches: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             ForEach(BackgroundPreset.allCases) { preset in
                 Button { theme.select(preset.rawValue) } label: {
-                    Circle()
-                        .fill(LinearGradient(colors: preset.colors, startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 43, height: 43)
-                        .overlay(Circle().stroke(.white, lineWidth: theme.wallpaperName == preset.rawValue ? 3 : 0))
+                    ZStack {
+                        if preset == .monochrome {
+                            HStack(spacing: 0) { Color.black; Color.white }
+                        } else {
+                            LinearGradient(colors: preset.colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+                        }
+                    }
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.joeInk.opacity(theme.wallpaperName == preset.rawValue ? 1 : 0.2),
+                                             lineWidth: theme.wallpaperName == preset.rawValue ? 3 : 1))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(preset.label + " wallpaper")
+                .accessibilityLabel(preset.label + (preset == .monochrome ? " · follows system appearance" : " wallpaper"))
+                .accessibilityAddTraits(theme.wallpaperName == preset.rawValue ? .isSelected : [])
             }
         }
     }
@@ -271,7 +279,7 @@ struct MobileSettingsView: View {
         } footer: {
             Text("Ask JoeBro to notify you about reminders, finished tasks, or changes you want watched. Hidden previews keep message text out of the lock screen.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     // MARK: Privacy
@@ -286,7 +294,7 @@ struct MobileSettingsView: View {
         } footer: {
             Text("Face ID protects this app's screen. Backend access uses the token you paired with.")
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     private func client() -> JoeBroAPI? {

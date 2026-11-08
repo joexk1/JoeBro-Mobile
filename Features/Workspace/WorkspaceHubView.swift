@@ -64,19 +64,19 @@ struct WorkspaceHubView: View {
             HStack(spacing: 13) {
                 Image(systemName: symbol)
                     .font(.system(size: 17))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(.joeInk.opacity(0.85))
                     .frame(width: 28)
                     .scaleEffect(reduceMotion || hasEntered ? 1 : 0.92)
                     .opacity(reduceMotion || hasEntered ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: hasEntered)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).foregroundStyle(.white)
+                    Text(title).foregroundStyle(.joeInk)
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
             .frame(minHeight: 48)
         }
-        .listRowBackground(Color.white.opacity(0.06))
+        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 }
 
@@ -91,7 +91,7 @@ func alertBinding<T>(_ source: Binding<T?>) -> Binding<Bool> {
 func empty(_ symbol: String, _ title: String, _ detail: String) -> some View {
     VStack(spacing: 10) {
         Image(systemName: symbol).font(.largeTitle).foregroundStyle(.secondary)
-        Text(title).font(.headline).foregroundStyle(.white)
+        Text(title).font(.headline).foregroundStyle(.joeInk)
         Text(detail).font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
     }
     .frame(maxWidth: .infinity).padding(.vertical, 40)
@@ -104,7 +104,7 @@ struct WSStatusDot: View {
     let on: Bool
     var body: some View {
         Circle()
-            .fill(on ? Color.green : Color.white.opacity(0.25))
+            .fill(on ? Color.green : Color.joeInk.opacity(0.25))
             .frame(width: 8, height: 8)
             .accessibilityLabel(on ? "Enabled" : "Disabled")
     }

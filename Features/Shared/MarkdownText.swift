@@ -8,7 +8,7 @@ import SwiftUI
 /// actually emits in chat and in documents.
 struct MarkdownText: View {
     let text: String
-    var textColor: Color = .white
+    var textColor: Color = .joeInk
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -55,7 +55,7 @@ struct MarkdownText: View {
 
         case .quote(let content):
             HStack(alignment: .top, spacing: 10) {
-                Rectangle().fill(.white.opacity(0.35)).frame(width: 3)
+                Rectangle().fill(.joeInk.opacity(0.35)).frame(width: 3)
                 inline(content).foregroundStyle(.secondary)
             }
 
@@ -86,7 +86,7 @@ struct MarkdownText: View {
             }
 
         case .rule:
-            Divider().overlay(.white.opacity(0.25))
+            Divider().overlay(.joeInk.opacity(0.25))
         }
     }
 

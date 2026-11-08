@@ -13,6 +13,8 @@ struct ChatComposerView: View {
     var onOpenWorkdir: (() -> Void)? = nil
     @FocusState private var inputFocused: Bool
     @State private var showPhotoPicker = false
+    @Environment(JoeBroTheme.self) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     private var canSend: Bool {
         !store.busy && !store.uploadingAttachment
@@ -33,7 +35,16 @@ struct ChatComposerView: View {
             status
         }
         .padding(12)
-        .jbGlass(24)
+        .background {
+            if theme.preset == .monochrome {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(colorScheme == .dark ? Color.black : Color.white)
+                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(.joeInk.opacity(0.16), lineWidth: 1))
+            } else {
+                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.ultraThinMaterial)
+            }
+        }
         .padding(.horizontal, 10)
         .padding(.bottom, 5)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPhoto, matching: .images)
@@ -83,7 +94,7 @@ struct ChatComposerView: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isOn ? Color.accentTint : Color.white.opacity(0.68))
+                .foregroundStyle(isOn ? Color.accentTint : Color.joeInk.opacity(0.68))
                 .frame(width: 36, height: 44)
                 .contentShape(Rectangle())
         }
@@ -107,7 +118,7 @@ struct ChatComposerView: View {
                     store.permissionMode == "readonly" ? "eye.fill" : "lock.open.fill")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(store.permissionMode == "full" ? Color.red :
-                                 store.permissionMode == "readonly" ? Color.orange : Color.white.opacity(0.68))
+                                 store.permissionMode == "readonly" ? Color.orange : Color.joeInk.opacity(0.68))
                 .frame(width: 36, height: 44)
                 .contentShape(Rectangle())
         }
@@ -146,7 +157,7 @@ struct ChatComposerView: View {
                 Button(action: toggleVoice) {
                     Image(systemName: voice.isRecording ? "stop.circle.fill" : "mic.fill")
                         .font(.headline)
-                        .foregroundStyle(voice.isRecording ? Color.red : Color.white.opacity(0.85))
+                        .foregroundStyle(voice.isRecording ? Color.red : Color.joeInk.opacity(0.85))
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
@@ -157,11 +168,11 @@ struct ChatComposerView: View {
             TextField("Message JoeBro", text: Bindable(store).draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($inputFocused)
-                .foregroundStyle(.white)
+                .foregroundStyle(.joeInk)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 11)
-                .background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.white.opacity(0.14)))
+                .background(.joeInk.opacity(0.09), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.joeInk.opacity(0.14)))
 
             Button {
                 if store.busy { Task { await store.stopCurrentTurn() } }
@@ -169,9 +180,9 @@ struct ChatComposerView: View {
             } label: {
                 Image(systemName: store.busy ? (store.stopping || store.stopRequested ? "ellipsis" : "stop.fill") : "arrow.up")
                     .font(.headline.bold())
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color.joeInverseInk)
                     .frame(width: 44, height: 44)
-                    .background(store.busy || canSend ? Color.accentTint : Color.white.opacity(0.25), in: Circle())
+                    .background(store.busy || canSend ? Color.accentTint : Color.joeInk.opacity(0.25), in: Circle())
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -183,7 +194,7 @@ struct ChatComposerView: View {
     private func composerIcon(_ symbol: String) -> some View {
         Image(systemName: symbol)
             .font(.headline)
-            .foregroundStyle(.white.opacity(0.85))
+            .foregroundStyle(.joeInk.opacity(0.85))
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
     }
@@ -211,13 +222,13 @@ struct ChatComposerView: View {
         ForEach(store.pendingAttachments) { attachment in
             HStack(spacing: 6) {
                 Label(attachment.name, systemImage: "paperclip")
-                    .font(.caption).foregroundStyle(.white.opacity(0.8)).lineLimit(1)
+                    .font(.caption).foregroundStyle(.joeInk.opacity(0.8)).lineLimit(1)
                 Spacer(minLength: 4)
                 Button {
                     store.pendingAttachments.removeAll { $0.id == attachment.id }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(.joeInk.opacity(0.6))
                         .frame(width: 44, height: 30)
                         .contentShape(Rectangle())
                 }
@@ -288,11 +299,11 @@ struct ChatModelPicker: View {
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: 8, weight: .bold))
             }
             .font(.caption.weight(.semibold))
-            .foregroundStyle(.white)
+            .foregroundStyle(.joeInk)
             .padding(.horizontal, 11)
             .frame(height: 44)
-            .background(.white.opacity(0.09), in: Capsule())
-            .overlay(Capsule().strokeBorder(.white.opacity(0.14)))
+            .background(.joeInk.opacity(0.09), in: Capsule())
+            .overlay(Capsule().strokeBorder(.joeInk.opacity(0.14)))
             .contentShape(Capsule())
         }
         .accessibilityLabel("Chat model")

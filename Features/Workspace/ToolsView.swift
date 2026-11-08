@@ -14,6 +14,7 @@ struct ToolsView: View {
     @State private var editingPlugin: WSPlugin?
     @State private var creating: Creating?
     @State private var deleting: Deleting?
+    @State private var search = ""
     @State private var loading = false
     @State private var error: String?
 
@@ -36,6 +37,7 @@ struct ToolsView: View {
         .scrollContentBackground(.hidden)
         .jbWallpaper()
         .navigationTitle("Tools")
+        .searchable(text: $search, prompt: "Search tools, MCP servers and plugins")
         .navigationBarTitleDisplayMode(.inline)
         .overlay { if loading && tools.isEmpty && servers.isEmpty && plugins.isEmpty { ProgressView().controlSize(.large) } }
         .refreshable { await load() }
@@ -85,7 +87,7 @@ struct ToolsView: View {
             if tools.isEmpty && !loading {
                 empty("link", "No API tools", "Point JoeBro at an HTTP endpoint it can call.")
             }
-            ForEach(tools) { tool in
+            ForEach(tools.filter { search.isEmpty || ($0.name + " " + $0.description).localizedCaseInsensitiveContains(search) }) { tool in
                 ToolRow(title: tool.name,
                         subtitle: tool.description.isEmpty ? "\(tool.method) \(tool.baseURL)" : tool.description,
                         detail: tool.hasKey ? "API key saved" : nil,
@@ -93,7 +95,7 @@ struct ToolsView: View {
                         toggleLabel: "\(tool.name) enabled") { on in
                     Task { await act { try await ws.setToolEnabled(id: tool.id, on: on) } }
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 .contentShape(Rectangle())
                 .onTapGesture { editingTool = tool }
                 .contextMenu {
@@ -126,11 +128,11 @@ struct ToolsView: View {
             if servers.isEmpty && !loading {
                 empty("server.rack", "No MCP servers", "Add a command and JoeBro discovers its tools.")
             }
-            ForEach(servers) { server in
+            ForEach(servers.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }) { server in
                 MCPRow(server: server) { on in
                     Task { await act { try await ws.setMCPEnabled(id: server.id, on: on) } }
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 .contentShape(Rectangle())
                 .onTapGesture { editingServer = server }
                 .contextMenu {
@@ -163,7 +165,7 @@ struct ToolsView: View {
             if plugins.isEmpty && !loading {
                 empty("puzzlepiece.extension", "No plugins", "Plugins add tools or guardrails to every turn.")
             }
-            ForEach(plugins) { plugin in
+            ForEach(plugins.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }) { plugin in
                 ToolRow(title: plugin.name,
                         subtitle: plugin.description.isEmpty ? plugin.repoPath : plugin.description,
                         detail: "\(plugin.kind.capitalized) · \(WSPermissionMode.named(plugin.permissionMode).label)",
@@ -171,7 +173,7 @@ struct ToolsView: View {
                         toggleLabel: "\(plugin.name) enabled") { on in
                     Task { await act { try await ws.setPluginEnabled(id: plugin.id, on: on) } }
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
                 .contentShape(Rectangle())
                 .onTapGesture { editingPlugin = plugin }
                 .contextMenu { pluginMenu(plugin) }
@@ -256,7 +258,7 @@ private struct ToolRow: View {
         HStack(spacing: 11) {
             WSStatusDot(on: on)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).foregroundStyle(.white).lineLimit(1)
+                Text(title).foregroundStyle(.joeInk).lineLimit(1)
                 if !subtitle.isEmpty {
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
@@ -280,7 +282,7 @@ private struct MCPRow: View {
             HStack(spacing: 11) {
                 WSStatusDot(on: server.enabled)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(server.name).foregroundStyle(.white).lineLimit(1)
+                    Text(server.name).foregroundStyle(.joeInk).lineLimit(1)
                     Text(server.command.isEmpty ? "No command set" : server.command)
                         .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
@@ -341,11 +343,11 @@ private struct APIToolEditor: View {
                 }
                 .tint(Color.accentTint)
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             Section("Description") {
                 TextField("What this tool does", text: $description, axis: .vertical).lineLimit(2...5)
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             Section {
                 SecureField(tool?.hasKey == true ? "Replace saved API key" : "API key (optional)", text: $apiKey)
             } header: {
@@ -355,7 +357,7 @@ private struct APIToolEditor: View {
                      ? "A key is already saved. Leave this blank to keep it."
                      : "Sent by the backend; never stored on this phone.")
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
         }
     }
 
@@ -405,20 +407,20 @@ private struct MCPServerEditor: View {
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 WSPermissionPicker(title: "Agent access", mode: $permissionMode)
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             if let server, !server.tools.isEmpty {
                 Section("Discovered tools") {
                     ForEach(server.tools, id: \.self) { tool in
-                        Text(tool).font(.subheadline).foregroundStyle(.white)
+                        Text(tool).font(.subheadline).foregroundStyle(.joeInk)
                     }
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let message = server?.error, !message.isEmpty {
                 Section("Last discovery error") {
                     Text(message).font(.footnote).foregroundStyle(.orange)
                 }
-                .listRowBackground(Color.white.opacity(0.06))
+                .listRowBackground(Color.joeInk.opacity(0.06))
             }
         }
     }
@@ -474,11 +476,11 @@ private struct PluginEditor: View {
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 WSPermissionPicker(title: "Agent access", mode: $permissionMode)
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
             Section("Description") {
                 TextField("What this plugin does", text: $description, axis: .vertical).lineLimit(2...5)
             }
-            .listRowBackground(Color.white.opacity(0.06))
+            .listRowBackground(Color.joeInk.opacity(0.06))
         }
     }
 

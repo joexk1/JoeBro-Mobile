@@ -5,13 +5,15 @@ import PhotosUI
 /// the look the app ships with. Deliberately saturated — glass goes flat over
 /// near-black, so even the dark variants keep visible colour depth.
 enum BackgroundPreset: String, CaseIterable, Identifiable {
-    case purple, ocean, forest, sunset, graphite
+    case purple, ocean, forest, sunset, graphite, monochrome
 
     var id: String { rawValue }
-    var label: String { rawValue.capitalized }
+    var label: String { self == .monochrome ? "Black & White" : rawValue.capitalized }
 
     var colors: [Color] {
         switch self {
+        case .monochrome:
+            [Color(uiColor: .systemBackground)]
         case .purple:
             [Color(red: 0.18, green: 0.10, blue: 0.34),
              Color(red: 0.30, green: 0.13, blue: 0.44),
@@ -120,6 +122,7 @@ enum BackgroundPreset: String, CaseIterable, Identifiable {
 
 struct WallpaperBackground: View {
     let theme: JoeBroTheme
+    @Environment(\.colorScheme) private var colorScheme
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -128,6 +131,8 @@ struct WallpaperBackground: View {
                     Image(uiImage: wallpaper).resizable().scaledToFill()
                         .frame(width: geo.size.width, height: geo.size.height).clipped()
                         .overlay(Color.black.opacity(0.32))
+                } else if theme.preset == .monochrome {
+                    colorScheme == .dark ? Color.black : Color.white
                 } else {
                     LinearGradient(colors: (theme.preset ?? .purple).colors,
                                    startPoint: .topLeading,
@@ -145,7 +150,7 @@ struct GlassPanel: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).stroke(.white.opacity(0.16), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).stroke(Color.joeInk.opacity(0.16), lineWidth: 1))
     }
 }
 
@@ -173,11 +178,25 @@ extension View {
 extension Color {
     /// The app's single accent. Controls must not inherit pure white or
     /// toggles and destructive buttons render as white-on-white blobs.
-    static let accentTint = Color(red: 0.72, green: 0.78, blue: 1)
+    static var joeInk: Color { Color.primary }
+    static var joeInverseInk: Color {
+        Color(UIColor { traits in traits.userInterfaceStyle == .dark ? .black : .white })
+    }
+    static var accentTint: Color {
+        Color(UIColor { traits in
+            if UserDefaults.standard.string(forKey: "wallpaperName") == BackgroundPreset.monochrome.rawValue {
+                return traits.userInterfaceStyle == .dark ? .white : .black
+            }
+            return traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.72, green: 0.78, blue: 1, alpha: 1)
+                : UIColor(red: 0.22, green: 0.30, blue: 0.65, alpha: 1)
+        })
+    }
 }
 
 extension ShapeStyle where Self == Color {
     /// Lets `.accentTint` be used wherever a ShapeStyle is expected
     /// (`.background`, `.fill`, `.foregroundStyle`), not just as `Color`.
     static var accentTint: Color { Color.accentTint }
+    static var joeInk: Color { Color.joeInk }
 }
