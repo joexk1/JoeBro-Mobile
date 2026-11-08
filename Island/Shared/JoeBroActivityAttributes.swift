@@ -27,6 +27,8 @@ struct JoeBroActivityAttributes: ActivityAttributes {
 
     /// Always "agents": there is a single summary activity.
     var id: String
+    /// Header scene shown behind the lock-screen activity ("off" or nil for none).
+    var sceneName: String? = nil
     /// App deep link, `joebro://agents`.
     var destination: String
 }

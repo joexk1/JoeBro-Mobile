@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ascii.rest": "^0.4.0",
+    "esbuild": "^0.28.2"
+  }
+}

@@ -34,6 +34,14 @@ struct JoeBroMobileApp: App {
                             // Hold the matching wallpaper while Chats mounts,
                             // then reveal its content without a black frame.
                             try? await Task.sleep(for: .milliseconds(160))
+                            // Root renders under the opaque intro from launch, preloading
+                            // WebKit; hold the intro until a selected header scene has drawn.
+                            let hasScene = paired && theme.wallpaperName != "photo"
+                                && BackgroundAnimation(rawValue: UserDefaults.standard.string(forKey: "backgroundAnimation") ?? "off").map { $0 != .off } == true
+                            let deadline = Date().addingTimeInterval(4)
+                            while hasScene && !AsciiSceneReadiness.shared.ready && Date() < deadline {
+                                try? await Task.sleep(for: .milliseconds(40))
+                            }
                             withAnimation(.easeOut(duration: 0.32)) { showIntro = false }
                         }
                     }

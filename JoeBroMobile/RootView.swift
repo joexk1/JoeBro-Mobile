@@ -24,6 +24,7 @@ struct RootView: View {
     var onRepaired: () -> Void = {}
     var onForgotten: () -> Void = {}
     private let serverURL = ServerConfig.urlString
+    @AppStorage("backgroundAnimation") private var backgroundAnimation = "off"
     @AppStorage("faceIDGate") private var faceIDGate = false
     @State private var runtime = MobileRuntime()
     @State private var selectedTab: MainTab = .joeBro
@@ -32,6 +33,7 @@ struct RootView: View {
     @State private var push = MobilePushNotifications.shared
     @State private var unlocked = false
     @State private var importingShare = false
+    @State private var activityUpdate: Task<Void, Never>?
     @State private var openSharedDraft = false
     @Environment(\.scenePhase) private var scenePhase
 
@@ -62,6 +64,7 @@ struct RootView: View {
                         .tabItem { Label("Workspace", systemImage: "square.grid.2x2.fill") }
                         .tag(MainTab.workspace)
                 }
+                .toolbarBackground(.hidden, for: .tabBar)
                 .tint(Color.accentTint)
                 .environment(theme)
             } else {
@@ -122,6 +125,9 @@ struct RootView: View {
             if faceIDGate { await authenticate() } else { unlocked = true }
             if ShareInbox.hasPending { selectedTab = .chats; await importSharedCapture() }
         }
+        .onChange(of: backgroundAnimation) { _, _ in
+            Task { await JoeBroActivityController().refreshScene() }
+        }
         .task(id: activityPollKey) {
             guard scenePhase == .active else { return }
             let activities = JoeBroActivityController()
@@ -129,7 +135,12 @@ struct RootView: View {
                 // Keep the island in sync even when the Agents tab is not open.
                 // This GET does not start an agent or use model tokens.
                 if let snap = try? await runtime.api.agentSnapshot() {
-                    await activities.reconcileAgents(snap.agents, activeTurns: snap.activeTurns)
+                    if activityUpdate == nil {
+                        activityUpdate = Task {
+                            await activities.reconcileAgents(snap.agents, activeTurns: snap.activeTurns)
+                            activityUpdate = nil
+                        }
+                    }
                 }
                 try? await Task.sleep(for: .seconds(5))
             }

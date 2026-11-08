@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import {build} from 'esbuild';
+const scenes=JSON.parse(fs.readFileSync('scenes.json','utf8'));
+const entry=`import {mount} from './ascii-upstream/src/mount.ts';\n${scenes.map((s,i)=>`import * as p${i} from './ascii-upstream/src/pieces/${s.name}.ts';`).join('\n')}\nconst scenes={${scenes.map((s,i)=>`${JSON.stringify(s.name)}:p${i}`).join(',')}};
+let stop=()=>{};
+window.setScene=(name,paused,paper)=>{stop();document.querySelector('#art').replaceChildren();const piece=scenes[name];if(!piece)return;const canvas=document.createElement('canvas');document.querySelector('#art').append(canvas);stop=mount(canvas,{...piece,meta:{...piece.meta,ground:paper?'#ffffff':'#000000'}},paused?{fps:0}:{});};
+window.sceneNames=Object.keys(scenes);
+`;
+fs.writeFileSync('scene-entry.js',entry);
+const result=await build({entryPoints:['scene-entry.js'],bundle:true,minify:true,write:false,format:'iife',target:'safari17'});
+const js=result.outputFiles[0].text;
+fs.mkdirSync('AsciiScenes',{recursive:true});
+fs.copyFileSync('node_modules/ascii.rest/LICENSE','AsciiScenes/LICENSE.txt');
+fs.writeFileSync('AsciiScenes/index.html',`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}#art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}canvas{width:max(100vw,200vh)!important;flex:none;max-width:none}</style></head><body><div id="art"></div><script>${js.replaceAll('</script','<\\/script')}</script></body></html>`);
+console.log(`${scenes.length} scenes, ${js.length} bytes`);

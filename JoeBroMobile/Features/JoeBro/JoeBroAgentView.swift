@@ -2,9 +2,21 @@ import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
 
+private struct HeaderZoneKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 /// JoeBro's persistent conversation. It has its own store so visiting a
 /// project chat never changes the main agent's transcript or draft.
 struct JoeBroAgentView: View {
+    @Environment(JoeBroTheme.self) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("backgroundAnimation") private var animationRaw = "off"
+    private var hasBanner: Bool { theme.wallpaperName != "photo" && (BackgroundAnimation(rawValue: animationRaw) ?? .off) != .off }
+
     let store: ChatStore
     let onOpenSettings: () -> Void
     @State private var selectedPhoto: PhotosPickerItem?
@@ -12,14 +24,28 @@ struct JoeBroAgentView: View {
     @State private var voice = VoiceCapture()
     @State private var openDocument: ChatDocumentRef?
     @State private var conversationAction: ConversationAction?
+    @State private var headerZoneHeight: CGFloat = 220
 
     private enum ConversationAction {
         case compact, clear
     }
 
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .top) {
+            // Own the full screen background outside any navigation controller.
+            // Native navigation hosting clips child backgrounds at the bar edge.
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    WallpaperBackground(theme: theme)
+                    AsciiTopBarAnimation()
+                        .frame(height: max(0, headerZoneHeight - geometry.frame(in: .global).minY))
+                        .clipped()
+                }
+            }
+            .ignoresSafeArea()
+
             VStack(spacing: 0) {
+                headerBar
                 JoeBroPresence(isWorking: store.busy,
                                isAvailable: store.mainConnectionIssue == nil,
                                isListening: voice.isRecording,
@@ -30,13 +56,19 @@ struct JoeBroAgentView: View {
                                onClear: { conversationAction = .clear })
                     .padding(.top, 7)
                     .padding(.bottom, 8)
-                Rectangle().fill(.white.opacity(0.12)).frame(height: 1)
+                    .background(
+                        GeometryReader { g in
+                            Color.clear.preference(key: HeaderZoneKey.self,
+                                                   value: g.frame(in: .global).maxY)
+                        }
+                    )
+                Rectangle().fill(.joeInk.opacity(0.12)).frame(height: 1)
                     .padding(.horizontal, 16)
                 if let issue = store.mainConnectionIssue, store.selectedSessionID == nil {
                     VStack(spacing: 16) {
                         Image(systemName: "wifi.exclamationmark")
-                            .font(.title2).foregroundStyle(.white.opacity(0.65))
-                        Text(issue).font(.subheadline).foregroundStyle(.white.opacity(0.8))
+                            .font(.title2).foregroundStyle(.joeInk.opacity(0.65))
+                        Text(issue).font(.subheadline).foregroundStyle(.joeInk.opacity(0.8))
                             .multilineTextAlignment(.center)
                         Button("Try again") { Task { await store.load() } }
                             .buttonStyle(.bordered)
@@ -50,19 +82,7 @@ struct JoeBroAgentView: View {
                     }
                 }
             }
-            .jbWallpaper()
-            .navigationTitle("JoeBro")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: onOpenSettings) {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(Color.accentTint)
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Settings")
-                }
-            }
+            .onPreferenceChange(HeaderZoneKey.self) { headerZoneHeight = $0 }
             .task { await store.load() }
             .onChange(of: selectedPhoto) { _, item in Task { await uploadPhoto(item) } }
             .fileImporter(isPresented: $showFilePicker, allowedContentTypes: [.item],
@@ -113,6 +133,60 @@ struct JoeBroAgentView: View {
         }
     }
 
+    private var headerBar: some View {
+        ZStack {
+            headerTitle
+            HStack {
+                Spacer()
+                settingsControl
+            }
+            .padding(.horizontal, 16)
+        }
+        .frame(height: 44)
+    }
+
+    private var titleLabel: some View {
+        Text("JoeBro")
+            .font(.headline)
+            .foregroundStyle(hasBanner ? Color.white : Color.joeInk)
+            .padding(.horizontal, 17)
+            .padding(.vertical, 9)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    @ViewBuilder private var headerTitle: some View {
+        if #available(iOS 26.0, *) {
+            titleLabel.glassEffect(.regular, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+        } else {
+            titleLabel.background(.ultraThinMaterial, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+        }
+    }
+
+    private var settingsLabel: some View {
+        Image(systemName: "gearshape")
+            .font(.system(size: 22, weight: .regular))
+            .foregroundStyle(hasBanner ? Color.white : Color.accentTint)
+            .frame(width: 44, height: 44)
+    }
+
+    @ViewBuilder private var settingsControl: some View {
+        if #available(iOS 26.0, *) {
+            Button(action: onOpenSettings) { settingsLabel }
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+                .accessibilityLabel("Settings")
+        } else {
+            Button(action: onOpenSettings) { settingsLabel }
+                .buttonStyle(.plain)
+                .background(.ultraThinMaterial, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+                .accessibilityLabel("Settings")
+        }
+    }
+
     private func documentSource(_ document: ChatDocumentRef) -> DocumentEditorStore.Source {
         if document.id.hasPrefix("local-"), let session = store.selectedSessionID {
             return .workdir(session: session, sub: String(document.id.dropFirst(6)))
@@ -152,6 +226,8 @@ struct JoeBroAgentView: View {
 
 private struct JoeBroPresence: View {
     @Environment(JoeBroTheme.self) private var theme
+    @AppStorage("backgroundAnimation") private var animationRaw = "off"
+    private var hasBanner: Bool { theme.wallpaperName != "photo" && (BackgroundAnimation(rawValue: animationRaw) ?? .off) != .off }
     let isWorking: Bool
     let isAvailable: Bool
     let isListening: Bool
@@ -191,11 +267,11 @@ private struct JoeBroPresence: View {
             } label: {
               ZStack {
                 RoundedRectangle(cornerRadius: 31, style: .continuous)
-                    .fill(.white.opacity(0.09))
+                    .fill(.joeInk.opacity(0.09))
                     .frame(width: 94, height: 94)
                     .overlay {
                         RoundedRectangle(cornerRadius: 31, style: .continuous)
-                            .strokeBorder(.white.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
+                            .strokeBorder(.joeInk.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
                     }
                 JoeBroFigure(expression: expression, eyesClosed: blinking,
                              color: theme.joeBroColor,
@@ -212,8 +288,11 @@ private struct JoeBroPresence: View {
                     Circle().fill(!isAvailable ? Color.gray : isListening ? Color.red : isWorking ? Color.accentTint : .mint)
                         .frame(width: 6, height: 6)
                     Text(!isAvailable ? "Offline" : isListening ? "Listening" : isUsingTools ? "Working on it" : isWorking ? "On it" : "Standing by")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.69))
+                        .font(.subheadline).foregroundStyle(hasBanner ? Color.white : Color.joeInk.opacity(0.69))
                 }
+                .padding(.horizontal, hasBanner ? 10 : 0)
+                .padding(.vertical, hasBanner ? 7 : 0)
+                .background(hasBanner ? Color.black.opacity(0.62) : .clear, in: Capsule())
             }
             Spacer(minLength: 0)
         }

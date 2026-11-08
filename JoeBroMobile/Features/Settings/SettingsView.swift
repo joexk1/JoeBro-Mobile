@@ -21,6 +21,7 @@ struct MobileSettingsView: View {
     @State private var connectionStatus = "Not checked"
     @AppStorage("faceIDGate") private var faceIDGate = false
     @AppStorage("hideNotificationPreviews") private var hideNotificationPreviews = true
+    @AppStorage("backgroundAnimation") private var backgroundAnimation = BackgroundAnimation.off.rawValue
 
     var body: some View {
         NavigationStack {
@@ -229,10 +230,15 @@ struct MobileSettingsView: View {
                     Label("Use a colour wallpaper instead", systemImage: "circle.lefthalf.filled")
                 }
             }
+            Picker("JoeBro header scene", selection: Binding(get: { BackgroundAnimation(rawValue: backgroundAnimation)?.rawValue ?? "off" },
+                set: { backgroundAnimation = $0 })) {
+                ForEach(BackgroundAnimation.allCases) { Text($0.label).tag($0.rawValue) }
+            }
+            .pickerStyle(.menu)
         } header: {
             Text("Appearance")
         } footer: {
-            Text("Pick a colour wallpaper or use one of your own photos. Black & White follows the system light or dark setting.")
+            Text("Pick a colour wallpaper or use one of your own photos. Black & White follows the system light or dark setting. The header scene animates behind the JoeBro tab's title.")
         }
         .listRowBackground(Color.joeInk.opacity(0.06))
     }

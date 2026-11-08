@@ -18,6 +18,11 @@ targets:
     platform: iOS
     sources:
       - path: JoeBroMobile
+        excludes:
+          - AsciiScenes
+      # Kept as a folder so the bundle URL lookup by subdirectory still works.
+      - path: JoeBroMobile/AsciiScenes
+        type: folder
       - path: Core
       - path: Features
       - path: Island/Shared

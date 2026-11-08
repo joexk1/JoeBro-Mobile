@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import WebKit
 
 /// Backdrops ported from the macOS app's WallpaperBackground, which is the
 /// the look the app ships with. Deliberately saturated — glass goes flat over
@@ -36,6 +37,48 @@ enum BackgroundPreset: String, CaseIterable, Identifiable {
              Color(red: 0.10, green: 0.11, blue: 0.13)]
         }
     }
+}
+
+/// The original, full-colour scenes from bas3line/ascii.
+enum BackgroundAnimation: String, CaseIterable, Identifiable {
+    case off
+    case alpineDawn = "alpine-dawn"
+    case amerFort = "amer-fort"
+    case auroraFjord = "aurora-fjord"
+    case blackPrism = "black-prism"
+    case cloudSea = "cloud-sea"
+    case commandCity = "command-city"
+    case deepReef = "deep-reef"
+    case desertNight = "desert-night"
+    case earthrise = "earthrise"
+    case edgeOrbit = "edge-orbit"
+    case gangaurGhat = "gangaur-ghat"
+    case greenStorm = "green-storm"
+    case jalMahal = "jal-mahal"
+    case jungleFalls = "jungle-falls"
+    case kiteFestival = "kite-festival"
+    case kyotoDusk = "kyoto-dusk"
+    case lakePichola = "lake-pichola"
+    case lanternLake = "lantern-lake"
+    case lavaWall = "lava-wall"
+    case marineDrive = "marine-drive"
+    case mistyForest = "misty-forest"
+    case nightCoast = "night-coast"
+    case nightHighway = "night-highway"
+    case oceanSunset = "ocean-sunset"
+    case planetScale = "planet-scale"
+    case prismCity = "prism-city"
+    case saltFlat = "salt-flat"
+    case saturnRise = "saturn-rise"
+    case snowTrain = "snow-train"
+    case stormPlains = "storm-plains"
+    case tajDawn = "taj-dawn"
+    case tokyoRain = "tokyo-rain"
+    case varanasiGhats = "varanasi-ghats"
+    case volcanoNight = "volcano-night"
+
+    var id: String { rawValue }
+    var label: String { rawValue.split(separator: "-").map { $0.capitalized }.joined(separator: " ") }
 }
 
 @MainActor
@@ -142,6 +185,121 @@ struct WallpaperBackground: View {
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .ignoresSafeArea()
+    }
+}
+
+/// The intro stays in front until WebKit has drawn the selected scene.
+@MainActor
+@Observable final class AsciiSceneReadiness {
+    static let shared = AsciiSceneReadiness()
+    var ready = false
+}
+
+/// Decorative only: the header owns layout; the scene never contributes height.
+struct AsciiTopBarAnimation: View {
+    @AppStorage("backgroundAnimation") private var animationRaw = BackgroundAnimation.off.rawValue
+    @Environment(JoeBroTheme.self) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var visible = true
+
+    private var mode: BackgroundAnimation { BackgroundAnimation(rawValue: animationRaw) ?? .off }
+    // Keep the scene palette on a dark ground in both app appearances.
+    private var paper: Bool { false }
+
+    var body: some View {
+        if mode != .off && theme.wallpaperName != "photo" {
+            ZStack {
+                paper ? Color.white : Color.black
+                AsciiSceneWebView(name: mode.rawValue, paper: paper,
+                                  paused: reduceMotion || scenePhase != .active || !visible)
+            }
+            .onAppear { visible = true }
+            .onDisappear { visible = false }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+}
+
+private struct AsciiSceneWebView: UIViewRepresentable {
+    let name: String
+    let paper: Bool
+    let paused: Bool
+
+    @MainActor private static let retainedCoordinator = Coordinator()
+    @MainActor private static var retainedView: WKWebView?
+
+    func makeCoordinator() -> Coordinator { Self.retainedCoordinator }
+
+    func makeUIView(context: Context) -> WKWebView {
+        if let view = Self.retainedView {
+            context.coordinator.update(name: name, paper: paper, paused: paused, in: view)
+            return view
+        }
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        let view = WKWebView(frame: .zero, configuration: configuration)
+        view.isOpaque = false
+        view.backgroundColor = .clear
+        view.scrollView.backgroundColor = .clear
+        view.scrollView.isScrollEnabled = false
+        view.scrollView.contentInsetAdjustmentBehavior = .never
+        view.scrollView.contentInset = .zero
+        view.scrollView.scrollIndicatorInsets = .zero
+        view.isUserInteractionEnabled = false
+        view.navigationDelegate = context.coordinator
+        Self.retainedView = view
+        context.coordinator.update(name: name, paper: paper, paused: paused, in: view)
+        if let url = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "AsciiScenes") {
+            view.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+        }
+        return view
+    }
+
+    func updateUIView(_ view: WKWebView, context: Context) {
+        context.coordinator.update(name: name, paper: paper, paused: paused, in: view)
+    }
+
+    static func dismantleUIView(_ view: WKWebView, coordinator: Coordinator) {
+        coordinator.pause(in: view)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        private var lastName = ""
+        private var lastPaper = false
+        private var ready = false
+
+        func pause(in view: WKWebView) {
+            update(name: lastName, paper: lastPaper, paused: true, in: view)
+        }
+        private var desired = ""
+        private var applied = ""
+
+        func update(name: String, paper: Bool, paused: Bool, in view: WKWebView) {
+            // name comes only from BackgroundAnimation; JSON encoding keeps the bridge literal safe.
+            lastName = name
+            lastPaper = paper
+            let encoded = String(data: try! JSONEncoder().encode(name), encoding: .utf8)!
+            desired = "window.setScene(\(encoded), \(paused), \(paper))"
+            apply(to: view)
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            ready = true
+            apply(to: webView)
+        }
+
+        private func apply(to view: WKWebView) {
+            guard ready, desired != applied else { return }
+            applied = desired
+            view.evaluateJavaScript(desired) { _, error in
+                if error == nil {
+                    AsciiSceneReadiness.shared.ready = true
+                }
+            }
+        }
     }
 }
 

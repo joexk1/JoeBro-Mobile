@@ -1,6 +1,7 @@
 import ActivityKit
 import SwiftUI
 import WidgetKit
+import UIKit
 
 @main
 struct JoeBroIslandBundle: WidgetBundle {
@@ -28,11 +29,27 @@ private func summary(_ count: Int) -> String {
     count == 1 ? "1 agent working" : "\(count) agents working"
 }
 
+private func activityBackdrop(scene: String?) -> some View {
+    ZStack {
+        if let scene, scene != "off" {
+            Color.black
+            GeometryReader { geo in
+                Image("scene-" + scene).resizable().scaledToFill()
+                    .frame(width: geo.size.width, height: geo.size.height).clipped()
+            }
+            Color.black.opacity(0.48)
+        }
+    }.clipped()
+}
+
 struct JoeBroIslandWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: JoeBroActivityAttributes.self) { context in
             JoeBroLockScreenActivity(state: context.state, isStale: context.isStale)
-                .activityBackgroundTint(Color(red: 0.12, green: 0.08, blue: 0.22).opacity(0.85))
+                .background { activityBackdrop(scene: context.attributes.sceneName) }
+                .activityBackgroundTint(context.attributes.sceneName.map { $0 != "off" } == true
+                                        ? Color.black
+                                        : Color(red: 0.12, green: 0.08, blue: 0.22).opacity(0.85))
                 .activitySystemActionForegroundColor(islandTint)
                 .widgetURL(URL(string: context.attributes.destination))
         } dynamicIsland: { context in

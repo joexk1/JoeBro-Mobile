@@ -11,6 +11,8 @@ final class JoeBroActivityController {
 
     var isAvailable: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }
 
+    func refreshScene() async { await sync() }
+
     func endAll() async {
         for activity in Activity<JoeBroActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
@@ -97,8 +99,15 @@ final class JoeBroActivityController {
 
     private func sync() async {
         let chats = Self.chatOrder.compactMap { id in Self.chatTurns[id].map { (id, $0) } }
-        let current = Activity<JoeBroActivityAttributes>.activities.first {
+        var current = Activity<JoeBroActivityAttributes>.activities.first {
             $0.attributes.id == Self.summaryID && $0.activityState == .active
+        }
+        // The header scene is part of the activity's static attributes, so a new
+        // choice needs a fresh activity.
+        let scene = UserDefaults.standard.string(forKey: "backgroundAnimation") ?? "off"
+        if let old = current, old.attributes.sceneName != scene {
+            await old.end(nil, dismissalPolicy: .immediate)
+            current = nil
         }
         guard !chats.isEmpty || !Self.agents.isEmpty else {
             if let current {
@@ -146,7 +155,7 @@ final class JoeBroActivityController {
             let fresh = (current.content.staleDate ?? .distantPast).timeIntervalSinceNow > 60
             if current.content.state != state || !fresh { await current.update(content) }
         } else {
-            let attributes = JoeBroActivityAttributes(id: Self.summaryID, destination: "joebro://agents")
+            let attributes = JoeBroActivityAttributes(id: Self.summaryID, sceneName: scene, destination: "joebro://agents")
             Self.failedTurn = false
             if let activity = try? Activity.request(attributes: attributes, content: content, pushType: .token) {
                 Self.observePushToken(activity)

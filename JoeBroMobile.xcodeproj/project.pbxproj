@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BBAA11000000000000000001 /* SceneStills in Resources */ = {isa = PBXBuildFile; fileRef = BBAA11000000000000000002; };
+		A5C110000000000000000001 /* AsciiScenes in Resources */ = {isa = PBXBuildFile; fileRef = A5C110000000000000000002 /* AsciiScenes */; };
 		F2EB43BB6C1660D300EB4737 /* PersonalFeatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8954ECA3C622B1313876AE6 /* PersonalFeatures.swift */; };
 		037D6FA1A7724BC4282F6B7D /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A674851B2FC565645280B00D /* DocumentEditorView.swift */; };
 		0482243D9ED53F21259BB4A6 /* VoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BC3E210A510965AB430362 /* VoiceCapture.swift */; };
@@ -95,6 +97,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BBAA11000000000000000002 /* SceneStills.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SceneStills.xcassets; sourceTree = "<group>"; };
+		A5C110000000000000000002 /* AsciiScenes */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoeBroMobile/AsciiScenes; sourceTree = SOURCE_ROOT; };
 		A8954ECA3C622B1313876AE6 /* PersonalFeatures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFeatures.swift; sourceTree = "<group>"; };
 		095391D6A43851D63176131A /* ChatComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerView.swift; sourceTree = "<group>"; };
 		0A40451803FAC51E4F3B07EC /* WorkspaceHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHubView.swift; sourceTree = "<group>"; };
@@ -255,6 +259,7 @@
 			isa = PBXGroup;
 			children = (
 				98CBB2E9173E8ADF0DF136A7 /* Assets.xcassets */,
+				A5C110000000000000000002 /* AsciiScenes */,
 				64F1ABC08391F8B846EBD3E5 /* Info.plist */,
 				C4F7A9161DD1B51203C389B3 /* IntroView.swift */,
 				A365595DB4A380F36D113937 /* JoeBroMobile.entitlements */,
@@ -380,6 +385,7 @@
 		E83AEDBDD794829863823F1A /* WidgetExtension */ = {
 			isa = PBXGroup;
 			children = (
+				BBAA11000000000000000002 /* SceneStills.xcassets */,
 				22E63A4FB6CA6D5448B491D9 /* Info.plist */,
 				F3D2E4F83154BB38F1E5D600 /* JoeBroIslandWidget.swift */,
 			);
@@ -421,6 +427,7 @@
 			buildConfigurationList = 9CD33C766723B18A1AC65C3C /* Build configuration list for PBXNativeTarget "JoeBroIsland" */;
 			buildPhases = (
 				C4777B99306DEDE8CFF7FA17 /* Sources */,
+				BBAA11000000000000000003 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -517,11 +524,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		BBAA11000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (BBAA11000000000000000001,); runOnlyForDeploymentPostprocessing = 0; };
 		8FAB2C76007C9C0E324F35E3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F0CADD82005BEC849F06A61F /* Assets.xcassets in Resources */,
+				A5C110000000000000000001 /* AsciiScenes in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
