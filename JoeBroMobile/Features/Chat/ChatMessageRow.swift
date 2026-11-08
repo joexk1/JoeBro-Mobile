@@ -20,8 +20,9 @@ struct ChatMessageRow: View {
     private var bubble: some View {
         VStack(alignment: .leading, spacing: 10) {
             if !line.thinking.isEmpty { thinkingBlock }
-            ForEach(line.toolCalls) { call in ChatToolCallCard(call: call) }
-            legacyTools
+            if !line.toolCalls.isEmpty || !line.tools.isEmpty {
+                ChatToolActivity(calls: line.toolCalls, legacyNames: line.tools)
+            }
             messageBody
             ForEach(line.documents) { document in documentChip(document) }
             attachmentChips
@@ -86,15 +87,6 @@ struct ChatMessageRow: View {
                 .foregroundStyle(.joeInk.opacity(0.8))
         }
         .tint(.accentTint)
-    }
-
-    @ViewBuilder
-    private var legacyTools: some View {
-        if line.toolCalls.isEmpty {
-            ForEach(line.tools.indices, id: \.self) { index in
-                ChatToolCallCard(call: ChatToolCall(name: line.tools[index], finished: true))
-            }
-        }
     }
 
     @ViewBuilder
