@@ -43,6 +43,11 @@ public final class JoeBroAPI: @unchecked Sendable {
         self.streamSession = URLSession(configuration: streaming)
     }
 
+    deinit {
+        session.invalidateAndCancel()
+        streamSession.invalidateAndCancel()
+    }
+
     func request(_ path: String, method: String = "GET", query: [URLQueryItem] = []) throws -> URLRequest {
         guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else { throw JoeBroAPIError.invalidURL }
         let root = components.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
@@ -74,8 +79,17 @@ public final class JoeBroAPI: @unchecked Sendable {
     }
 
     func fetch<T: Decodable>(_ type: T.Type, _ path: String, query: [URLQueryItem] = []) async throws -> T {
-        let (data, response) = try await session.data(for: request(path, query: query))
-        return try JSONDecoder().decode(T.self, from: checked(data, response))
+        let req = try request(path, query: query)
+        for attempt in 0...1 {
+            do {
+                let (data, response) = try await session.data(for: req)
+                return try JSONDecoder().decode(T.self, from: checked(data, response))
+            } catch let error as URLError where attempt == 0 &&
+                [.networkConnectionLost, .cannotConnectToHost, .notConnectedToInternet].contains(error.code) {
+                try await Task.sleep(for: .milliseconds(300))
+            }
+        }
+        throw JoeBroAPIError.invalidResponse
     }
 
     func send<T: Decodable>(_ type: T.Type, _ path: String, method: String = "POST", json: [String: Any]? = nil, form: [String: String]? = nil) async throws -> T {
