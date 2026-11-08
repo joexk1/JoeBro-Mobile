@@ -88,6 +88,26 @@ The key is stored on your Mac and used only to talk to Apple's push servers. "Ac
 
 ---
 
+## Header scenes and themes
+
+Settings > Appearance is where the app's look lives. Two things in it are worth knowing about.
+
+**Header scenes.** Pick one of 34 animated scenes and it plays behind the JoeBro tab's header. The title and the settings button sit on glass, so they stay readable over any of them. The scenes are drawn in ASCII, in full colour, and run in a sandboxed web view that loads nothing from the network. They pause when the app isn't active, when the header is off screen and when **Reduce Motion** is on. A photo wallpaper turns them off. The Live Activity on the Lock Screen shows a still of the same scene.
+
+![Header scenes playing behind the JoeBro tab](README_assets/banner-scenes.png)
+
+The picker is **Appearance > JoeBro header scene**, and it is off until you choose one. The scene sits behind the header only. Your chat, the tab bar and every other screen stay as they were.
+
+![Choosing a header scene in Settings](README_assets/banner-settings.png)
+
+**Black & White.** The last wallpaper swatch follows the iPhone's light or dark setting: black in dark mode, white in light mode. The other wallpapers stay dark. Header scenes still play on top, on their own dark ground.
+
+![Black & White in dark and light mode, with a header scene](README_assets/banner-black-and-white.png)
+
+The scenes come from [bas3line/ascii](https://github.com/bas3line/ascii) (MIT). The licence ships inside the app's `AsciiScenes` folder, and `Tools/AsciiScenes/README.md` says how to rebuild the bundled scene file.
+
+---
+
 ## How the phone agent works
 
 The phone agent is JoeBro, on your phone, with a memory and a to-do list. All of it runs on your Mac. The phone is the screen.
