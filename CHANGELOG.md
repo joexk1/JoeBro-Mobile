@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Header scenes.** Pick one of 34 animated ASCII scenes under Settings > Appearance and it plays behind the JoeBro tab's header. It pauses under Reduce Motion, when the app is inactive and when the header is off screen. A photo wallpaper turns it off. The Live Activity on the lock screen shows a still of the same scene. The scenes are from [bas3line/ascii](https://github.com/bas3line/ascii) (MIT).
+- **Black & White theme.** A new wallpaper swatch that follows the iPhone's light or dark setting: black in dark mode, white in light mode. The other wallpapers stay dark.
+- A reply that ran several tools shows one **steps** row with a plain-language summary. Expand it to see each call.
+- Search in the Tools list.
+
+### Changed
+
+- The app no longer forces dark mode in its Info.plist. It picks dark for every wallpaper except Black & White.
+- A GET that fails because the connection dropped is retried once.
+- Pulling to refresh in the Agents tab replaces a poll that is still running instead of waiting for it.
+
 ## 1.4.0 - 2026-11-03
 
 Needs JoeBro 1.4.0 or later on your Mac.
