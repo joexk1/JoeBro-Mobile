@@ -29,7 +29,7 @@ struct NightShiftView: View {
                 Toggle("Run overnight", isOn: Binding(get: { enabled }, set: { v in
                     enabled = v
                     Task { try? await ws.nightConfig(enabled: v) }
-                })).tint(Color.accentTint)
+                }))
             } footer: { Text("Queued tasks run in separate git worktrees. Nothing is pushed; you approve or reject each result.") }
             .listRowBackground(Color.joeInk.opacity(0.06))
             if !reviews.isEmpty {
@@ -127,6 +127,7 @@ struct NightShiftView: View {
     private func load() async {
         loading = true; defer { loading = false }
         do { let r = try await ws.nightShift(); tasks = r.tasks; enabled = r.config?.enabled ?? true; error = nil }
+        catch where error.isNotFound { tasks = []; self.error = nil }      // nothing there yet: show the empty state
         catch { self.error = error.localizedDescription }
     }
     private func act(_ work: () async throws -> Void) async {

@@ -58,6 +58,7 @@ struct JoeBroMobileApp: App {
                     .zIndex(1)
                 }
             }
+            .toggleStyle(JoeSwitchStyle())   // every switch: green when on, whatever the colour theme
             .safeAreaInset(edge: .top, spacing: 0) {
                 if demo && !DemoMode.hidesBanner {
                     Text("Demo mode: sample data, not connected to a Mac")
@@ -66,6 +67,9 @@ struct JoeBroMobileApp: App {
                 }
             }
             .environment(theme)
+            #if DEBUG
+            .overlay { JoeBroDemoActivity.snapshotOverlay() }
+            #endif
             .onOpenURL { url in
                 if url.scheme == "joebro", url.host == "notifications" {
                     MobilePushNotifications.shared.openInbox = true

@@ -16,7 +16,6 @@ struct WorkspaceHubView: View {
         case "brain": BrainView(api: api, ws: ws)
         case "night": NightShiftView(ws: ws)
         case "sharedmemory": SharedMemoryView(ws: ws)
-        case "coding": CodingSessionsView(ws: ws)
         case "models": DemoModelList(api: api)
         default: MobileNotificationInbox(api: api)
         }
@@ -43,7 +42,6 @@ struct WorkspaceHubView: View {
                     row("bell", "Notifications", "Reminders and updates from JoeBro") { MobileNotificationInbox(api: api) }
                     row("magnifyingglass", "Research", "Deep research runs and reports") { ResearchView(api: api, ws: ws) }
                     row("moon.stars", "Night Shift", "Queue coding tasks, review them in the morning") { NightShiftView(ws: ws) }
-                    row("chevron.left.forwardslash.chevron.right", "Coding sessions", "Recent Claude Code, Codex and OpenCode runs") { CodingSessionsView(ws: ws) }
                     row("clock.arrow.circlepath", "Tasks", "Prompts on a schedule") { TasksView(ws: ws) }
                 }
                 Section("Knowledge") {

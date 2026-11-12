@@ -6,7 +6,7 @@ struct SharedMemoryView: View {
     let ws: WorkspaceAPI
     @Environment(JoeBroTheme.self) private var theme
     private enum Scope: String, CaseIterable { case all = "All", you = "You", projects = "Projects", global = "Global" }
-    @State private var scope = Scope.all
+    @State private var scope = Scope(rawValue: DemoMode.option("-JoeBroMemScope") ?? "") ?? Scope.all
     @State private var projects: [SMProject] = []
     @State private var project = "__all"
     @State private var facts: [SMFact] = []
@@ -73,6 +73,7 @@ struct SharedMemoryView: View {
             if projects.isEmpty { projects = try await ws.memoryProjects() }
             facts = try await ws.memoryFacts(project: project, status: showArchived ? "all" : "active", query: search)
             error = nil
+        } catch where error.isNotFound { facts = []; self.error = nil       // nothing there yet: empty state
         } catch { self.error = error.localizedDescription }
     }
     private func act(_ work: () async throws -> Void) async {
@@ -182,39 +183,5 @@ struct FactAdder: View {
                 }
             }
         }
-    }
-}
-
-/// Recent coding sessions from every linked agent, with Resume.
-struct CodingSessionsView: View {
-    let ws: WorkspaceAPI
-    @State private var sessions: [JBAgentRecord] = []
-    @State private var note: String?
-    var body: some View {
-        List {
-            if sessions.isEmpty { empty("chevron.left.forwardslash.chevron.right", "No coding sessions yet", "Claude Code, Codex and OpenCode sessions show up here once linked.") }
-            ForEach(sessions) { s in
-                HStack(spacing: 12) {
-                    Image(systemName: (s.kind ?? .coding).symbol).foregroundStyle(Color.accentTint).frame(width: 24)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(s.displayTitle).foregroundStyle(.joeInk).lineLimit(2)
-                        Text([s.model, s.isLive ? "running" : (s.status ?? "")].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                    if !s.isLive {
-                        Button("Resume") { Task { do { try await ws.resumeCoding(s); note = "Resuming on your computer." } catch { note = error.localizedDescription } } }
-                            .buttonStyle(.bordered).controlSize(.small)
-                    }
-                }.listRowBackground(Color.joeInk.opacity(0.06))
-            }
-        }
-        .listStyle(.insetGrouped).scrollContentBackground(.hidden).jbWallpaper()
-        .navigationTitle("Coding sessions").navigationBarTitleDisplayMode(.inline)
-        .refreshable { await load() }.task { await load() }
-        .alert("Coding sessions", isPresented: alertBinding($note)) { Button("OK") { note = nil } } message: { Text(note ?? "") }
-    }
-    private func load() async {
-        sessions = ((try? await ws.recentCodingSessions()) ?? []).filter { $0.kind == .coding }
     }
 }

@@ -358,3 +358,12 @@ extension ShapeStyle where Self == Color {
     static var accentTint: Color { Color.accentTint }
     static var joeInk: Color { Color.joeInk }
 }
+
+
+/// Switches read as switches in every colour theme: the on state is always green
+/// (a theme-coloured tint went white-on-white in the light themes).
+struct JoeSwitchStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Toggle(configuration).toggleStyle(.switch).tint(.green)
+    }
+}

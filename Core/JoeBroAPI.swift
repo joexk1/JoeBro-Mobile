@@ -543,3 +543,13 @@ public final class JoeBroAPI: @unchecked Sendable {
         }
     }
 }
+
+
+extension Error {
+    /// A 404 from a list/load route: the backend (or an older one) has nothing there.
+    /// Screens show their empty state instead of an error.
+    var isNotFound: Bool {
+        if let e = self as? JoeBroAPIError, case .http(404, _) = e { return true }
+        return false
+    }
+}

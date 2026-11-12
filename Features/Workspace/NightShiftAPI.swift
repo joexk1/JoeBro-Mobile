@@ -164,17 +164,8 @@ extension WorkspaceAPI {
 extension WorkspaceAPI {
     /// Route that resumes a coding session on a linked machine (start_coding_session).
     /// Not in reports/feature-api.md yet: change this one constant when the backend names it.
-    static let resumeCodingRoute = "api/coding-agents/start"
 
     private struct AgentsEnv: Decodable { let agents: [JBAgentRecord] }
-    func recentCodingSessions() async throws -> [JBAgentRecord] {
-        try await call(AgentsEnv.self, "api/agents?include=coding").agents
-    }
-    func resumeCoding(_ agent: JBAgentRecord) async throws {
-        struct Plain: Decodable { let ok: Bool? }
-        _ = try await call(Plain.self, Self.resumeCodingRoute, method: "POST",
-                           json: ["resume": agent.id, "session_id": agent.sessionID ?? "", "title": agent.title ?? ""])
-    }
     /// Raw bytes of an authenticated GET (review screenshots).
     func nightScreenshot(_ id: String) async throws -> Data {
         struct Wrap: Decodable { }
