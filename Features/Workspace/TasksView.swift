@@ -31,7 +31,7 @@ struct TasksView: View {
                 ForEach(personalTasks) { task in row(task) }
             } header: {
                 HStack {
-                    Text("JoeBro phone agent")
+                    Text(Flavor.mainAgentTasksHeader)
                     Spacer()
                     Button { creatingPersonal = true } label: {
                         Image(systemName: "plus.circle").foregroundStyle(Color.accentTint)

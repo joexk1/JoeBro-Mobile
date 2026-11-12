@@ -43,7 +43,7 @@ struct MuseView: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .jbWallpaper()
-        .navigationTitle("Memory")
+        .navigationTitle(Flavor.memoryTitle)
         .navigationBarTitleDisplayMode(.inline)
         .overlay { if loading && files.isEmpty { ProgressView().controlSize(.large) } }
         .refreshable { await load() }

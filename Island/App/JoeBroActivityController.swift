@@ -136,12 +136,13 @@ final class JoeBroActivityController {
             return !chatSessions.contains(s)
         }
         let chatRuns = chats.map { id, title in
-            JoeBroActivityAttributes.Run(id: "chat-" + id, title: title, kind: "reply",
-                                         detail: "", queued: false)
+            JoeBroActivityAttributes.Run(id: "chat-" + id,
+                                         title: Flavor.isPersonal && id == Flavor.mainSessionID ? Flavor.mainAgentName : title,
+                                         kind: "reply", detail: "", queued: false)
         }
         let all = chatRuns + agentRuns.map(Self.run)
         let headline: String? = agentRuns.isEmpty
-            ? (chats.count == 1 ? "JoeBro is replying" : "\(chats.count) chats replying")
+            ? (chats.count == 1 ? Self.replyHeadline(chats[0].0) : "\(chats.count) chats replying")
             : nil
         let state = JoeBroActivityAttributes.ContentState(
             count: all.count,
@@ -197,6 +198,12 @@ final class JoeBroActivityController {
             guard let s = agent.sessionID?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return true }
             return seen.insert(s).inserted
         }
+    }
+
+    /// Headline while exactly one chat is streaming and no agents run.
+    private static func replyHeadline(_ sessionID: String) -> String {
+        guard Flavor.isPersonal else { return "JoeBro is replying" }
+        return sessionID == Flavor.mainSessionID ? Flavor.mainAgentName + " is replying" : "Workspace chat is replying"
     }
 
     private static func run(_ agent: JBAgentRecord) -> JoeBroActivityAttributes.Run {

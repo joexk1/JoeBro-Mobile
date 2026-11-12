@@ -31,7 +31,7 @@ import SwiftUI
             if agent.kind == .briefing || agent.id == "brf_current" { return false }
             // The main JoeBro has its own card (mainJoeBro); its turns' registry
             // rows would otherwise count it twice.
-            if agent.sessionID == "joebro_ios_main" { return false }
+            if agent.sessionID == Flavor.mainSessionID && mainJoeBro.busy { return false }
             guard sessionsLoaded, let session = agent.sessionID, !session.isEmpty else { return true }
             if existingSessions.contains(session) { return true }
             // A running or queued run is live whether or not the (concurrently
@@ -311,7 +311,7 @@ struct AgentsTabView: View {
                         .symbolEffect(.pulse, options: .repeating, isActive: mainJoeBro.busy && !reduceMotion)
                 }
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("JoeBro")
+                    Text(Flavor.mainAgentName)
                         .font(.headline)
                         .foregroundStyle(.joeInk)
                     HStack(spacing: 6) {

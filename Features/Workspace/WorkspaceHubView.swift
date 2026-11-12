@@ -29,8 +29,8 @@ struct WorkspaceHubView: View {
                     row("clock.arrow.circlepath", "Tasks", "Prompts on a schedule") { TasksView(ws: ws) }
                 }
                 Section("Knowledge") {
-                    row("brain", "Brain", "What JoeBro remembers") { BrainView(api: api, ws: ws) }
-                    row("person.text.rectangle", "Memory", "Notes JoeBro keeps about you") { MuseView(ws: ws) }
+                    row("brain", Flavor.brainTitle, "What JoeBro remembers") { BrainView(api: api, ws: ws) }
+                    row("person.text.rectangle", Flavor.memoryTitle, "Notes JoeBro keeps about you") { MuseView(ws: ws) }
                     row("sparkles", "Skills", "Learned procedures") { SkillsView(ws: ws) }
                     row("wrench.and.screwdriver", "Tools", "APIs, MCP servers, plugins") { ToolsView(ws: ws) }
                     row("checkmark.shield", "AI Check", "Score text for AI likelihood") { AICheckView(ws: ws) }

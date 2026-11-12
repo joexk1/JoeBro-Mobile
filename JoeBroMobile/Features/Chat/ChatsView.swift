@@ -36,9 +36,10 @@ struct ChatLine: Identifiable, Codable {
     var toolCalls: [ChatToolCall] = []
     var documents: [ChatDocumentRef] = []
     var attachments: [String] = []
+    var visualizations: [ChatVisualization] = []
     var streaming = false
     init(role: String, text: String, id: UUID = UUID()) { self.role = role; self.text = text; self.id = id }
-    enum CodingKeys: String, CodingKey { case id, serverID, role, text, thinking, tools, toolCalls, documents, attachments, streaming }
+    enum CodingKeys: String, CodingKey { case id, serverID, role, text, thinking, tools, toolCalls, documents, attachments, visualizations, streaming }
     init(from decoder: Decoder) throws {
         let box = try decoder.container(keyedBy: CodingKeys.self)
         id = try box.decode(UUID.self, forKey: .id)
@@ -50,6 +51,7 @@ struct ChatLine: Identifiable, Codable {
         toolCalls = try box.decodeIfPresent([ChatToolCall].self, forKey: .toolCalls) ?? []
         documents = try box.decodeIfPresent([ChatDocumentRef].self, forKey: .documents) ?? []
         attachments = try box.decodeIfPresent([String].self, forKey: .attachments) ?? []
+        visualizations = try box.decodeIfPresent([ChatVisualization].self, forKey: .visualizations) ?? []
         streaming = try box.decodeIfPresent(Bool.self, forKey: .streaming) ?? false
     }
 }
@@ -172,7 +174,6 @@ struct ChatLine: Identifiable, Codable {
     private func loadMainJoeBro() async {
         do {
             let profile = try await api.openJoeBro()
-            models = (try? await api.models().filter { !$0.offline }) ?? []
             guard let session = profile.session else { throw JoeBroAPIError.invalidResponse }
             sessions = [session]
             selectedSessionID = session.id
@@ -186,11 +187,13 @@ struct ChatLine: Identifiable, Codable {
             mainConnectionIssue = nil
             error = nil
             await select(session.id)
+            await refreshModels()
         } catch {
             if case JoeBroAPIError.http(404, _) = error {
                 mainConnectionIssue = "Update the backend to enable JoeBro."
             } else {
-                mainConnectionIssue = "JoeBro is offline."
+                mainConnectionIssue = selectedSessionID == nil ? "Couldn’t connect. Pull to retry." : nil
+                self.error = "Connection interrupted. Please retry."
             }
         }
     }
@@ -233,6 +236,10 @@ struct ChatLine: Identifiable, Codable {
                                  exitCode: event["exit_code"]?.intValue,
                                  finished: true)
                 } ?? []
+                var visuals = (message.metadata?["visualizations"]?.arrayValue ?? []).compactMap(ChatVisualization.init(json:))
+                visuals += (message.metadata?["tool_events"]?.arrayValue ?? []).compactMap { $0["visualization"].flatMap(ChatVisualization.init(json:)) }
+                var seen = Set<String>()
+                line.visualizations = visuals.reversed().filter { seen.insert($0.kind == "plan" ? "working-plan" : $0.id).inserted }.reversed()
                 line.attachments = message.metadata?["attachments"]?.arrayValue?.compactMap { $0["name"]?.stringValue } ?? []
                 return line
             }
@@ -266,6 +273,14 @@ struct ChatLine: Identifiable, Codable {
             }
             saveSnapshot()
         } catch { self.error = error.localizedDescription }
+    }
+
+    func refreshMainIfChanged() async {
+        guard isMainJoeBro, !busy, let id = selectedSessionID else { return }
+        struct Tip: Decodable { let last_id: Int }
+        guard let tip = try? await api.fetch(Tip.self, "/api/session/\(id)/tip"),
+              tip.last_id != (lines.compactMap(\.serverID).max() ?? 0), !busy else { return }
+        await select(id)
     }
 
     func reconcileAfterResume() async {
@@ -486,6 +501,12 @@ struct ChatLine: Identifiable, Codable {
                             live.toolCalls.append(ChatToolCall(name: json["tool"]?.stringValue ?? "Tool",
                                                                command: json["command"]?.stringValue ?? ""))
                         case "tool_output":
+                            if let payload = json["visualization"], let visual = ChatVisualization(json: payload) {
+                                if let index = live.visualizations.firstIndex(where: {
+                                    $0.id == visual.id || ($0.kind == "plan" && visual.kind == "plan")
+                                }) { live.visualizations[index] = visual }
+                                else { live.visualizations.append(visual) }
+                            }
                             let name = json["tool"]?.stringValue ?? "Tool"
                             let index = live.toolCalls.lastIndex(where: { !$0.finished && $0.name == name })
                                 ?? live.toolCalls.lastIndex(where: { !$0.finished })
@@ -493,6 +514,12 @@ struct ChatLine: Identifiable, Codable {
                                 live.toolCalls[index].output = json["output"]?.stringValue ?? ""
                                 live.toolCalls[index].exitCode = json["exit_code"]?.intValue
                                 live.toolCalls[index].finished = true
+                            }
+                        case "visualizations":
+                            for visual in (json["data"]?.arrayValue ?? []).compactMap(ChatVisualization.init(json:)) {
+                                if let index = live.visualizations.firstIndex(where: { $0.id == visual.id }) {
+                                    live.visualizations[index] = visual
+                                } else { live.visualizations.append(visual) }
                             }
                         case "doc_update":
                             if let id = json["doc_id"]?.stringValue, !id.isEmpty,

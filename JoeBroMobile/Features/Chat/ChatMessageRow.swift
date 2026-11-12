@@ -23,6 +23,7 @@ struct ChatMessageRow: View {
             if !line.toolCalls.isEmpty || !line.tools.isEmpty {
                 ChatToolActivity(calls: line.toolCalls, legacyNames: line.tools)
             }
+            ForEach(line.visualizations.filter(\.isResult)) { visual in ChatVisualizationView(visual: visual) }
             messageBody
             ForEach(line.documents) { document in documentChip(document) }
             attachmentChips
@@ -121,5 +122,196 @@ struct ChatMessageRow: View {
             ProgressView().controlSize(.small).tint(.accentTint)
             Text("JoeBro is replying…").font(.caption).foregroundStyle(.secondary)
         }
+    }
+}
+
+/// A factual snapshot emitted by a completed tool; never parsed from model prose.
+struct ChatVisualization: Codable, Identifiable {
+    struct Row: Codable, Identifiable {
+        var id: String { title + detail + state }
+        let title: String
+        let detail: String
+        let state: String
+    }
+    struct Metric: Codable, Identifiable {
+        var id: String { label }
+        let label: String
+        let value: String
+    }
+    struct Point: Codable, Identifiable {
+        var id: String { label }
+        let label: String
+        let value: Double
+    }
+    let id: String
+    let kind: String
+    let presentation: String?
+    var isResult: Bool {
+        kind == "plan" || presentation == "outcome" ||
+        ["Calendar updated", "Reminder created", "Reminder updated", "Reminder completed", "Reminder reopened"].contains(title)
+    }
+    let title: String
+    let subtitle: String
+    let rows: [Row]
+    let metrics: [Metric]
+    let series: [Point]
+
+    init?(json: JBJSON) {
+        guard let id = json["id"]?.stringValue, let kind = json["kind"]?.stringValue,
+              let title = json["title"]?.stringValue else { return nil }
+        self.id = id; self.kind = kind; self.title = title
+        presentation = json["presentation"]?.stringValue
+        subtitle = json["subtitle"]?.stringValue ?? ""
+        rows = (json["rows"]?.arrayValue ?? []).prefix(20).map {
+            Row(title: $0["title"]?.stringValue ?? "", detail: $0["detail"]?.stringValue ?? "",
+                state: $0["state"]?.stringValue ?? "")
+        }
+        metrics = (json["metrics"]?.arrayValue ?? []).prefix(6).map {
+            Metric(label: $0["label"]?.stringValue ?? "", value: $0["value"]?.stringValue ?? "")
+        }
+        series = (json["series"]?.arrayValue ?? []).prefix(24).compactMap { item in
+            guard let raw = item["value"], case .number(let value) = raw, value.isFinite else { return nil }
+            return Point(label: item["label"]?.stringValue ?? "", value: value)
+        }
+    }
+}
+
+private struct ChatVisualizationView: View {
+    let visual: ChatVisualization
+    @State private var showAll = false
+
+    private var tint: Color {
+        switch visual.kind {
+        case "calendar", "reminders": return .orange
+        case "weather": return .cyan
+        case "shopping", "health": return .mint
+        case "memory", "research": return .purple
+        case "agents", "tasks", "plan": return .blue
+        default: return .accentTint
+        }
+    }
+    private var symbol: String {
+        switch visual.kind {
+        case "calendar": return "calendar"
+        case "weather": return "cloud.sun.fill"
+        case "shopping": return "basket.fill"
+        case "reminders": return "bell.badge.fill"
+        case "memory": return "brain.head.profile"
+        case "agents": return "terminal.fill"
+        case "tasks", "plan": return "checklist"
+        case "health": return "heart.fill"
+        case "research": return "sparkle.magnifyingglass"
+        case "email": return "envelope.fill"
+        default: return "square.grid.2x2.fill"
+        }
+    }
+    private var visibleRows: [ChatVisualization.Row] {
+        showAll ? visual.rows : Array(visual.rows.prefix(5))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: symbol)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(tint)
+                    .frame(width: 36, height: 36)
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(visual.title).font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
+                    if !visual.subtitle.isEmpty {
+                        Text(visual.subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            if !visual.metrics.isEmpty { metricStrip }
+            if visual.series.count > 1 { trendLine }
+            VStack(spacing: 0) {
+                ForEach(Array(visibleRows.enumerated()), id: \.offset) { index, row in
+                    rowView(row)
+                    if index < visibleRows.count - 1 { Divider().overlay(tint.opacity(0.1)).padding(.vertical, 9) }
+                }
+            }
+            if visual.rows.count > 5 {
+                Button(showAll ? "Show less" : "Show all \(visual.rows.count)") { showAll.toggle() }
+                    .font(.caption.weight(.semibold)).foregroundStyle(tint)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tint.opacity(0.06), in: RoundedRectangle(cornerRadius: 17))
+        .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(tint.opacity(0.24), lineWidth: 1))
+        .accessibilityElement(children: .contain)
+    }
+
+    private var metricStrip: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 18) {
+                ForEach(visual.metrics) { metric in metricView(metric) }
+            }
+            LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 12) {
+                ForEach(visual.metrics) { metric in metricView(metric) }
+            }
+        }
+    }
+
+    private func metricView(_ metric: ChatVisualization.Metric) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(metric.value).font(.system(size: 25, weight: .medium, design: .rounded)).monospacedDigit().foregroundStyle(.joeInk)
+            Text(metric.label).font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+
+    private var trendLine: some View {
+        VStack(spacing: 5) {
+            Canvas { context, size in
+                let values = visual.series.map(\.value)
+                let lo = (values.min() ?? 0) - 1
+                let span = max(2, (values.max() ?? 0) - lo + 1)
+                var path = Path()
+                for (index, value) in values.enumerated() {
+                    let point = CGPoint(x: size.width * Double(index) / Double(max(1, values.count - 1)),
+                                        y: size.height * (1 - (value - lo) / span))
+                    if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
+                }
+                context.stroke(path, with: .color(tint), style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+            }
+            .frame(height: 48)
+            HStack {
+                Text(visual.series.first?.label ?? "")
+                Spacer()
+                Text(visual.series.last?.label ?? "")
+            }
+            .font(.caption2).foregroundStyle(.secondary)
+        }
+        .accessibilityLabel(visual.title + " trend: " + visual.series.map { "\($0.label), \($0.value.formatted())" }.joined(separator: "; "))
+    }
+
+    private func rowView(_ row: ChatVisualization.Row) -> some View {
+        HStack(alignment: .top, spacing: 9) {
+            if visual.kind == "shopping" || visual.kind == "plan" {
+                Image(systemName: row.state == "done" ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(row.state == "done" ? tint : Color.secondary)
+                    .font(.subheadline).padding(.top, 2)
+            } else {
+                RoundedRectangle(cornerRadius: 2).fill(tint.opacity(0.65)).frame(width: 3)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(row.title).font(.subheadline).foregroundStyle(.joeInk)
+                    .strikethrough(row.state == "done" && visual.kind == "shopping")
+                if !row.detail.isEmpty {
+                    Text(row.detail).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 0)
+            if !row.state.isEmpty && !["shopping", "plan"].contains(visual.kind) {
+                Text(row.state.replacingOccurrences(of: "_", with: " ").capitalized)
+                    .font(.system(size: 10, weight: .semibold)).foregroundStyle(tint)
+                    .padding(.horizontal, 7).padding(.vertical, 4)
+                    .background(tint.opacity(0.1), in: Capsule())
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }

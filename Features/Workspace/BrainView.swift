@@ -29,7 +29,7 @@ struct BrainView: View {
         .scrollContentBackground(.hidden)
         .jbWallpaper()
         .searchable(text: $search, prompt: "Search memories")
-        .navigationTitle("Brain")
+        .navigationTitle(Flavor.brainTitle)
         .navigationBarTitleDisplayMode(.inline)
         .overlay { if loading && memories.isEmpty { ProgressView().controlSize(.large) } }
         .refreshable { await load() }

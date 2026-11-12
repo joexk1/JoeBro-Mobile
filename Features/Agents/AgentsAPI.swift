@@ -144,7 +144,12 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         messages = try? box.decode([JBAgentMessage].self, forKey: .messages)
     }
 
-    public var displayTitle: String { (title?.isEmpty == false ? title : nil) ?? "Untitled agent" }
+    /// A run of the phone agent itself: its own chat, or one of its scheduled tasks.
+    public var isMainAgent: Bool { sessionID == Flavor.mainSessionID || sessionID?.hasPrefix("task_session_ptask_") == true }
+    public var displayTitle: String {
+        let name = (title?.isEmpty == false ? title : nil) ?? "Untitled agent"
+        return Flavor.isPersonal && isMainAgent ? Flavor.mainAgentName + " · " + name : name
+    }
     public var isSessionOnly: Bool { id.hasPrefix("session:") }
     public var isLive: Bool { live == true || ["running", "queued", "working", "waiting"].contains(status ?? "") }
     public var failed: Bool { ["error", "failed"].contains(status ?? "") }
