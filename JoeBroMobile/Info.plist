@@ -28,4 +28,5 @@
 <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string><key>CFBundleURLSchemes</key><array><string>joebro</string></array></dict></array>
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/><key>NSExceptionDomains</key><dict><key>ts.net</key><dict><key>NSIncludesSubdomains</key><true/><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict></dict></dict>
 <key>NSLocalNetworkUsageDescription</key><string>JoeBro connects to JoeBro running on your Mac on your local network.</string>
+<key>UIBackgroundModes</key><array><string>remote-notification</string></array>
 </dict></plist>

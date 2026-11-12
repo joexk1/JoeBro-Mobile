@@ -7,6 +7,53 @@
    {
     "url": "https://demo.joebro.invalid",
     "models": [
+     "claude-opus-4",
+     "claude-sonnet-4",
+     "claude-haiku-4"
+    ],
+    "models_display": [
+     "Claude Opus 4",
+     "Claude Sonnet 4",
+     "Claude Haiku 4"
+    ],
+    "endpoint_id": "anthropic",
+    "endpoint_name": "Anthropic",
+    "category": "cloud",
+    "offline": false
+   },
+   {
+    "url": "https://demo.joebro.invalid",
+    "models": [
+     "gpt-5-codex",
+     "gpt-5"
+    ],
+    "models_display": [
+     "GPT-5 Codex",
+     "GPT-5"
+    ],
+    "endpoint_id": "openai",
+    "endpoint_name": "OpenAI",
+    "category": "cloud",
+    "offline": false
+   },
+   {
+    "url": "https://demo.joebro.invalid",
+    "models": [
+     "qwen3-coder-30b",
+     "llama-3.3-70b"
+    ],
+    "models_display": [
+     "Qwen3 Coder 30B",
+     "Llama 3.3 70B"
+    ],
+    "endpoint_id": "local",
+    "endpoint_name": "Local (Ollama)",
+    "category": "local",
+    "offline": false
+   },
+   {
+    "url": "https://demo.joebro.invalid",
+    "models": [
      "demo-model"
     ],
     "models_display": [
@@ -313,26 +360,134 @@
   "ok": true,
   "agents": [
    {
-    "id": "a1",
-    "kind": "task",
-    "title": "Demo: weekly review",
-    "status": "done",
-    "live": false,
-    "model": "demo-model",
-    "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
+    "id": "c1",
+    "kind": "coding",
+    "title": "Claude Code: migrate auth middleware",
+    "status": "running",
+    "live": true,
+    "model": "claude-opus-4",
     "created_at": "2026-10-14T09:00:00",
-    "finished_at": "2026-10-14T09:00:00"
+    "started_at": "2026-10-14T09:00:00",
+    "progress": "Editing 6 files, tests running"
    },
    {
-    "id": "a2",
+    "id": "c1s1",
+    "kind": "subagent",
+    "title": "Explore: find session token usage",
+    "status": "done",
+    "live": false,
+    "model": "claude-haiku-4",
+    "created_at": "2026-10-14T09:01:00",
+    "started_at": "2026-10-14T09:01:00",
+    "parent_id": "c1",
+    "finished_at": "2026-10-14T09:06:00",
+    "result": "Sample result (demo data)."
+   },
+   {
+    "id": "c1s2",
+    "kind": "subagent",
+    "title": "Write tests for refresh flow",
+    "status": "running",
+    "live": true,
+    "model": "claude-sonnet-4",
+    "created_at": "2026-10-14T09:02:00",
+    "started_at": "2026-10-14T09:02:00",
+    "parent_id": "c1",
+    "progress": "3 of 5 cases written"
+   },
+   {
+    "id": "c1s3",
+    "kind": "subagent",
+    "title": "Review diff for regressions",
+    "status": "queued",
+    "live": true,
+    "model": "claude-opus-4",
+    "created_at": "2026-10-14T09:03:00",
+    "started_at": "2026-10-14T09:03:00",
+    "parent_id": "c1"
+   },
+   {
+    "id": "x1",
+    "kind": "coding",
+    "title": "Codex: fix flaky upload test",
+    "status": "running",
+    "live": true,
+    "model": "gpt-5-codex",
+    "created_at": "2026-10-14T09:04:00",
+    "started_at": "2026-10-14T09:04:00",
+    "progress": "Bisecting the failure"
+   },
+   {
+    "id": "x1s1",
+    "kind": "subagent",
+    "title": "Reproduce failure locally",
+    "status": "done",
+    "live": false,
+    "model": "gpt-5-codex",
+    "created_at": "2026-10-14T09:05:00",
+    "started_at": "2026-10-14T09:05:00",
+    "parent_id": "x1",
+    "finished_at": "2026-10-14T09:10:00",
+    "result": "Sample result (demo data)."
+   },
+   {
+    "id": "o1",
+    "kind": "coding",
+    "title": "OpenCode: refactor settings screen",
+    "status": "running",
+    "live": true,
+    "model": "qwen3-coder-30b (local)",
+    "created_at": "2026-10-14T09:06:00",
+    "started_at": "2026-10-14T09:06:00",
+    "progress": "Splitting SettingsView"
+   },
+   {
+    "id": "o1s1",
+    "kind": "subagent",
+    "title": "Extract section views",
+    "status": "running",
+    "live": true,
+    "model": "qwen3-coder-30b (local)",
+    "created_at": "2026-10-14T09:07:00",
+    "started_at": "2026-10-14T09:07:00",
+    "parent_id": "o1",
+    "progress": "4 of 7 sections"
+   },
+   {
+    "id": "r1",
     "kind": "research",
-    "title": "Demo: tax incidence",
+    "title": "Research: on-device model options",
+    "status": "done",
+    "live": false,
+    "model": "claude-sonnet-4",
+    "created_at": "2026-10-14T09:08:00",
+    "started_at": "2026-10-14T09:08:00",
+    "finished_at": "2026-10-14T09:13:00",
+    "result": "Sample result (demo data)."
+   },
+   {
+    "id": "t1",
+    "kind": "task",
+    "title": "Weekly review",
     "status": "done",
     "live": false,
     "model": "demo-model",
-    "result": "Sample report (demo data).",
-    "created_at": "2026-10-14T09:00:00",
-    "finished_at": "2026-10-14T09:00:00"
+    "created_at": "2026-10-14T09:09:00",
+    "started_at": "2026-10-14T09:09:00",
+    "finished_at": "2026-10-14T09:14:00",
+    "result": "Sample result (demo data)."
+   },
+   {
+    "id": "b1",
+    "kind": "briefing",
+    "title": "Morning briefing",
+    "status": "done",
+    "live": false,
+    "model": "claude-haiku-4",
+    "created_at": "2026-10-14T09:10:00",
+    "started_at": "2026-10-14T09:10:00",
+    "finished_at": "2026-10-14T09:15:00",
+    "result": "Sample result (demo data)."
    }
   ]
  },
@@ -445,5 +600,168 @@
   "last_id": 4,
   "mode": "chat",
   "model": "demo-model"
+ },
+ "GET /api/agents/c1": {
+  "ok": true,
+  "agent": {
+   "id": "c1",
+   "kind": "coding",
+   "title": "Claude Code: migrate auth middleware",
+   "status": "running",
+   "live": true,
+   "model": "claude-opus-4",
+   "created_at": "2026-10-14T09:00:00",
+   "started_at": "2026-10-14T09:00:00",
+   "progress": "Editing 6 files, tests running"
+  }
+ },
+ "GET /api/agents/c1s1": {
+  "ok": true,
+  "agent": {
+   "id": "c1s1",
+   "kind": "subagent",
+   "title": "Explore: find session token usage",
+   "status": "done",
+   "live": false,
+   "model": "claude-haiku-4",
+   "created_at": "2026-10-14T09:01:00",
+   "started_at": "2026-10-14T09:01:00",
+   "parent_id": "c1",
+   "finished_at": "2026-10-14T09:06:00",
+   "result": "Sample result (demo data)."
+  }
+ },
+ "GET /api/agents/c1s2": {
+  "ok": true,
+  "agent": {
+   "id": "c1s2",
+   "kind": "subagent",
+   "title": "Write tests for refresh flow",
+   "status": "running",
+   "live": true,
+   "model": "claude-sonnet-4",
+   "created_at": "2026-10-14T09:02:00",
+   "started_at": "2026-10-14T09:02:00",
+   "parent_id": "c1",
+   "progress": "3 of 5 cases written"
+  }
+ },
+ "GET /api/agents/c1s3": {
+  "ok": true,
+  "agent": {
+   "id": "c1s3",
+   "kind": "subagent",
+   "title": "Review diff for regressions",
+   "status": "queued",
+   "live": true,
+   "model": "claude-opus-4",
+   "created_at": "2026-10-14T09:03:00",
+   "started_at": "2026-10-14T09:03:00",
+   "parent_id": "c1"
+  }
+ },
+ "GET /api/agents/x1": {
+  "ok": true,
+  "agent": {
+   "id": "x1",
+   "kind": "coding",
+   "title": "Codex: fix flaky upload test",
+   "status": "running",
+   "live": true,
+   "model": "gpt-5-codex",
+   "created_at": "2026-10-14T09:04:00",
+   "started_at": "2026-10-14T09:04:00",
+   "progress": "Bisecting the failure"
+  }
+ },
+ "GET /api/agents/x1s1": {
+  "ok": true,
+  "agent": {
+   "id": "x1s1",
+   "kind": "subagent",
+   "title": "Reproduce failure locally",
+   "status": "done",
+   "live": false,
+   "model": "gpt-5-codex",
+   "created_at": "2026-10-14T09:05:00",
+   "started_at": "2026-10-14T09:05:00",
+   "parent_id": "x1",
+   "finished_at": "2026-10-14T09:10:00",
+   "result": "Sample result (demo data)."
+  }
+ },
+ "GET /api/agents/o1": {
+  "ok": true,
+  "agent": {
+   "id": "o1",
+   "kind": "coding",
+   "title": "OpenCode: refactor settings screen",
+   "status": "running",
+   "live": true,
+   "model": "qwen3-coder-30b (local)",
+   "created_at": "2026-10-14T09:06:00",
+   "started_at": "2026-10-14T09:06:00",
+   "progress": "Splitting SettingsView"
+  }
+ },
+ "GET /api/agents/o1s1": {
+  "ok": true,
+  "agent": {
+   "id": "o1s1",
+   "kind": "subagent",
+   "title": "Extract section views",
+   "status": "running",
+   "live": true,
+   "model": "qwen3-coder-30b (local)",
+   "created_at": "2026-10-14T09:07:00",
+   "started_at": "2026-10-14T09:07:00",
+   "parent_id": "o1",
+   "progress": "4 of 7 sections"
+  }
+ },
+ "GET /api/agents/r1": {
+  "ok": true,
+  "agent": {
+   "id": "r1",
+   "kind": "research",
+   "title": "Research: on-device model options",
+   "status": "done",
+   "live": false,
+   "model": "claude-sonnet-4",
+   "created_at": "2026-10-14T09:08:00",
+   "started_at": "2026-10-14T09:08:00",
+   "finished_at": "2026-10-14T09:13:00",
+   "result": "Sample result (demo data)."
+  }
+ },
+ "GET /api/agents/t1": {
+  "ok": true,
+  "agent": {
+   "id": "t1",
+   "kind": "task",
+   "title": "Weekly review",
+   "status": "done",
+   "live": false,
+   "model": "demo-model",
+   "created_at": "2026-10-14T09:09:00",
+   "started_at": "2026-10-14T09:09:00",
+   "finished_at": "2026-10-14T09:14:00",
+   "result": "Sample result (demo data)."
+  }
+ },
+ "GET /api/agents/b1": {
+  "ok": true,
+  "agent": {
+   "id": "b1",
+   "kind": "briefing",
+   "title": "Morning briefing",
+   "status": "done",
+   "live": false,
+   "model": "claude-haiku-4",
+   "created_at": "2026-10-14T09:10:00",
+   "started_at": "2026-10-14T09:10:00",
+   "finished_at": "2026-10-14T09:15:00",
+   "result": "Sample result (demo data)."
+  }
  }
 }
