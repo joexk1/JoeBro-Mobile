@@ -92,12 +92,10 @@ struct WorkspaceHubView: View {
                     .scaleEffect(reduceMotion || hasEntered ? 1 : 0.92)
                     .opacity(reduceMotion || hasEntered ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: hasEntered)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).foregroundStyle(.joeInk)
-                    Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
+                Text(title).foregroundStyle(.joeInk)
             }
-            .frame(minHeight: 48)
+            .frame(minHeight: 44)
+            .accessibilityHint(subtitle)   // titles only on screen; VoiceOver still gets the description
         }
         .listRowBackground(Color.joeInk.opacity(0.06))
     }
