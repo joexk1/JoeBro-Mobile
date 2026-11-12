@@ -16,7 +16,7 @@
 <key>UIRequiresFullScreen</key><false/>
 <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
 <key>UISupportedInterfaceOrientations~ipad</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
-<key>NSSupportsLiveActivities</key><true/>
+<key>NSSupportsLiveActivities</key><true/><key>NSSupportsLiveActivitiesFrequentUpdates</key><true/>
 <key>NSCameraUsageDescription</key><string>Capture a photo to discuss with JoeBro.</string>
 <key>NSCalendarsFullAccessUsageDescription</key><string>Show and edit the calendars already connected to this iPhone.</string>
 <key>NSPhotoLibraryUsageDescription</key><string>Choose a wallpaper or a photo for your conversation.</string>

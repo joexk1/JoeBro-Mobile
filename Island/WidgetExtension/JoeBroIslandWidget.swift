@@ -17,6 +17,14 @@ private func title(_ s: JoeBroActivityAttributes.ContentState, stale: Bool) -> S
     return stale ? "Update paused" : s.headline ?? summary(s.count)
 }
 
+/// "3 subagents" / "1 waiting", or nil when there is nothing to add.
+private func extras(_ s: JoeBroActivityAttributes.ContentState) -> String? {
+    var parts: [String] = []
+    if let n = s.subagents, n > 0 { parts.append(n == 1 ? "1 subagent" : "\(n) subagents") }
+    if let w = s.waiting, w > 0 { parts.append("\(w) waiting") }
+    return parts.isEmpty ? nil : parts.joined(separator: " · ")
+}
+
 private func glyph(_ s: JoeBroActivityAttributes.ContentState) -> String {
     switch s.finished {
     case "done": "checkmark.circle.fill"
@@ -70,9 +78,14 @@ struct JoeBroIslandWidget: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(title(context.state, stale: context.isStale))
-                        .font(.system(.headline, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
+                    VStack(spacing: 1) {
+                        Text(title(context.state, stale: context.isStale))
+                            .font(.system(.headline, design: .rounded).weight(.bold))
+                            .foregroundStyle(.white)
+                        if context.state.finished == nil, let e = extras(context.state) {
+                            Text(e).font(.caption2).foregroundStyle(HierarchicalShapeStyle.secondary)
+                        }
+                    }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     JoeBroRunList(state: context.state)
@@ -84,9 +97,15 @@ struct JoeBroIslandWidget: Widget {
                 if context.state.finished != nil {
                     Image(systemName: glyph(context.state)).foregroundStyle(islandTint)
                 } else {
-                Text("\(context.state.count)")
-                    .font(.system(.subheadline, design: .rounded).weight(.bold).monospacedDigit())
-                    .foregroundStyle(.white)
+                HStack(spacing: 3) {
+                    Text("\(context.state.count)")
+                        .font(.system(.subheadline, design: .rounded).weight(.bold).monospacedDigit())
+                        .foregroundStyle(.white)
+                    if let n = context.state.subagents, n > 0 {
+                        Image(systemName: "arrow.triangle.branch").font(.caption2).foregroundStyle(islandTint)
+                        Text("\(n)").font(.caption2.monospacedDigit()).foregroundStyle(islandTint)
+                    }
+                }
                 }
             } minimal: {
                 Image(systemName: glyph(context.state)).foregroundStyle(islandTint)
@@ -108,6 +127,9 @@ private struct JoeBroLockScreenActivity: View {
                 Text(title(state, stale: isStale))
                     .font(.system(.headline, design: .rounded).weight(.bold))
                     .foregroundStyle(.white)
+                if state.finished == nil, let e = extras(state) {
+                    Text(e).font(.caption).foregroundStyle(HierarchicalShapeStyle.secondary)
+                }
                 Spacer(minLength: 8)
                 if state.finished == nil {
                     Text(state.startedAt, style: .timer)
@@ -130,6 +152,16 @@ private struct JoeBroRunList: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(state.runs.prefix(shown)) { run in
                 JoeBroRunRow(run: run)
+                if let kids = run.children, !kids.isEmpty {
+                    ForEach(kids.prefix(2)) { kid in
+                        JoeBroChildRow(child: kid)
+                    }
+                    if let n = run.subagents, n > 2 {
+                        Text("+\(n - 2) more subagents")
+                            .font(.caption2).foregroundStyle(HierarchicalShapeStyle.tertiary)
+                            .padding(.leading, 44)
+                    }
+                }
             }
             if state.count > shown {
                 Text("+\(state.count - shown) more")
@@ -187,6 +219,30 @@ private struct JoeBroRunRow: View {
         case "task": "clock.arrow.circlepath"
         case "coding": "chevron.left.forwardslash.chevron.right"
         default: "sparkles"
+        }
+    }
+}
+
+/// A subagent, indented under its run, with a status dot.
+private struct JoeBroChildRow: View {
+    let child: JoeBroActivityAttributes.Child
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.turn.down.right").font(.caption2).foregroundStyle(HierarchicalShapeStyle.tertiary)
+            Circle().fill(color).frame(width: 6, height: 6)
+            Text(child.title).font(.caption).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .padding(.leading, 26)
+    }
+
+    private var color: Color {
+        switch child.status {
+        case "running": islandTint
+        case "failed": .red
+        case "done": .green
+        default: .gray
         }
     }
 }

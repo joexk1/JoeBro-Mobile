@@ -32,6 +32,7 @@ final class JoeBroActivityController {
     // entry point funnels into one `sync()`. The activity ends only when both
     // are idle.
     private static var agents: [JBAgentRecord] = []
+    private static var subagents: [JBAgentRecord] = []
     private static var chatTurns: [String: String] = [:]   // sessionID -> title
     private static var chatOrder: [String] = []
     private static var chatBegan: [String: Date] = [:]
@@ -58,7 +59,11 @@ final class JoeBroActivityController {
         for (id, _) in Self.lastLive {
             if let r = agents.first(where: { $0.id == id }), r.status == "failed" { Self.failedTurn = true }
         }
-        Self.agents = Self.uniqueBySession(agents.filter { $0.kind != .briefing && !$0.isSessionOnly && $0.isLive })
+        let live = Self.uniqueBySession(agents.filter { $0.kind != .briefing && !$0.isSessionOnly && $0.isLive })
+        // Subagents nest under the run that spawned them instead of becoming runs.
+        let parents = Set(live.map(\.id))
+        Self.subagents = agents.filter { $0.kind == .subagent && ($0.parentID.map(parents.contains) ?? false) }
+        Self.agents = live.filter { !Self.subagents.contains($0) }
         Self.lastLive = Dictionary(Self.agents.map { ($0.id, $0.displayTitle) }, uniquingKeysWith: { a, _ in a })
         await sync()
     }
@@ -105,7 +110,7 @@ final class JoeBroActivityController {
         // The header scene is part of the activity's static attributes, so a new
         // choice needs a fresh activity.
         let scene = UserDefaults.standard.string(forKey: "backgroundAnimation") ?? "off"
-        if let old = current, old.attributes.sceneName != scene {
+        if let old = current, (old.attributes.sceneName ?? "off") != scene {
             await old.end(nil, dismissalPolicy: .immediate)
             current = nil
         }
@@ -140,7 +145,7 @@ final class JoeBroActivityController {
                                          title: Flavor.isPersonal && id == Flavor.mainSessionID ? Flavor.mainAgentName : title,
                                          kind: "reply", detail: "", queued: false)
         }
-        let all = chatRuns + agentRuns.map(Self.run)
+        let all = chatRuns + agentRuns.map { Self.run($0, subagents: Self.subagents) }
         let headline: String? = agentRuns.isEmpty
             ? (chats.count == 1 ? Self.replyHeadline(chats[0].0) : "\(chats.count) chats replying")
             : nil
@@ -149,7 +154,9 @@ final class JoeBroActivityController {
             runs: Array(all.prefix(Self.maxRuns)),
             startedAt: current?.content.state.startedAt ?? .now,
             headline: headline,
-            finished: nil
+            finished: nil,
+            subagents: Self.subagents.filter(\.isLive).count,
+            waiting: nil
         )
         let content = ActivityContent(state: state, staleDate: .now.addingTimeInterval(120))
         if let current {
@@ -164,16 +171,55 @@ final class JoeBroActivityController {
         }
     }
 
-    /// Sends the activity's push token to the backend so it can end the island
-    /// (liveactivity push) when the app is backgrounded and cannot update it.
+    /// Backend route that stores both the push-to-start token and the
+    /// per-activity update tokens (reports/feature-api.md, section 4).
+    static let registerRoute = "/api/push/activity"
+
+    private static var observing = false
+    private static var observed = Set<String>()
+    private static var lastStartToken: String?
+
+    /// Call once at launch (and again after pairing). The backend can then
+    /// start the Live Activity over APNs the moment an agent spawns, with the
+    /// app in the background, and update it for each subagent.
+    static func startObservers() {
+        Task { @MainActor in
+            if let t = lastStartToken { await register(["push_to_start_token": t]) }   // retry after pairing
+            guard !observing, !DemoMode.active else { return }
+            observing = true
+            if #available(iOS 17.2, *) {
+                Task { @MainActor in
+                    for await data in Activity<JoeBroActivityAttributes>.pushToStartTokenUpdates {
+                        let token = data.map { String(format: "%02x", $0) }.joined()
+                        lastStartToken = token
+                        await register(["push_to_start_token": token])
+                    }
+                }
+            }
+            // Activities started by a push never pass through sync(): watch them too.
+            for activity in Activity<JoeBroActivityAttributes>.activities { observePushToken(activity) }
+            Task { @MainActor in
+                for await activity in Activity<JoeBroActivityAttributes>.activityUpdates { observePushToken(activity) }
+            }
+        }
+    }
+
+    private static func register(_ fields: [String: Any]) async {
+        guard let env = apnsEnvironment(), let api = ServerConfig.api() else { return }
+        var body = fields
+        body["environment"] = env
+        body["install_id"] = MobilePushNotifications.shared.installID
+        let _: JoeBroAPI.OK? = try? await api.send(JoeBroAPI.OK.self, registerRoute, json: body)
+    }
+
+    /// Sends the activity's own push token so the backend can update and end it
+    /// (liveactivity push) while the app is backgrounded.
     private static func observePushToken(_ activity: Activity<JoeBroActivityAttributes>) {
+        guard observed.insert(activity.id).inserted else { return }
         Task {
             for await data in activity.pushTokenUpdates {
                 let token = data.map { String(format: "%02x", $0) }.joined()
-                guard let env = apnsEnvironment(), let api = ServerConfig.api()
-                else { continue }
-                let _: JoeBroAPI.OK? = try? await api.send(JoeBroAPI.OK.self, "/api/push/activity",
-                                                           json: ["token": token, "environment": env])
+                await register(["token": token, "activity_id": activity.id])
             }
         }
     }
@@ -206,13 +252,19 @@ final class JoeBroActivityController {
         return sessionID == Flavor.mainSessionID ? Flavor.mainAgentName + " is replying" : "Workspace chat is replying"
     }
 
-    private static func run(_ agent: JBAgentRecord) -> JoeBroActivityAttributes.Run {
-        .init(
+    private static func run(_ agent: JBAgentRecord, subagents: [JBAgentRecord]) -> JoeBroActivityAttributes.Run {
+        let kids = subagents.filter { $0.parentID == agent.id }
+        return .init(
             id: agent.id,
             title: agent.displayTitle,
             kind: (agent.kind ?? .unknown).rawValue,
             detail: agent.progress?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
-            queued: agent.status == "queued"
+            queued: agent.status == "queued",
+            subagents: kids.filter(\.isLive).count,
+            waiting: agent.status == "waiting" || agent.status == "needs_approval",
+            children: kids.prefix(3).map {
+                .init(id: $0.id, title: $0.displayTitle, status: $0.isLive ? ($0.status == "queued" ? "queued" : "running") : ($0.status == "failed" ? "failed" : "done"))
+            }
         )
     }
 }
