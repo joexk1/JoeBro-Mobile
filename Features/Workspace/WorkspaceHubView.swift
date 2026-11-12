@@ -17,6 +17,7 @@ struct WorkspaceHubView: View {
         case "night": NightShiftView(ws: ws)
         case "sharedmemory": SharedMemoryView(ws: ws)
         case "coding": CodingSessionsView(ws: ws)
+        case "models": DemoModelList(api: api)
         default: MobileNotificationInbox(api: api)
         }
     }
@@ -160,3 +161,29 @@ struct WSPermissionPicker: View {
         .tint(Color.accentTint)
     }
 }
+
+#if DEBUG
+/// Demo-only (`-JoeBroScreen models`): the grouped model list the chat picker shows, laid out open for screenshots.
+struct DemoModelList: View {
+    let api: JoeBroAPI
+    @State private var models: [JBModelChoice] = []
+    var body: some View {
+        List {
+            ForEach(Array(Dictionary(grouping: models, by: \.endpointName)).sorted { a, b in
+                let la = a.value.first?.category == "local", lb = b.value.first?.category == "local"
+                return la != lb ? la : a.key < b.key
+            }, id: \.key) { group in
+                Section(group.key) {
+                    ForEach(group.value) { m in
+                        Label { Text(m.display) } icon: { ProviderLogoView(model: m.modelID, size: 18) }
+                            .listRowBackground(Color.joeInk.opacity(0.06))
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped).scrollContentBackground(.hidden).jbWallpaper()
+        .navigationTitle("Choose model").navigationBarTitleDisplayMode(.inline)
+        .task { models = (try? await api.models()) ?? [] }
+    }
+}
+#endif

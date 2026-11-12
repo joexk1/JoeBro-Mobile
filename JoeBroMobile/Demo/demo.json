@@ -39,6 +39,21 @@
    {
     "url": "https://demo.joebro.invalid",
     "models": [
+     "deepseek-chat",
+     "mistral-large"
+    ],
+    "models_display": [
+     "DeepSeek V3 (your API key)",
+     "Mistral Large (your API key)"
+    ],
+    "endpoint_id": "openrouter",
+    "endpoint_name": "OpenRouter (your API key)",
+    "category": "cloud",
+    "offline": false
+   },
+   {
+    "url": "https://demo.joebro.invalid",
+    "models": [
      "qwen3-coder-30b",
      "llama-3.3-70b"
     ],
@@ -49,19 +64,6 @@
     "endpoint_id": "local",
     "endpoint_name": "Local (Ollama)",
     "category": "local",
-    "offline": false
-   },
-   {
-    "url": "https://demo.joebro.invalid",
-    "models": [
-     "demo-model"
-    ],
-    "models_display": [
-     "Demo model"
-    ],
-    "endpoint_id": "demo",
-    "endpoint_name": "Demo",
-    "category": "cloud",
     "offline": false
    }
   ]
@@ -82,7 +84,7 @@
    "folder": null,
    "is_important": true,
    "endpoint_id": "demo",
-   "created_at": "2026-10-14T09:00:00"
+   "created_at": "{{d-1:22:00}}"
   },
   {
    "id": "demo-chat-2",
@@ -93,7 +95,7 @@
    "folder": null,
    "is_important": false,
    "endpoint_id": "demo",
-   "created_at": "2026-10-14T09:00:00"
+   "created_at": "{{d-1:22:00}}"
   },
   {
    "id": "demo-chat-3",
@@ -104,20 +106,20 @@
    "folder": "Personal",
    "is_important": false,
    "endpoint_id": "demo",
-   "created_at": "2026-10-14T09:00:00"
+   "created_at": "{{d-1:22:00}}"
   }
  ],
  "POST /api/joebro/session": {
   "session": {
    "id": "demo-joebro",
    "name": "JoeBro",
-   "model": "demo-model",
+   "model": "claude-opus-4",
    "mode": "agent",
    "archived": false,
-   "endpoint_id": "demo"
+   "endpoint_id": "anthropic"
   },
-  "model": "demo-model",
-  "endpoint_id": "demo",
+  "model": "claude-opus-4",
+  "endpoint_id": "anthropic",
   "permission_mode": "readonly",
   "soul": "Demo assistant. Sample data only."
  },
@@ -125,28 +127,49 @@
   "session": {
    "id": "demo-joebro",
    "name": "JoeBro",
-   "model": "demo-model",
+   "model": "claude-opus-4",
    "mode": "agent",
    "archived": false,
-   "endpoint_id": "demo"
+   "endpoint_id": "anthropic"
   },
-  "model": "demo-model",
-  "endpoint_id": "demo",
+  "model": "claude-opus-4",
+  "endpoint_id": "anthropic",
   "permission_mode": "readonly",
   "soul": "Demo assistant. Sample data only."
  },
  "GET /api/history/demo-joebro": {
   "history": [
    {
-    "role": "assistant",
-    "content": "Welcome to the demo. These conversations, tasks, memory files and notifications are sample data and nothing is connected. Pair your own Mac to use the real thing.",
+    "role": "user",
+    "content": "restart what I was working on yesterday",
     "metadata": {
      "_db_id": 1
     }
+   },
+   {
+    "role": "assistant",
+    "content": "Yesterday evening you had **Claude Code: migrate auth middleware** open in the atlas project. I found the session and resumed it on your MacBook with the same worktree.\n\nIt picked up where it stopped: 6 files edited, tests running. Two subagents are on it (refresh-flow tests, diff review). I will ping you when the review card is ready.",
+    "metadata": {
+     "tool_events": [
+      {
+       "tool": "coding_sessions",
+       "command": "recent sessions since yesterday",
+       "output": "3 sessions found (demo)",
+       "exit_code": 0
+      },
+      {
+       "tool": "coding_agents",
+       "command": "resume Claude Code: migrate auth middleware",
+       "output": "resumed on MacBook (demo)",
+       "exit_code": 0
+      }
+     ],
+     "_db_id": 2
+    }
    }
   ],
-  "model": "demo-model",
-  "name": "Demo"
+  "model": "claude-opus-4",
+  "name": "JoeBro"
  },
  "GET /api/history/demo-chat-1": {
   "history": [
@@ -366,8 +389,8 @@
     "status": "running",
     "live": true,
     "model": "claude-opus-4",
-    "created_at": "2026-10-14T09:00:00",
-    "started_at": "2026-10-14T09:00:00",
+    "created_at": "{{d-1:22:00}}",
+    "started_at": "{{d-1:22:00}}",
     "progress": "Editing 6 files, tests running"
    },
    {
@@ -377,10 +400,10 @@
     "status": "done",
     "live": false,
     "model": "claude-haiku-4",
-    "created_at": "2026-10-14T09:01:00",
-    "started_at": "2026-10-14T09:01:00",
+    "created_at": "{{d-1:22:01}}",
+    "started_at": "{{d-1:22:01}}",
     "parent_id": "c1",
-    "finished_at": "2026-10-14T09:06:00",
+    "finished_at": "{{d-1:22:06}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -390,8 +413,8 @@
     "status": "running",
     "live": true,
     "model": "claude-sonnet-4",
-    "created_at": "2026-10-14T09:02:00",
-    "started_at": "2026-10-14T09:02:00",
+    "created_at": "{{d-1:22:02}}",
+    "started_at": "{{d-1:22:02}}",
     "parent_id": "c1",
     "progress": "3 of 5 cases written"
    },
@@ -402,8 +425,8 @@
     "status": "queued",
     "live": true,
     "model": "claude-opus-4",
-    "created_at": "2026-10-14T09:03:00",
-    "started_at": "2026-10-14T09:03:00",
+    "created_at": "{{d-1:22:03}}",
+    "started_at": "{{d-1:22:03}}",
     "parent_id": "c1"
    },
    {
@@ -413,8 +436,8 @@
     "status": "running",
     "live": true,
     "model": "gpt-5-codex",
-    "created_at": "2026-10-14T09:04:00",
-    "started_at": "2026-10-14T09:04:00",
+    "created_at": "{{d-1:22:04}}",
+    "started_at": "{{d-1:22:04}}",
     "progress": "Bisecting the failure"
    },
    {
@@ -424,10 +447,10 @@
     "status": "done",
     "live": false,
     "model": "gpt-5-codex",
-    "created_at": "2026-10-14T09:05:00",
-    "started_at": "2026-10-14T09:05:00",
+    "created_at": "{{d-1:22:05}}",
+    "started_at": "{{d-1:22:05}}",
     "parent_id": "x1",
-    "finished_at": "2026-10-14T09:10:00",
+    "finished_at": "{{d-1:22:10}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -437,8 +460,8 @@
     "status": "running",
     "live": true,
     "model": "qwen3-coder-30b (local)",
-    "created_at": "2026-10-14T09:06:00",
-    "started_at": "2026-10-14T09:06:00",
+    "created_at": "{{d-1:22:06}}",
+    "started_at": "{{d-1:22:06}}",
     "progress": "Splitting SettingsView"
    },
    {
@@ -448,8 +471,8 @@
     "status": "running",
     "live": true,
     "model": "qwen3-coder-30b (local)",
-    "created_at": "2026-10-14T09:07:00",
-    "started_at": "2026-10-14T09:07:00",
+    "created_at": "{{d-1:22:07}}",
+    "started_at": "{{d-1:22:07}}",
     "parent_id": "o1",
     "progress": "4 of 7 sections"
    },
@@ -460,9 +483,9 @@
     "status": "done",
     "live": false,
     "model": "claude-sonnet-4",
-    "created_at": "2026-10-14T09:08:00",
-    "started_at": "2026-10-14T09:08:00",
-    "finished_at": "2026-10-14T09:13:00",
+    "created_at": "{{d-1:22:08}}",
+    "started_at": "{{d-1:22:08}}",
+    "finished_at": "{{d-1:22:13}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -472,9 +495,9 @@
     "status": "done",
     "live": false,
     "model": "demo-model",
-    "created_at": "2026-10-14T09:09:00",
-    "started_at": "2026-10-14T09:09:00",
-    "finished_at": "2026-10-14T09:14:00",
+    "created_at": "{{d-1:22:09}}",
+    "started_at": "{{d-1:22:09}}",
+    "finished_at": "{{d-1:22:14}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -484,10 +507,49 @@
     "status": "done",
     "live": false,
     "model": "claude-haiku-4",
-    "created_at": "2026-10-14T09:10:00",
-    "started_at": "2026-10-14T09:10:00",
-    "finished_at": "2026-10-14T09:15:00",
+    "created_at": "{{d-1:22:10}}",
+    "started_at": "{{d-1:22:10}}",
+    "finished_at": "{{d-1:22:15}}",
     "result": "Sample result (demo data)."
+   },
+   {
+    "id": "c2",
+    "kind": "coding",
+    "title": "Claude Code: add dark mode to settings",
+    "status": "done",
+    "live": false,
+    "model": "claude-opus-4",
+    "created_at": "{{d-1:22:10}}",
+    "started_at": "{{d-1:22:10}}",
+    "finished_at": "{{d-1:22:10}}",
+    "result": "Sample result (demo data).",
+    "session_id": "demo-c2"
+   },
+   {
+    "id": "x2",
+    "kind": "coding",
+    "title": "Codex: bump dependencies and fix lint",
+    "status": "done",
+    "live": false,
+    "model": "gpt-5-codex",
+    "created_at": "{{d-1:22:13}}",
+    "started_at": "{{d-1:22:13}}",
+    "finished_at": "{{d-1:22:13}}",
+    "result": "Sample result (demo data).",
+    "session_id": "demo-x2"
+   },
+   {
+    "id": "o2",
+    "kind": "coding",
+    "title": "OpenCode: write API docs for the uploader",
+    "status": "done",
+    "live": false,
+    "model": "qwen3-coder-30b",
+    "created_at": "{{d-1:22:14}}",
+    "started_at": "{{d-1:22:14}}",
+    "finished_at": "{{d-1:22:14}}",
+    "result": "Sample result (demo data).",
+    "session_id": "demo-o2"
    }
   ]
  },
@@ -501,8 +563,8 @@
    "live": false,
    "model": "demo-model",
    "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
-   "created_at": "2026-10-14T09:00:00",
-   "finished_at": "2026-10-14T09:00:00"
+   "created_at": "{{d-1:22:00}}",
+   "finished_at": "{{d-1:22:00}}"
   }
  },
  "GET /api/agents/a2": {
@@ -515,8 +577,8 @@
    "live": false,
    "model": "demo-model",
    "result": "Sample report (demo data).",
-   "created_at": "2026-10-14T09:00:00",
-   "finished_at": "2026-10-14T09:00:00"
+   "created_at": "{{d-1:22:00}}",
+   "finished_at": "{{d-1:22:00}}"
   }
  },
  "GET /api/skills": {
@@ -610,8 +672,8 @@
    "status": "running",
    "live": true,
    "model": "claude-opus-4",
-   "created_at": "2026-10-14T09:00:00",
-   "started_at": "2026-10-14T09:00:00",
+   "created_at": "{{d-1:22:00}}",
+   "started_at": "{{d-1:22:00}}",
    "progress": "Editing 6 files, tests running"
   }
  },
@@ -624,10 +686,10 @@
    "status": "done",
    "live": false,
    "model": "claude-haiku-4",
-   "created_at": "2026-10-14T09:01:00",
-   "started_at": "2026-10-14T09:01:00",
+   "created_at": "{{d-1:22:01}}",
+   "started_at": "{{d-1:22:01}}",
    "parent_id": "c1",
-   "finished_at": "2026-10-14T09:06:00",
+   "finished_at": "{{d-1:22:06}}",
    "result": "Sample result (demo data)."
   }
  },
@@ -640,8 +702,8 @@
    "status": "running",
    "live": true,
    "model": "claude-sonnet-4",
-   "created_at": "2026-10-14T09:02:00",
-   "started_at": "2026-10-14T09:02:00",
+   "created_at": "{{d-1:22:02}}",
+   "started_at": "{{d-1:22:02}}",
    "parent_id": "c1",
    "progress": "3 of 5 cases written"
   }
@@ -655,8 +717,8 @@
    "status": "queued",
    "live": true,
    "model": "claude-opus-4",
-   "created_at": "2026-10-14T09:03:00",
-   "started_at": "2026-10-14T09:03:00",
+   "created_at": "{{d-1:22:03}}",
+   "started_at": "{{d-1:22:03}}",
    "parent_id": "c1"
   }
  },
@@ -669,8 +731,8 @@
    "status": "running",
    "live": true,
    "model": "gpt-5-codex",
-   "created_at": "2026-10-14T09:04:00",
-   "started_at": "2026-10-14T09:04:00",
+   "created_at": "{{d-1:22:04}}",
+   "started_at": "{{d-1:22:04}}",
    "progress": "Bisecting the failure"
   }
  },
@@ -683,10 +745,10 @@
    "status": "done",
    "live": false,
    "model": "gpt-5-codex",
-   "created_at": "2026-10-14T09:05:00",
-   "started_at": "2026-10-14T09:05:00",
+   "created_at": "{{d-1:22:05}}",
+   "started_at": "{{d-1:22:05}}",
    "parent_id": "x1",
-   "finished_at": "2026-10-14T09:10:00",
+   "finished_at": "{{d-1:22:10}}",
    "result": "Sample result (demo data)."
   }
  },
@@ -699,8 +761,8 @@
    "status": "running",
    "live": true,
    "model": "qwen3-coder-30b (local)",
-   "created_at": "2026-10-14T09:06:00",
-   "started_at": "2026-10-14T09:06:00",
+   "created_at": "{{d-1:22:06}}",
+   "started_at": "{{d-1:22:06}}",
    "progress": "Splitting SettingsView"
   }
  },
@@ -713,8 +775,8 @@
    "status": "running",
    "live": true,
    "model": "qwen3-coder-30b (local)",
-   "created_at": "2026-10-14T09:07:00",
-   "started_at": "2026-10-14T09:07:00",
+   "created_at": "{{d-1:22:07}}",
+   "started_at": "{{d-1:22:07}}",
    "parent_id": "o1",
    "progress": "4 of 7 sections"
   }
@@ -728,9 +790,9 @@
    "status": "done",
    "live": false,
    "model": "claude-sonnet-4",
-   "created_at": "2026-10-14T09:08:00",
-   "started_at": "2026-10-14T09:08:00",
-   "finished_at": "2026-10-14T09:13:00",
+   "created_at": "{{d-1:22:08}}",
+   "started_at": "{{d-1:22:08}}",
+   "finished_at": "{{d-1:22:13}}",
    "result": "Sample result (demo data)."
   }
  },
@@ -743,9 +805,9 @@
    "status": "done",
    "live": false,
    "model": "demo-model",
-   "created_at": "2026-10-14T09:09:00",
-   "started_at": "2026-10-14T09:09:00",
-   "finished_at": "2026-10-14T09:14:00",
+   "created_at": "{{d-1:22:09}}",
+   "started_at": "{{d-1:22:09}}",
+   "finished_at": "{{d-1:22:14}}",
    "result": "Sample result (demo data)."
   }
  },
@@ -758,9 +820,9 @@
    "status": "done",
    "live": false,
    "model": "claude-haiku-4",
-   "created_at": "2026-10-14T09:10:00",
-   "started_at": "2026-10-14T09:10:00",
-   "finished_at": "2026-10-14T09:15:00",
+   "created_at": "{{d-1:22:10}}",
+   "started_at": "{{d-1:22:10}}",
+   "finished_at": "{{d-1:22:15}}",
    "result": "Sample result (demo data)."
   }
  },

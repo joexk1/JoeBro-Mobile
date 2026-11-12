@@ -14,7 +14,12 @@ struct NightShiftView: View {
     @State private var loading = false
     @State private var error: String?
 
+    #if DEBUG
+    /// Demo-only: `-JoeBroQueueOnly` hides review cards so the queue fills the screenshot.
+    private var reviews: [NSTask] { DemoMode.option("-JoeBroQueueOnly") != nil ? [] : tasks.filter(\.needsReview) }
+    #else
     private var reviews: [NSTask] { tasks.filter(\.needsReview) }
+    #endif
     private var queue: [NSTask] { tasks.filter(\.isOpen) }
     private var done: [NSTask] { tasks.filter { !$0.isOpen && !$0.needsReview } }
 
