@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Night Shift.** Add, reorder, cancel and run tasks from the phone. Morning review cards show the diff, test result and summary, with Approve, Reject and Follow-up on the lock screen. It never pushes.
+- **Shared Memory.** One Memory screen for you, your projects and global facts, with search, strength, provenance, pin, edit, archive and history. Needs JoeBro 1.5 on your Mac.
+- **Live agents and subagents** in the Agents tab and the Dynamic Island, nested under their parent. New runs start on the Island through push-to-start, even with the app in the background.
+- **Resume.** Recent coding sessions have a Resume button, and the phone agent can pick up a session by asking.
+- **Morning briefing and proactive autonomy** are in the shipped app.
+- **Demo mode** (-JoeBroDemo in debug builds, "Try the demo" at pairing) for trying the app without a Mac.
 - **Header scenes.** Pick one of 34 animated ASCII scenes under Settings > Appearance and it plays behind the JoeBro tab's header. It pauses under Reduce Motion, when the app is inactive and when the header is off screen. A photo wallpaper turns it off. The Live Activity on the lock screen shows a still of the same scene. The scenes are from [bas3line/ascii](https://github.com/bas3line/ascii) (MIT).
 - **Black & White theme.** A new wallpaper swatch that follows the iPhone's light or dark setting: black in dark mode, white in light mode. The other wallpapers stay dark.
 - A reply that ran several tools shows one **steps** row with a plain-language summary. Expand it to see each call.

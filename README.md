@@ -5,23 +5,44 @@
 <h1 align="center">JoeBro Mobile</h1>
 
 <p align="center">
-  JoeBro in your pocket.<br>
+  All your agents, in your pocket.<br>
+  Claude Code, Codex and OpenCode, plus your own models.<br>
   Talks to your own Mac. No cloud in the middle.
 </p>
 
 <p align="center"><a href="https://joebro.pages.dev/"><b>joebro.pages.dev</b></a></p>
 
-**Sister repo:** the Mac app is **[JoeBro](https://github.com/joexk1/JoeBro)**. You need it running (1.3 or later) for this app to do anything.
+**Sister repo:** the Mac app is **[JoeBro](https://github.com/joexk1/JoeBro)**. You need it running (1.3 or later; 1.5 for the features below) for this app to do anything.
 
 ---
 
 The phone half of JoeBro. No account to make, and nothing goes through anyone else's server.
 
-You get your chats, your agents, your documents and a phone agent that works in the background and pings you when something needs you.
+JoeBro is the free way to bring all your existing agents under one umbrella. Claude Code, Codex and OpenCode, plus your own API keys and local models, all show up here, next to your chats and documents. A phone agent works in the background and pings you when something needs you.
 
 This is a source release. There is no App Store build. Your bundle ID, your signing team and your push key are yours, so you build it yourself.
 
 ![The phone agent: one chat that follows you, running on your own Mac](README_assets/phone-agent.png)
+
+---
+
+## New in 1.5
+
+- **Night Shift.** Queue coding tasks from the phone. They run overnight, each in its own git branch, on whichever machine has the repo. In the morning you get review cards with the diff, the test result and a summary. **Approve**, **Reject** or ask for a follow-up from the lock screen. Rejecting needs Face ID. It never pushes.
+- **Shared Memory.** One project memory that every agent reads and writes over MCP. The Memory screen shows facts for you, your projects and global, with the agent that wrote each one. Your personal facts never reach a repo or a coding agent.
+- **Live agents and subagents** in the Agents tab and the Dynamic Island. They appear as they spawn, even with the app in the background (push-to-start).
+- **Resume.** Ask the phone agent to pick up a coding session: "pick up what I was working on yesterday and add tests". Recent coding sessions also have a Resume button.
+- **Morning briefing and proactive mode** are in the shipped app.
+
+![Night Shift on the phone: the queue and the morning review cards](README_assets/night-shift.png)
+
+![Shared Memory: one memory for every agent](README_assets/shared-memory.png)
+
+![Agents and subagents in the Agents tab and the Dynamic Island](README_assets/agents-island.png)
+
+![Resuming a recent coding session](README_assets/resume-session.png)
+
+Push-to-start and the lock-screen buttons need the push setup below.
 
 ---
 
