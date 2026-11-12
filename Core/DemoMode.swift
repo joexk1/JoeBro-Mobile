@@ -14,8 +14,11 @@ enum DemoMode {
         let args = ProcessInfo.processInfo.arguments
         return args.firstIndex(of: name).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil }
     }
+    /// `-JoeBroNoBanner` hides the yellow demo strip (marketing screenshots).
+    static var hidesBanner: Bool { ProcessInfo.processInfo.arguments.contains("-JoeBroNoBanner") }
     #else
     nonisolated(unsafe) static var active = false
+    static let hidesBanner = false
     #endif
     static let host = "demo.joebro.invalid"
     static let url = URL(string: "https://\(host)")!

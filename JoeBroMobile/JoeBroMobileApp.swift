@@ -241,7 +241,7 @@ final class MobilePushNotifications {
         }
     }
 
-    private var installID: String {
+    var installID: String {
         let defaults = UserDefaults.standard
         if let id = defaults.string(forKey: "mobilePushInstallID") { return id }
         let id = UUID().uuidString

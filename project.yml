@@ -1,7 +1,29 @@
 name: JoeBroMobile
+# Debug/Release = production. Debug-Personal/Release-Personal = the owner's build:
+# PERSONAL compilation condition, Personal/Info.plist, personal bundle id (Config/Personal.xcconfig).
+configs:
+  Debug: debug
+  Release: release
+  Debug-Personal: debug
+  Release-Personal: release
 configFiles:
   Debug: Config/Base.xcconfig
   Release: Config/Base.xcconfig
+  Debug-Personal: Config/Personal.xcconfig
+  Release-Personal: Config/Personal.xcconfig
+schemes:
+  JoeBroMobile:
+    build:
+      targets:
+        JoeBroMobile: all
+    run: {config: Debug}
+    archive: {config: Release}
+  JoeBroMobile-Personal:
+    build:
+      targets:
+        JoeBroMobile: all
+    run: {config: Debug-Personal}
+    archive: {config: Release-Personal}
 options:
   deploymentTarget:
     iOS: "17.0"
@@ -24,6 +46,9 @@ targets:
       - path: JoeBroMobile/AsciiScenes
         type: folder
       - path: Core
+      - path: Personal
+        excludes:
+          - Info.plist
       - path: Features
       - path: Island/Shared
       - path: Island/App
@@ -33,6 +58,13 @@ targets:
         INFOPLIST_FILE: JoeBroMobile/Info.plist
         CODE_SIGN_ENTITLEMENTS: JoeBroMobile/JoeBroMobile.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        Debug-Personal:
+          INFOPLIST_FILE: Personal/Info.plist
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DEBUG PERSONAL"
+        Release-Personal:
+          INFOPLIST_FILE: Personal/Info.plist
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) PERSONAL"
     attributes:
       SystemCapabilities:
         com.apple.Push:

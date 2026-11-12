@@ -7,14 +7,13 @@ struct WorkspaceHubView: View {
     @State private var ws: WorkspaceAPI
     @State private var hasEntered = false
     #if DEBUG
-    /// `-JoeBroScreen tasks|memory|brain|inbox|shopping` opens that screen at launch (screenshots).
+    /// `-JoeBroScreen tasks|memory|brain|inbox` opens that screen at launch (screenshots).
     @State private var debugOpen = false
     @ViewBuilder private var debugScreen: some View {
         switch DemoMode.option("-JoeBroScreen") ?? "" {
         case "tasks": TasksView(ws: ws)
         case "memory": MuseView(ws: ws)
         case "brain": BrainView(api: api, ws: ws)
-        case "shopping": ShoppingView(api: api)
         default: MobileNotificationInbox(api: api)
         }
     }
