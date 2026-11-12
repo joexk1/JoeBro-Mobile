@@ -149,14 +149,17 @@ final class JoeBroActivityController {
         let headline: String? = agentRuns.isEmpty
             ? (chats.count == 1 ? Self.replyHeadline(chats[0].0) : "\(chats.count) chats replying")
             : nil
+        // Most relevant first: running, then awaiting approval, then queued.
+        func rank(_ r: JoeBroActivityAttributes.Run) -> Int { r.waiting == true ? 0 : (r.queued ? 2 : 1) }
+        let ordered = all.enumerated().sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
         let state = JoeBroActivityAttributes.ContentState(
             count: all.count,
-            runs: Array(all.prefix(Self.maxRuns)),
+            runs: Array(ordered.prefix(Self.maxRuns)),
             startedAt: current?.content.state.startedAt ?? .now,
             headline: headline,
             finished: nil,
             subagents: Self.subagents.filter(\.isLive).count,
-            waiting: nil
+            waiting: all.filter { $0.waiting == true }.count
         )
         let content = ActivityContent(state: state, staleDate: .now.addingTimeInterval(120))
         if let current {
@@ -252,7 +255,7 @@ final class JoeBroActivityController {
         return sessionID == Flavor.mainSessionID ? Flavor.mainAgentName + " is replying" : "Workspace chat is replying"
     }
 
-    private static func run(_ agent: JBAgentRecord, subagents: [JBAgentRecord]) -> JoeBroActivityAttributes.Run {
+    static func run(_ agent: JBAgentRecord, subagents: [JBAgentRecord]) -> JoeBroActivityAttributes.Run {
         let kids = subagents.filter { $0.parentID == agent.id }
         return .init(
             id: agent.id,

@@ -138,6 +138,9 @@ struct RootView: View {
             presentPendingMainAgentMessage()
             await JoeBroActivityController().endLegacyBriefings()
             JoeBroActivityController.startObservers()
+            #if DEBUG
+            await JoeBroDemoActivity.startIfRequested()
+            #endif
             if faceIDGate { await authenticate() } else { unlocked = true }
             if ShareInbox.hasPending { selectedTab = .chats; await importSharedCapture() }
         }
