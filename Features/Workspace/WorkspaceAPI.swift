@@ -213,7 +213,7 @@ final class WorkspaceAPI: @unchecked Sendable {
         return Data(pairs.joined(separator: "&").utf8)
     }
 
-    private func call<T: Decodable>(_ type: T.Type, _ path: String, method: String = "GET",
+    func call<T: Decodable>(_ type: T.Type, _ path: String, method: String = "GET",
                                     json: [String: Any]? = nil, form: [String: String]? = nil) async throws -> T {
         let (data, response) = try await session.data(for: request(path, method: method, json: json, form: form))
         guard let http = response as? HTTPURLResponse else { throw JoeBroAPIError.invalidResponse }
@@ -225,7 +225,13 @@ final class WorkspaceAPI: @unchecked Sendable {
         catch { throw JoeBroAPIError.server("Unexpected reply from \(path): \(error.localizedDescription)") }
     }
 
-    private func idPath(_ id: String) -> String {
+    func rawGET(_ path: String) async throws -> Data {
+        let (data, response) = try await session.data(for: request(path))
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else { throw JoeBroAPIError.invalidResponse }
+        return data
+    }
+
+    func idPath(_ id: String) -> String {
         id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#%"))) ?? id
     }
 

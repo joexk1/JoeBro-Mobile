@@ -43,6 +43,27 @@ final class DemoURLProtocol: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func stopLoading() {}
 
+    private static func resolveDates(_ text: String) -> String {
+        guard let re = try? NSRegularExpression(pattern: #"\{\{d([+-]?\d+):(\d\d):(\d\d)\}\}"#) else { return text }
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        let ns = text as NSString
+        var out = ""
+        var last = 0
+        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            let day = Int(ns.substring(with: m.range(at: 1))) ?? 0
+            let h = Int(ns.substring(with: m.range(at: 2))) ?? 0
+            let mi = Int(ns.substring(with: m.range(at: 3))) ?? 0
+            let cal = Calendar.current
+            let base = cal.date(byAdding: .day, value: day, to: cal.startOfDay(for: Date())) ?? Date()
+            out += fmt.string(from: cal.date(bySettingHour: h, minute: mi, second: 0, of: base) ?? base)
+            last = m.range.location + m.range.length
+        }
+        return out + ns.substring(from: last)
+    }
+
     override func startLoading() {
         guard let url = request.url else { return }
         let method = request.httpMethod ?? "GET"
@@ -63,7 +84,7 @@ final class DemoURLProtocol: URLProtocol {
             body.append(Data("data: [DONE]\n\n".utf8))
         } else if let key = keys.first(where: { Self.table[$0] != nil }),
                   let data = try? JSONSerialization.data(withJSONObject: Self.table[key]!, options: [.fragmentsAllowed]) {
-            body = data
+            body = Data(Self.resolveDates(String(decoding: data, as: UTF8.self)).utf8)
         } else if method == "GET" {
             status = 404
             body = Data(#"{"detail":"Not part of the demo"}"#.utf8)

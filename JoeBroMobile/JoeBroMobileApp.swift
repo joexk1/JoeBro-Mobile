@@ -162,8 +162,14 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         let fromMainAgent = Self.isMainAgentMessage(info)
         let messageID = (info?["message_id"] as? String).flatMap(Int.init)
         let replyText = (response as? UNTextInputNotificationResponse)?.userText
+        let nightTask = info?["kind"] as? String == "night_review" ? info?["task"] as? String : nil
         Task { @MainActor in
-            if fromMainAgent, action == MobilePushNotifications.replyAction, let replyText {
+            if let nightTask, [MobilePushNotifications.nightApproveAction, MobilePushNotifications.nightRejectAction, MobilePushNotifications.nightFollowupAction].contains(action) {
+                let background = UIApplication.shared.beginBackgroundTask(withName: "Night Shift decision", expirationHandler: nil)
+                let decision = action == MobilePushNotifications.nightApproveAction ? "approve" : action == MobilePushNotifications.nightRejectAction ? "reject" : "followup"
+                await MobilePushNotifications.shared.decideNight(task: nightTask, decision: decision, text: replyText)
+                if background != .invalid { UIApplication.shared.endBackgroundTask(background) }
+            } else if fromMainAgent, action == MobilePushNotifications.replyAction, let replyText {
                 // Typed on the lock screen: send without opening the app.
                 let background = UIApplication.shared.beginBackgroundTask(withName: "Reply to JoeBro", expirationHandler: nil)
                 await MobilePushNotifications.shared.queueReply(replyText, messageID: messageID)
@@ -353,7 +359,19 @@ final class MobilePushNotifications {
     static let approvalCategory = "CODING_APPROVAL"
     static let approveAction = "CODING_APPROVE"
     static let denyAction = "CODING_DENY"
+    static let nightCategory = "NIGHT_REVIEW"
+    static let nightApproveAction = "NIGHT_APPROVE"
+    static let nightRejectAction = "NIGHT_REJECT"
+    static let nightFollowupAction = "NIGHT_FOLLOWUP"
     static var categories: Set<UNNotificationCategory> {
+        // Night Shift morning review: approve keeps the branch (Face ID), reject deletes it (Face ID), follow-up takes typed text.
+        let nApprove = UNNotificationAction(identifier: nightApproveAction, title: "Approve", options: [.authenticationRequired],
+                                            icon: UNNotificationActionIcon(systemImageName: "checkmark.circle"))
+        let nReject = UNNotificationAction(identifier: nightRejectAction, title: "Reject", options: [.destructive, .authenticationRequired],
+                                           icon: UNNotificationActionIcon(systemImageName: "xmark.circle"))
+        let nFollow = UNTextInputNotificationAction(identifier: nightFollowupAction, title: "Ask follow-up", options: [.authenticationRequired],
+                                                    textInputButtonTitle: "Send", textInputPlaceholder: "What should change?")
+        let night = UNNotificationCategory(identifier: nightCategory, actions: [nApprove, nReject, nFollow], intentIdentifiers: [], options: [])
         // Approving runs a command on the PC/Mac, so it needs Face ID; denying is always safe.
         let approve = UNNotificationAction(identifier: approveAction, title: "Approve",
                                            options: [.authenticationRequired],
@@ -364,7 +382,15 @@ final class MobilePushNotifications {
                                                   options: [.authenticationRequired],
                                                   textInputButtonTitle: "Send", textInputPlaceholder: "Reply to JoeBro")
         return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny], intentIdentifiers: [], options: []),
-                UNNotificationCategory(identifier: messageCategory, actions: [reply], intentIdentifiers: [], options: [])]
+                UNNotificationCategory(identifier: messageCategory, actions: [reply], intentIdentifiers: [], options: []), night]
+    }
+
+    func decideNight(task: String, decision: String, text: String? = nil) async {
+        guard let api = client() else { return }
+        let id = task.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))) ?? task
+        var body: [String: Any] = ["decision": decision]
+        if let text { body["text"] = text }
+        _ = try? await api.send(JoeBroAPI.OK.self, "/api/night-shift/\(id)/decide", json: body)
     }
 
     func decide(agent: String, approve: Bool) async {

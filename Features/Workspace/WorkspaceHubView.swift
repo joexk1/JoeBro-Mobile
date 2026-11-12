@@ -14,6 +14,9 @@ struct WorkspaceHubView: View {
         case "tasks": TasksView(ws: ws)
         case "memory": MuseView(ws: ws)
         case "brain": BrainView(api: api, ws: ws)
+        case "night": NightShiftView(ws: ws)
+        case "sharedmemory": SharedMemoryView(ws: ws)
+        case "coding": CodingSessionsView(ws: ws)
         default: MobileNotificationInbox(api: api)
         }
     }
@@ -38,9 +41,12 @@ struct WorkspaceHubView: View {
                 Section("Work") {
                     row("bell", "Notifications", "Reminders and updates from JoeBro") { MobileNotificationInbox(api: api) }
                     row("magnifyingglass", "Research", "Deep research runs and reports") { ResearchView(api: api, ws: ws) }
+                    row("moon.stars", "Night Shift", "Queue coding tasks, review them in the morning") { NightShiftView(ws: ws) }
+                    row("chevron.left.forwardslash.chevron.right", "Coding sessions", "Recent Claude Code, Codex and OpenCode runs") { CodingSessionsView(ws: ws) }
                     row("clock.arrow.circlepath", "Tasks", "Prompts on a schedule") { TasksView(ws: ws) }
                 }
                 Section("Knowledge") {
+                    row("brain.head.profile", "Memory", "One memory for you, your projects and every agent") { SharedMemoryView(ws: ws) }
                     row("brain", Flavor.brainTitle, "What JoeBro remembers") { BrainView(api: api, ws: ws) }
                     row("person.text.rectangle", Flavor.memoryTitle, "Notes JoeBro keeps about you") { MuseView(ws: ws) }
                     row("sparkles", "Skills", "Learned procedures") { SkillsView(ws: ws) }
