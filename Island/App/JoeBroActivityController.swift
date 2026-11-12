@@ -110,6 +110,10 @@ final class JoeBroActivityController {
         // The header scene is part of the activity's static attributes, so a new
         // choice needs a fresh activity.
         let scene = UserDefaults.standard.string(forKey: "backgroundAnimation") ?? "off"
+        if scene != Self.registeredScene, let t = Self.lastStartToken {   // scene changed: tell the backend
+            Self.registeredScene = scene
+            await Self.register(["push_to_start_token": t])
+        }
         if let old = current, (old.attributes.sceneName ?? "off") != scene {
             await old.end(nil, dismissalPolicy: .immediate)
             current = nil
@@ -207,11 +211,15 @@ final class JoeBroActivityController {
         }
     }
 
+    private static var registeredScene: String?
+
     private static func register(_ fields: [String: Any]) async {
         guard let env = apnsEnvironment(), let api = ServerConfig.api() else { return }
         var body = fields
         body["environment"] = env
         body["install_id"] = MobilePushNotifications.shared.installID
+        // The header scene, so an activity the backend starts by push gets the same backdrop.
+        body["scene"] = UserDefaults.standard.string(forKey: "backgroundAnimation") ?? "off"
         let _: JoeBroAPI.OK? = try? await api.send(JoeBroAPI.OK.self, registerRoute, json: body)
     }
 
