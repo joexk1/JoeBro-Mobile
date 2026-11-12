@@ -78,7 +78,13 @@ import SwiftUI
             [agent.displayTitle, agent.progress ?? "", agent.result ?? "", agent.kind?.label ?? "", agent.status ?? ""]
                 .contains { $0.localizedCaseInsensitiveContains(query) }
         }
-        return list.filter(\.isLive) + list.filter { !$0.isLive }
+        let ordered = list.filter(\.isLive) + list.filter { !$0.isLive }
+        // Subagents sit directly under the agent that spawned them.
+        let ids = Set(ordered.map(\.id))
+        let children = Dictionary(grouping: ordered.filter { $0.kind == .subagent && ids.contains($0.parentID ?? "") },
+                                  by: { $0.parentID ?? "" })
+        let nested = Set(children.values.flatMap { $0 }.map(\.id))
+        return ordered.filter { !nested.contains($0.id) }.flatMap { [$0] + (children[$0.id] ?? []) }
     }
 
     var liveCount: Int { uniqueAgents.filter(\.isLive).count + (mainJoeBro.busy ? 1 : 0) }
@@ -208,10 +214,12 @@ struct AgentsTabView: View {
     }
 
     private var scroller: some View {
+        ScrollViewReader { proxy in
         List {
             Group {
                 filters
                 content
+                if DemoMode.option("-JoeBroAgentsEnd") != nil { Color.clear.frame(height: 1).id("agents-end") }
             }
             .listRowInsets(EdgeInsets(top: 7, leading: 16, bottom: 7, trailing: 16))
             .listRowSeparator(.hidden)
@@ -225,6 +233,13 @@ struct AgentsTabView: View {
         .refreshable { await store.refresh() }
         .jbWallpaper()
         .searchable(text: Bindable(store).search, prompt: "Search agents")
+        .task(id: store.loading) {
+            // Demo/screenshots: `-JoeBroAgentsEnd 1` scrolls to the end of the list.
+            guard DemoMode.option("-JoeBroAgentsEnd") != nil, !store.loading else { return }
+            try? await Task.sleep(for: .milliseconds(800))
+            proxy.scrollTo("agents-end", anchor: .bottom)
+        }
+        }
     }
 
     var body: some View {
@@ -357,6 +372,11 @@ struct AgentsTabView: View {
 
     @ViewBuilder
     private func agentRow(_ agent: JBAgentRecord) -> some View {
+        agentRowButton(agent)
+            .padding(.leading, agent.kind == .subagent && agent.parentID != nil ? 26 : 0)
+    }
+
+    @ViewBuilder private func agentRowButton(_ agent: JBAgentRecord) -> some View {
         if agent.isLive && agent.cancelRequested != true {
             Button { open = agent } label: { row(agent) }
                 .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))

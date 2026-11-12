@@ -41,7 +41,7 @@ struct SharedMemoryView: View {
             }.listRowBackground(Color.joeInk.opacity(0.06))
             Section {
                 if shown.isEmpty { empty("brain", "Nothing here yet", "Agents add facts as they work. You can add your own with +.") }
-                ForEach(shown) { fact in
+                ForEach(Array(shown.prefix(DemoMode.option("-JoeBroMemMax").flatMap(Int.init) ?? .max))) { fact in
                     Button { editing = fact } label: { FactRow(fact: fact) }.buttonStyle(.plain)
                         .listRowBackground(Color.joeInk.opacity(0.06))
                         .swipeActions(edge: .leading) {

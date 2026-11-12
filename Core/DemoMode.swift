@@ -43,6 +43,24 @@ final class DemoURLProtocol: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func stopLoading() {}
 
+    /// `{{m-N}}` becomes "N minutes ago", so running agents look live whenever the demo starts.
+    private static func resolveMinutes(_ text: String) -> String {
+        guard let re = try? NSRegularExpression(pattern: #"\{\{m-(\d+)\}\}"#) else { return text }
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        let ns = text as NSString
+        var out = ""
+        var last = 0
+        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            let n = Double(ns.substring(with: m.range(at: 1))) ?? 0
+            out += fmt.string(from: Date().addingTimeInterval(-n * 60))
+            last = m.range.location + m.range.length
+        }
+        return out + ns.substring(from: last)
+    }
+
     private static func resolveDates(_ text: String) -> String {
         guard let re = try? NSRegularExpression(pattern: #"\{\{d([+-]?\d+):(\d\d):(\d\d)\}\}"#) else { return text }
         let fmt = DateFormatter()
@@ -84,7 +102,7 @@ final class DemoURLProtocol: URLProtocol {
             body.append(Data("data: [DONE]\n\n".utf8))
         } else if let key = keys.first(where: { Self.table[$0] != nil }),
                   let data = try? JSONSerialization.data(withJSONObject: Self.table[key]!, options: [.fragmentsAllowed]) {
-            body = Data(Self.resolveDates(String(decoding: data, as: UTF8.self)).utf8)
+            body = Data(Self.resolveMinutes(Self.resolveDates(String(decoding: data, as: UTF8.self))).utf8)
         } else if method == "GET" {
             status = 404
             body = Data(#"{"detail":"Not part of the demo"}"#.utf8)

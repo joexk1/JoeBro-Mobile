@@ -148,19 +148,19 @@
    },
    {
     "role": "assistant",
-    "content": "Yesterday evening you had **Claude Code: migrate auth middleware** open in the atlas project. I found the session and resumed it on your MacBook with the same worktree.\n\nIt picked up where it stopped: 6 files edited, tests running. Two subagents are on it (refresh-flow tests, diff review). I will ping you when the review card is ready.",
+    "content": "Found it. Yesterday evening you were in **atlas**, on branch `feature/auth-middleware`, running Claude Code on \"migrate auth middleware\".\n\nI resumed that session on your MacBook in the same worktree. It has 6 files edited and the refresh-flow tests still to finish. Next it will write the remaining test cases and review its own diff for regressions.\n\nI will ping you when it is ready for review.",
     "metadata": {
      "tool_events": [
       {
        "tool": "coding_sessions",
        "command": "recent sessions since yesterday",
-       "output": "3 sessions found (demo)",
+       "output": "atlas: Claude Code, migrate auth middleware (feature/auth-middleware)",
        "exit_code": 0
       },
       {
        "tool": "coding_agents",
-       "command": "resume Claude Code: migrate auth middleware",
-       "output": "resumed on MacBook (demo)",
+       "command": "resume Claude Code in atlas on feature/auth-middleware",
+       "output": "resumed on MacBook, 6 files edited",
        "exit_code": 0
       }
      ],
@@ -389,8 +389,8 @@
     "status": "running",
     "live": true,
     "model": "claude-opus-4",
-    "created_at": "{{d-1:22:00}}",
-    "started_at": "{{d-1:22:00}}",
+    "created_at": "{{m-8}}",
+    "started_at": "{{m-8}}",
     "progress": "Editing 6 files, tests running"
    },
    {
@@ -400,10 +400,10 @@
     "status": "done",
     "live": false,
     "model": "claude-haiku-4",
-    "created_at": "{{d-1:22:01}}",
-    "started_at": "{{d-1:22:01}}",
+    "created_at": "{{m-7}}",
+    "started_at": "{{m-7}}",
     "parent_id": "c1",
-    "finished_at": "{{d-1:22:06}}",
+    "finished_at": "{{m-6}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -413,8 +413,8 @@
     "status": "running",
     "live": true,
     "model": "claude-sonnet-4",
-    "created_at": "{{d-1:22:02}}",
-    "started_at": "{{d-1:22:02}}",
+    "created_at": "{{m-7}}",
+    "started_at": "{{m-7}}",
     "parent_id": "c1",
     "progress": "3 of 5 cases written"
    },
@@ -425,8 +425,8 @@
     "status": "queued",
     "live": true,
     "model": "claude-opus-4",
-    "created_at": "{{d-1:22:03}}",
-    "started_at": "{{d-1:22:03}}",
+    "created_at": "{{m-6}}",
+    "started_at": "{{m-6}}",
     "parent_id": "c1"
    },
    {
@@ -436,8 +436,8 @@
     "status": "running",
     "live": true,
     "model": "gpt-5-codex",
-    "created_at": "{{d-1:22:04}}",
-    "started_at": "{{d-1:22:04}}",
+    "created_at": "{{m-4}}",
+    "started_at": "{{m-4}}",
     "progress": "Bisecting the failure"
    },
    {
@@ -447,10 +447,10 @@
     "status": "done",
     "live": false,
     "model": "gpt-5-codex",
-    "created_at": "{{d-1:22:05}}",
-    "started_at": "{{d-1:22:05}}",
+    "created_at": "{{m-4}}",
+    "started_at": "{{m-4}}",
     "parent_id": "x1",
-    "finished_at": "{{d-1:22:10}}",
+    "finished_at": "{{m-3}}",
     "result": "Sample result (demo data)."
    },
    {
@@ -460,8 +460,8 @@
     "status": "running",
     "live": true,
     "model": "qwen3-coder-30b (local)",
-    "created_at": "{{d-1:22:06}}",
-    "started_at": "{{d-1:22:06}}",
+    "created_at": "{{m-5}}",
+    "started_at": "{{m-5}}",
     "progress": "Splitting SettingsView"
    },
    {
@@ -471,8 +471,8 @@
     "status": "running",
     "live": true,
     "model": "qwen3-coder-30b (local)",
-    "created_at": "{{d-1:22:07}}",
-    "started_at": "{{d-1:22:07}}",
+    "created_at": "{{m-5}}",
+    "started_at": "{{m-5}}",
     "parent_id": "o1",
     "progress": "4 of 7 sections"
    },
@@ -550,6 +550,39 @@
     "finished_at": "{{d-1:22:14}}",
     "result": "Sample result (demo data).",
     "session_id": "demo-o2"
+   },
+   {
+    "id": "ch1",
+    "kind": "chat",
+    "title": "Plan the Lisbon trip",
+    "status": "running",
+    "live": true,
+    "model": "claude-sonnet-4",
+    "created_at": "{{m-3}}",
+    "started_at": "{{m-3}}",
+    "progress": "Comparing flights and hotels"
+   },
+   {
+    "id": "r2",
+    "kind": "research",
+    "title": "Research: offline-first sync patterns",
+    "status": "running",
+    "live": true,
+    "model": "claude-opus-4",
+    "created_at": "{{m-2}}",
+    "started_at": "{{m-2}}",
+    "progress": "Reading 6 of 12 sources"
+   },
+   {
+    "id": "t2",
+    "kind": "task",
+    "title": "Daily repo digest",
+    "status": "running",
+    "live": true,
+    "model": "claude-haiku-4",
+    "created_at": "{{m-1}}",
+    "started_at": "{{m-1}}",
+    "progress": "Summarising 14 commits"
    }
   ]
  },

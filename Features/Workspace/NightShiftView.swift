@@ -24,6 +24,7 @@ struct NightShiftView: View {
     private var done: [NSTask] { tasks.filter { !$0.isOpen && !$0.needsReview } }
 
     var body: some View {
+        ScrollViewReader { proxy in
         List {
             Section {
                 Toggle("Run overnight", isOn: Binding(get: { enabled }, set: { v in
@@ -82,6 +83,12 @@ struct NightShiftView: View {
         .listStyle(.insetGrouped).scrollContentBackground(.hidden).jbWallpaper()
         .navigationTitle("Night Shift").navigationBarTitleDisplayMode(.inline)
         .refreshable { await load() }.task { await load() }
+        .task(id: tasks.count) {
+            // Demo/screenshots: `-JoeBroNightScroll N` ends the view on the Nth review card.
+            guard let n = DemoMode.option("-JoeBroNightScroll").flatMap(Int.init), reviews.indices.contains(n - 1) else { return }
+            try? await Task.sleep(for: .milliseconds(800))
+            proxy.scrollTo(reviews[n - 1].id, anchor: .bottom)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) { EditButton() }
             ToolbarItem(placement: .topBarTrailing) {
@@ -100,6 +107,7 @@ struct NightShiftView: View {
             Button("Keep reviewing", role: .cancel) { rejecting = nil }
         } message: { Text("The worktree and branch are removed. The commit stays in git until it is garbage collected.") }
         .alert("Night Shift", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
+        }
     }
 
     private func queueRow(_ task: NSTask) -> some View {
