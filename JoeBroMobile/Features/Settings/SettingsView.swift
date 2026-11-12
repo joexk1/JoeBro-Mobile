@@ -30,6 +30,9 @@ struct MobileSettingsView: View {
                 modelSection
                 subagentSection
                 joeBroSection
+                #if PERSONAL
+                AppleRemindersSettingsSection()
+                #endif
                 ProactiveModeSection(api: client())
                 HealthSettingsSection(api: client())
                 appearanceSection
@@ -48,8 +51,8 @@ struct MobileSettingsView: View {
 
     private var connectionSection: some View {
         Section {
-            LabeledContent("Name", value: ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name)
-            LabeledContent("URL", value: ServerConfig.urlString)
+            LabeledContent("Name", value: DemoMode.active ? "Demo" : ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name)
+            LabeledContent("URL", value: DemoMode.active ? "Built-in sample data" : ServerConfig.urlString)
             LabeledContent("Status", value: connectionStatus)
             Button { Task { await testConnection() } } label: {
                 Label("Test connection", systemImage: "antenna.radiowaves.left.and.right")
@@ -58,7 +61,7 @@ struct MobileSettingsView: View {
                 Label("Pair again", systemImage: "qrcode.viewfinder")
             }
             Button(role: .destructive) { confirmForget = true } label: {
-                Label("Forget this backend", systemImage: "trash")
+                Label(DemoMode.active ? "Leave the demo" : "Forget this backend", systemImage: "trash")
             }
         } header: {
             Text("Your backend")

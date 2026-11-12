@@ -27,7 +27,12 @@ struct RootView: View {
     @AppStorage("backgroundAnimation") private var backgroundAnimation = "off"
     @AppStorage("faceIDGate") private var faceIDGate = false
     @State private var runtime = MobileRuntime()
+    #if DEBUG
+    /// `-JoeBroTab chats|agents|workspace` picks the launch tab (screenshots, UI tests).
+    @State private var selectedTab: MainTab = ["chats": .chats, "agents": .agents, "workspace": .workspace][DemoMode.option("-JoeBroTab") ?? ""] ?? .joeBro
+    #else
     @State private var selectedTab: MainTab = .joeBro
+    #endif
     @State private var showSettings = false
     @State private var showPushInbox = false
     @State private var push = MobilePushNotifications.shared
@@ -87,10 +92,18 @@ struct RootView: View {
         }
         .sheet(isPresented: $showPushInbox) {
             NavigationStack {
-                MobileNotificationInbox(api: runtime.api)
+                MobileNotificationInbox(api: runtime.api, focusID: push.pendingInboxID)
                     .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showPushInbox = false } } }
             }
             .environment(theme)
+            .onDisappear { push.pendingInboxID = nil }
+        }
+        .onChange(of: push.openMainAgent) { _, open in
+            if open { presentPendingMainAgentMessage() }
+        }
+        .onChange(of: mainAgentVisibleKey, initial: true) { _, _ in
+            push.mainAgentVisible = selectedTab == .joeBro && scenePhase == .active
+                && !showSettings && !showPushInbox && (!faceIDGate || unlocked)
         }
         .onChange(of: push.openInbox) { _, open in
             if open { presentPendingPushInbox() }
@@ -103,7 +116,7 @@ struct RootView: View {
         }
         .task { await push.syncRegistration() }
         .onChange(of: unlocked) { _, value in
-            if value { presentPendingPushInbox() }
+            if value { presentPendingPushInbox(); presentPendingMainAgentMessage() }
         }
         .onChange(of: faceIDGate) { _, on in
             if !on { unlocked = true } else { unlocked = false; Task { await authenticate() } }
@@ -111,6 +124,7 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 presentPendingPushInbox()
+                presentPendingMainAgentMessage()
                 if ShareInbox.hasPending { selectedTab = .chats; Task { await importSharedCapture() } }
                 Task { await runtime.chat.reconcileAfterResume() }
                 Task { await runtime.joeBro.reconcileAfterResume() }
@@ -121,12 +135,22 @@ struct RootView: View {
         }
         .task {
             presentPendingPushInbox()
+            presentPendingMainAgentMessage()
             await JoeBroActivityController().endLegacyBriefings()
             if faceIDGate { await authenticate() } else { unlocked = true }
             if ShareInbox.hasPending { selectedTab = .chats; await importSharedCapture() }
         }
         .onChange(of: backgroundAnimation) { _, _ in
             Task { await JoeBroActivityController().refreshScene() }
+        }
+        .task(id: "main|" + activityPollKey) {
+            // The phone agent also writes into its chat on its own (tasks, proactive
+            // notes, lock-screen replies). Pick those up while its tab is open.
+            guard scenePhase == .active else { return }
+            while !Task.isCancelled {
+                if selectedTab == .joeBro { await runtime.joeBro.refreshMainIfChanged() }
+                do { try await Task.sleep(for: .seconds(5)) } catch { break }
+            }
         }
         .task(id: activityPollKey) {
             guard scenePhase == .active else { return }
@@ -145,6 +169,19 @@ struct RootView: View {
                 try? await Task.sleep(for: .seconds(5))
             }
         }
+    }
+
+    private var mainAgentVisibleKey: String {
+        "\(selectedTab)|\(scenePhase)|\(showSettings)|\(showPushInbox)|\(unlocked)|\(faceIDGate)"
+    }
+
+    private func presentPendingMainAgentMessage() {
+        guard push.openMainAgent, !faceIDGate || unlocked else { return }
+        showSettings = false
+        showPushInbox = false
+        selectedTab = .joeBro
+        push.openMainAgent = false
+        Task { await runtime.joeBro.refreshMainIfChanged() }
     }
 
     private func importSharedCapture() async {
@@ -174,6 +211,7 @@ struct RootView: View {
         selectedTab = .workspace
         showPushInbox = true
         push.openInbox = false
+        // pendingInboxID stays set so the inbox can open that row; the sheet clears it on dismiss.
     }
 
     private func authenticate() async {

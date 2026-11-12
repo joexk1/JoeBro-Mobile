@@ -97,7 +97,7 @@ struct ChatLine: Identifiable, Codable {
         self.api = api
         self.isMainJoeBro = isMainJoeBro
         selectedModelID = isMainJoeBro ? nil : UserDefaults.standard.string(forKey: "selectedModelID")
-        if let data = try? Data(contentsOf: isMainJoeBro ? Self.mainCacheURL : Self.cacheURL),
+        if !DemoMode.active, let data = try? Data(contentsOf: isMainJoeBro ? Self.mainCacheURL : Self.cacheURL),
            let snapshot = try? JSONDecoder().decode(ChatSnapshot.self, from: data) {
             sessions = snapshot.sessions
             selectedSessionID = snapshot.selectedID
@@ -131,7 +131,7 @@ struct ChatLine: Identifiable, Codable {
     private func saveSnapshot() {
         let snapshot = ChatSnapshot(sessions: sessions, selectedID: selectedSessionID, lines: lines,
                                     documentsBySession: documentsBySession, savedAt: .now)
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        guard !DemoMode.active, let data = try? JSONEncoder().encode(snapshot) else { return }
         let url = isMainJoeBro ? Self.mainCacheURL : Self.cacheURL
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? data.write(to: url, options: [.atomic, .completeFileProtectionUnlessOpen])

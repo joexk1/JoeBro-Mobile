@@ -1,0 +1,14 @@
+// The owner's personal build: same sources as production plus the PERSONAL
+// compilation condition (set per configuration in project.yml) and Personal/.
+// It installs next to the production app under its own bundle id.
+#include "Base.xcconfig"
+
+JOEBRO_BUNDLE_ID = app.joebro.personal.mobile
+JOEBRO_DISPLAY_NAME = JoeBro
+
+// Backend the personal build pairs with on first launch. Set both in
+// Config/Secrets.xcconfig (gitignored); see Secrets.xcconfig.example.
+JOEBRO_DEFAULT_SERVER =
+JOEBRO_BACKEND_TOKEN =
+
+#include? "Secrets.xcconfig"

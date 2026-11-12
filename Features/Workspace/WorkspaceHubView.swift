@@ -6,6 +6,19 @@ struct WorkspaceHubView: View {
     let api: JoeBroAPI
     @State private var ws: WorkspaceAPI
     @State private var hasEntered = false
+    #if DEBUG
+    /// `-JoeBroScreen tasks|memory|brain|inbox|shopping` opens that screen at launch (screenshots).
+    @State private var debugOpen = false
+    @ViewBuilder private var debugScreen: some View {
+        switch DemoMode.option("-JoeBroScreen") ?? "" {
+        case "tasks": TasksView(ws: ws)
+        case "memory": MuseView(ws: ws)
+        case "brain": BrainView(api: api, ws: ws)
+        case "shopping": ShoppingView(api: api)
+        default: MobileNotificationInbox(api: api)
+        }
+    }
+    #endif
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onOpenSettings: () -> Void = {}
 
@@ -42,6 +55,10 @@ struct WorkspaceHubView: View {
             .navigationTitle("Workspace")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { hasEntered = true }
+            #if DEBUG
+            .navigationDestination(isPresented: $debugOpen) { debugScreen }
+            .task { if DemoMode.option("-JoeBroScreen") != nil { debugOpen = true } }
+            #endif
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { onOpenSettings() } label: {

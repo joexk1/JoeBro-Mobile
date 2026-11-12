@@ -15,8 +15,14 @@ struct OnboardingView: View {
     var allowCancel = false
     var onPaired: () -> Void
     var onCancel: () -> Void = {}
+    /// Only the first-run screen offers the demo.
+    var onDemo: (() -> Void)?
 
+    #if DEBUG
+    @State private var page = Int(DemoMode.option("-JoeBroPage") ?? "") ?? 0
+    #else
     @State private var page = 0
+    #endif
     @State private var scanning = false
     @State private var showManual = false
     @State private var link = ""
@@ -68,6 +74,7 @@ struct OnboardingView: View {
             Text(title).font(.title.bold()).multilineTextAlignment(.center)
             Text(text).font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Button("Next") { withAnimation { page += 1 } }.buttonStyle(.borderedProminent).controlSize(.large)
+            demoButton
             Spacer(); Spacer()
         }
         .padding(.horizontal, 32)
@@ -105,10 +112,17 @@ struct OnboardingView: View {
                     }
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
+                demoButton
                 if busy { ProgressView() }
                 if let message { Text(message).font(.footnote).foregroundStyle(.red).multilineTextAlignment(.center) }
             }
             .padding(.horizontal, 32).padding(.bottom, 60)
+        }
+    }
+
+    @ViewBuilder private var demoButton: some View {
+        if let onDemo {
+            Button("Try the demo", action: onDemo).font(.footnote).disabled(busy)
         }
     }
 

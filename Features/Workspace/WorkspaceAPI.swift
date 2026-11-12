@@ -174,6 +174,7 @@ final class WorkspaceAPI: @unchecked Sendable {
         config.timeoutIntervalForResource = 180
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.urlCache = nil
+        DemoMode.install(config)
         session = URLSession(configuration: config)
     }
 

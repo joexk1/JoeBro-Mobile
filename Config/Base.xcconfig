@@ -10,6 +10,9 @@
 BUNDLE_ID_PREFIX = com.example.joebro
 JOEBRO_BUNDLE_ID = $(BUNDLE_ID_PREFIX)
 
+// Name under the home-screen icon.
+JOEBRO_DISPLAY_NAME = JoeBro
+
 // Your Apple Developer team. Empty builds only unsigned or for the simulator.
 DEVELOPMENT_TEAM =
 

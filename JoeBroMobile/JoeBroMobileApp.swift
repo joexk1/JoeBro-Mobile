@@ -11,20 +11,29 @@ struct JoeBroMobileApp: App {
     @State private var showIntro = true
     @State private var rootMounted = false
 
-    @State private var paired = ServerConfig.isPaired
+    @State private var paired: Bool
+    @State private var demo = DemoMode.active
     @State private var revision = 0
     @State private var inbox = PairingInbox.shared
     @State private var confirm: PairingPayload?
+
+    init() {
+        #if PERSONAL
+        PersonalSetup.seedPairingIfNeeded()
+        #endif
+        _paired = State(initialValue: ServerConfig.isPaired || DemoMode.active)
+    }
 
     var body: some Scene {
         WindowGroup {
             ZStack {
                 WallpaperBackground(theme: theme)
                 if !paired {
-                    OnboardingView(theme: theme) { revision += 1; paired = true }
+                    OnboardingView(theme: theme, onPaired: { setDemo(false); revision += 1; paired = true },
+                                   onDemo: { setDemo(true); revision += 1; paired = true })
                 } else if rootMounted {
-                    RootView(theme: theme, onRepaired: { revision += 1 },
-                             onForgotten: { revision += 1; paired = false })
+                    RootView(theme: theme, onRepaired: { setDemo(false); revision += 1 },
+                             onForgotten: { setDemo(false); revision += 1; paired = false })
                         .id(revision)
                 }
                 if showIntro {
@@ -49,6 +58,13 @@ struct JoeBroMobileApp: App {
                     .zIndex(1)
                 }
             }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                if demo && !DemoMode.hidesBanner {
+                    Text("Demo mode: sample data, not connected to a Mac")
+                        .font(.caption2.weight(.semibold)).foregroundStyle(.black)
+                        .frame(maxWidth: .infinity).padding(.vertical, 3).background(Color.yellow)
+                }
+            }
             .environment(theme)
             .onOpenURL { url in
                 if url.scheme == "joebro", url.host == "notifications" {
@@ -59,7 +75,7 @@ struct JoeBroMobileApp: App {
             }
             .alert("Pair with a different backend?", isPresented: Binding(get: { confirm != nil }, set: { if !$0 { confirm = nil } })) {
                 Button("Pair") {
-                    if let c = confirm { paired = false; inbox.incoming = c }
+                    if let c = confirm { setDemo(false); paired = false; inbox.incoming = c }
                     confirm = nil
                 }
                 Button("Cancel", role: .cancel) { confirm = nil }
@@ -67,12 +83,28 @@ struct JoeBroMobileApp: App {
                 Text("This replaces the backend this phone is currently paired with.")
             }
             .preferredColorScheme(theme.preset == .monochrome ? nil : .dark)
-            .task { if ServerConfig.isPaired { await MobilePushNotifications.shared.refresh(); LocationReporter.shared.start() } }
+            .task {
+                guard ServerConfig.isPaired, !DemoMode.active else { return }
+                await MobilePushNotifications.shared.refresh()
+                LocationReporter.shared.start()
+                #if PERSONAL
+                await AppleRemindersSync.shared.start()
+                #endif
+            }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { Task { await MobilePushNotifications.shared.refresh() }; LocationReporter.shared.start() }
+                // Nothing here may run before pairing: it would prompt for
+                // permissions and call a backend that is not there yet.
+                guard phase == .active, ServerConfig.isPaired, !DemoMode.active else { return }
+                Task { await MobilePushNotifications.shared.refresh() }
+                LocationReporter.shared.start()
+                #if PERSONAL
+                Task { await AppleRemindersSync.shared.start(); await AppleRemindersSync.shared.sync(force: true) }
+                #endif
             }
         }
     }
+
+    private func setDemo(_ on: Bool) { DemoMode.active = on; demo = on }
 }
 
 
@@ -84,6 +116,19 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         return true
     }
 
+    #if PERSONAL
+    /// Silent push from the backend: the agent changed a reminder, mirror it into Apple Reminders.
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        let info = userInfo["joebro"] as? [String: Any]
+        guard info?["kind"] as? String == "reminders_sync" else { completionHandler(.noData); return }
+        Task { @MainActor in
+            let updated = await AppleRemindersSync.shared.sync(force: true)
+            completionHandler(updated ? .newData : .failed)
+        }
+    }
+    #endif
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         MobilePushNotifications.shared.deviceToken = deviceToken.map { String(format: "%02x", $0) }.joined()
         Task { await MobilePushNotifications.shared.syncRegistration() }
@@ -94,7 +139,18 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        Task { @MainActor in completionHandler([.banner, .sound, .list]) }
+        let fromMainAgent = Self.isMainAgentMessage(notification.request.content.userInfo["joebro"] as? [String: Any])
+        Task { @MainActor in
+            // The message is already on screen when the phone agent's own tab is open.
+            let visible = fromMainAgent && MobilePushNotifications.shared.mainAgentVisible
+            completionHandler(visible ? [] : [.banner, .sound, .list])
+        }
+    }
+
+    /// A message the phone agent wrote into its own chat (not a coding-agent event routed through it).
+    nonisolated private static func isMainAgentMessage(_ info: [String: Any]?) -> Bool {
+        let kind = info?["kind"] as? String ?? ""
+        return info?["session"] as? String == Flavor.mainSessionID && kind != "coding" && !kind.hasPrefix("coding_")
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
@@ -102,11 +158,23 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         let action = response.actionIdentifier
         let info = response.notification.request.content.userInfo["joebro"] as? [String: Any]
         let agent = info?["agent"] as? String
+        let inboxID = info?["inbox_id"] as? String
+        let fromMainAgent = Self.isMainAgentMessage(info)
+        let messageID = (info?["message_id"] as? String).flatMap(Int.init)
+        let replyText = (response as? UNTextInputNotificationResponse)?.userText
         Task { @MainActor in
-            if let agent, action == MobilePushNotifications.approveAction || action == MobilePushNotifications.denyAction {
+            if fromMainAgent, action == MobilePushNotifications.replyAction, let replyText {
+                // Typed on the lock screen: send without opening the app.
+                let background = UIApplication.shared.beginBackgroundTask(withName: "Reply to JoeBro", expirationHandler: nil)
+                await MobilePushNotifications.shared.queueReply(replyText, messageID: messageID)
+                if background != .invalid { UIApplication.shared.endBackgroundTask(background) }
+            } else if fromMainAgent {
+                MobilePushNotifications.shared.openMainAgent = true
+            } else if let agent, action == MobilePushNotifications.approveAction || action == MobilePushNotifications.denyAction {
                 // Answered from the lock screen / banner: no app UI, just tell the backend.
                 await MobilePushNotifications.shared.decide(agent: agent, approve: action == MobilePushNotifications.approveAction)
             } else {
+                MobilePushNotifications.shared.pendingInboxID = inboxID
                 MobilePushNotifications.shared.openInbox = true
             }
             completionHandler()
@@ -121,7 +189,57 @@ final class MobilePushNotifications {
     var enabled: Bool { UserDefaults.standard.bool(forKey: "mobilePushEnabled") }
     var deviceToken: String?
     var openInbox = false
+    /// Inbox row to open once the inbox sheet is up (set by a tapped notification).
+    var pendingInboxID: String?
+    /// A tapped message from the phone agent: switch to its tab.
+    var openMainAgent = false
+    /// True while the phone agent's tab is on screen; its pushes then stay silent.
+    var mainAgentVisible = false
     private var syncing = false
+
+    // MARK: replies typed on a notification
+    private var flushingReplies = false
+    private struct PendingReply: Codable {
+        let id: String
+        let message: String
+        let messageID: Int?
+    }
+    /// Kept on disk until the backend accepts them, so a reply typed offline is not lost.
+    private var pendingReplies: [PendingReply] {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: "mainAgentPendingReplies")
+                    ?? UserDefaults.standard.data(forKey: "personalPendingReplies") else { return [] }
+            return (try? JSONDecoder().decode([PendingReply].self, from: data)) ?? []
+        }
+        set {
+            UserDefaults.standard.set(try? JSONEncoder().encode(newValue), forKey: "mainAgentPendingReplies")
+            UserDefaults.standard.removeObject(forKey: "personalPendingReplies")
+        }
+    }
+
+    func queueReply(_ text: String, messageID: Int?) async {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        pendingReplies.append(PendingReply(id: UUID().uuidString, message: text, messageID: messageID))
+        await flushReplies()
+    }
+
+    func flushReplies() async {
+        guard !flushingReplies, !pendingReplies.isEmpty, let api = client() else { return }
+        flushingReplies = true
+        defer { flushingReplies = false }
+        for reply in pendingReplies {
+            var body: [String: Any] = ["request_id": reply.id, "message": reply.message]
+            if let id = reply.messageID { body["message_id"] = id }
+            do {
+                let _: JoeBroAPI.OK = try await api.send(JoeBroAPI.OK.self, "/api/joebro/reply", json: body)
+                pendingReplies.removeAll { $0.id == reply.id }
+            } catch {
+                status = "Your reply is saved on this iPhone and will send when reconnected."
+                break
+            }
+        }
+    }
 
     private var installID: String {
         let defaults = UserDefaults.standard
@@ -165,6 +283,7 @@ final class MobilePushNotifications {
     }
 
     func refresh() async {
+        await flushReplies()
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         let authorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
         // Existing installs can already have iOS permission without our new app preference.
@@ -228,7 +347,9 @@ final class MobilePushNotifications {
 
     private struct PushServerStatus: Decodable { let configured: Bool }
 
-    // MARK: coding-agent approvals from the lock screen
+    // MARK: notification actions (reply to the phone agent; approve or deny a coding agent)
+    static let messageCategory = "PERSONAL_MESSAGE"   // the identifier the backend sends
+    static let replyAction = "PERSONAL_REPLY"
     static let approvalCategory = "CODING_APPROVAL"
     static let approveAction = "CODING_APPROVE"
     static let denyAction = "CODING_DENY"
@@ -239,8 +360,11 @@ final class MobilePushNotifications {
                                            icon: UNNotificationActionIcon(systemImageName: "checkmark.circle"))
         let deny = UNNotificationAction(identifier: denyAction, title: "Deny", options: [.destructive],
                                         icon: UNNotificationActionIcon(systemImageName: "xmark.circle"))
-        return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny], intentIdentifiers: [],
-                                       options: [])]
+        let reply = UNTextInputNotificationAction(identifier: replyAction, title: "Reply",
+                                                  options: [.authenticationRequired],
+                                                  textInputButtonTitle: "Send", textInputPlaceholder: "Reply to JoeBro")
+        return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny], intentIdentifiers: [], options: []),
+                UNNotificationCategory(identifier: messageCategory, actions: [reply], intentIdentifiers: [], options: [])]
     }
 
     func decide(agent: String, approve: Bool) async {
@@ -254,6 +378,8 @@ final class MobilePushNotifications {
 
 struct MobileNotificationInbox: View {
     let api: JoeBroAPI
+    /// Row to open as soon as it loads (the notification that was tapped).
+    var focusID: String? = nil
     @State private var items: [Item] = []
     @State private var note: String?
     @State private var selected: Set<String> = []
@@ -261,6 +387,9 @@ struct MobileNotificationInbox: View {
     @State private var deleteAll = false
     @State private var deleting = false
     @State private var opened: Item?
+    @State private var reloading = false
+    @State private var focusedID: String?
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(JoeBroTheme.self) private var theme
 
     var body: some View {
@@ -278,7 +407,7 @@ struct MobileNotificationInbox: View {
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
-                .onTapGesture { if !selecting { opened = item } }
+                .onTapGesture { if !selecting { opened = item; markRead(item.id) } }
                 .tag(item.id)
                 .swipeActions {
                     Button(role: .destructive) { Task { await delete(item.id) } } label: {
@@ -324,7 +453,18 @@ struct MobileNotificationInbox: View {
             NSLog("JoeBro notification inbox rendered")
             #endif
         }
-        .task { await reload() }
+        .task(id: focusID) {
+            focusedID = nil
+            await reload()
+            // New notices arrive while the list is open; keep it current.
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(5)) } catch { break }
+                if scenePhase == .active && !deleting && !selecting && opened == nil { await reload() }
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await reload() } }
+        }
         .refreshable { await reload() }
         .sheet(item: $opened) { item in
             NavigationStack {
@@ -342,14 +482,29 @@ struct MobileNotificationInbox: View {
                 .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { opened = nil } } }
             }
             .environment(theme)
-            // Opening a notification consumes it.
-            .task { await delete(item.id) }
+            // Viewing marks it read; the row stays until it is deleted.
+            .task { markRead(item.id) }
         }
     }
 
+    private func markRead(_ id: String) {
+        guard let index = items.firstIndex(where: { $0.id == id }), items[index].read == 0 else { return }
+        items[index].read = 1
+        Task { _ = try? await api.send(JoeBroAPI.OK.self, "/api/inbox/read", json: ["id": id]) }
+    }
+
     private func reload() async {
-        do { items = try await api.fetch(Envelope.self, "/api/inbox").inbox; note = nil }
-        catch { note = "Could not load notifications. Check your backend connection." }
+        guard !reloading, !deleting else { return }
+        reloading = true
+        defer { reloading = false }
+        do {
+            items = try await api.fetch(Envelope.self, "/api/inbox").inbox
+            note = nil
+            if let focusID, focusedID != focusID, let hit = items.first(where: { $0.id == focusID }) {
+                focusedID = focusID
+                opened = hit
+            }
+        } catch { note = "Could not load notifications. Check your backend connection." }
     }
     private func delete(_ id: String) async {
         do {
@@ -380,6 +535,6 @@ struct MobileNotificationInbox: View {
         let title: String
         let body: String
         let created_at: String
-        let read: Int
+        var read: Int
     }
 }

@@ -1,0 +1,449 @@
+{
+ "GET /api/ping": {
+  "ok": true
+ },
+ "GET /api/models": {
+  "items": [
+   {
+    "url": "https://demo.joebro.invalid",
+    "models": [
+     "demo-model"
+    ],
+    "models_display": [
+     "Demo model"
+    ],
+    "endpoint_id": "demo",
+    "endpoint_name": "Demo",
+    "category": "cloud",
+    "offline": false
+   }
+  ]
+ },
+ "GET /api/prefs": {
+  "prefs": {
+   "default_model": "demo-model",
+   "default_endpoint_id": "demo"
+  }
+ },
+ "GET /api/sessions": [
+  {
+   "id": "demo-chat-1",
+   "name": "Demo: plan my week",
+   "model": "demo-model",
+   "mode": "agent",
+   "archived": false,
+   "folder": null,
+   "is_important": true,
+   "endpoint_id": "demo",
+   "created_at": "2026-10-14T09:00:00"
+  },
+  {
+   "id": "demo-chat-2",
+   "name": "Demo: summarise a reading",
+   "model": "demo-model",
+   "mode": "chat",
+   "archived": false,
+   "folder": null,
+   "is_important": false,
+   "endpoint_id": "demo",
+   "created_at": "2026-10-14T09:00:00"
+  },
+  {
+   "id": "demo-chat-3",
+   "name": "Demo: trip packing list",
+   "model": "demo-model",
+   "mode": "chat",
+   "archived": false,
+   "folder": "Personal",
+   "is_important": false,
+   "endpoint_id": "demo",
+   "created_at": "2026-10-14T09:00:00"
+  }
+ ],
+ "POST /api/joebro/session": {
+  "session": {
+   "id": "demo-joebro",
+   "name": "JoeBro",
+   "model": "demo-model",
+   "mode": "agent",
+   "archived": false,
+   "endpoint_id": "demo"
+  },
+  "model": "demo-model",
+  "endpoint_id": "demo",
+  "permission_mode": "readonly",
+  "soul": "Demo assistant. Sample data only."
+ },
+ "GET /api/joebro": {
+  "session": {
+   "id": "demo-joebro",
+   "name": "JoeBro",
+   "model": "demo-model",
+   "mode": "agent",
+   "archived": false,
+   "endpoint_id": "demo"
+  },
+  "model": "demo-model",
+  "endpoint_id": "demo",
+  "permission_mode": "readonly",
+  "soul": "Demo assistant. Sample data only."
+ },
+ "GET /api/history/demo-joebro": {
+  "history": [
+   {
+    "role": "assistant",
+    "content": "Welcome to the demo. These conversations, tasks, memory files and notifications are sample data and nothing is connected. Pair your own Mac to use the real thing.",
+    "metadata": {
+     "_db_id": 1
+    }
+   }
+  ],
+  "model": "demo-model",
+  "name": "Demo"
+ },
+ "GET /api/history/demo-chat-1": {
+  "history": [
+   {
+    "role": "user",
+    "content": "Demo conversation. Plan my week: two lectures, a gym session and the report due Friday.",
+    "metadata": {
+     "_db_id": 1
+    }
+   },
+   {
+    "role": "assistant",
+    "content": "Here is a sample plan. This is demo data, not a real reply.\n\n**Monday**: lecture 10:00, start the report outline\n**Wednesday**: lecture 14:00, gym at 18:00\n**Thursday**: write the report body\n**Friday**: proofread, then submit before 17:00\n\nI also checked your tasks and saved a reminder for Thursday morning.",
+    "metadata": {
+     "tool_events": [
+      {
+       "tool": "calendar",
+       "command": "list events this week",
+       "output": "3 events found (demo)",
+       "exit_code": 0
+      },
+      {
+       "tool": "tasks",
+       "command": "add reminder: write report body",
+       "output": "saved (demo)",
+       "exit_code": 0
+      }
+     ],
+     "_db_id": 2
+    }
+   },
+   {
+    "role": "user",
+    "content": "Thanks. Keep Friday afternoon free.",
+    "metadata": {
+     "_db_id": 3
+    }
+   },
+   {
+    "role": "assistant",
+    "content": "Done in this demo: Friday afternoon stays empty. In the real app this goes to the JoeBro running on your own Mac.",
+    "metadata": {
+     "_db_id": 4
+    }
+   }
+  ],
+  "model": "demo-model",
+  "name": "Demo"
+ },
+ "GET /api/history/demo-chat-2": {
+  "history": [
+   {
+    "role": "user",
+    "content": "Demo: summarise chapter 3 in three bullets.",
+    "metadata": {
+     "_db_id": 1
+    }
+   },
+   {
+    "role": "assistant",
+    "content": "Sample summary (demo data):\n\n- Costs shape behaviour more than intentions do.\n- Rules matter when enforcement is cheap.\n- Exceptions need a stated reason.",
+    "metadata": {
+     "_db_id": 2
+    }
+   }
+  ],
+  "model": "demo-model",
+  "name": "Demo"
+ },
+ "GET /api/history/demo-chat-3": {
+  "history": [
+   {
+    "role": "user",
+    "content": "Demo: what do I pack for four days in Lisbon?",
+    "metadata": {
+     "_db_id": 1
+    }
+   },
+   {
+    "role": "assistant",
+    "content": "Sample list (demo data): light jacket, walking shoes, charger, passport, a small umbrella.",
+    "metadata": {
+     "_db_id": 2
+    }
+   }
+  ],
+  "model": "demo-model",
+  "name": "Demo"
+ },
+ "GET /api/tasks": {
+  "tasks": [
+   {
+    "id": "t1",
+    "name": "Demo: morning briefing",
+    "prompt": "Summarise my calendar and unread mail.",
+    "schedule": "daily",
+    "scheduled_time": "07:30",
+    "status": "active",
+    "permission_mode": "readonly",
+    "repeat_day": 0,
+    "scope": "general"
+   },
+   {
+    "id": "t2",
+    "name": "Demo: weekly review",
+    "prompt": "List what I finished this week and what slipped.",
+    "schedule": "weekly",
+    "scheduled_time": "17:00",
+    "status": "active",
+    "permission_mode": "readonly",
+    "repeat_day": 5,
+    "scope": "general"
+   },
+   {
+    "id": "t3",
+    "name": "Demo: tidy downloads folder",
+    "prompt": "Suggest files to archive.",
+    "schedule": "weekly",
+    "scheduled_time": "09:00",
+    "status": "paused",
+    "permission_mode": "readonly",
+    "repeat_day": 1,
+    "scope": "general"
+   }
+  ]
+ },
+ "GET /api/memory": {
+  "memory": [
+   {
+    "id": "m1",
+    "text": "Demo memory: prefers short answers with a clear next step.",
+    "category": "preferences",
+    "pinned": true
+   },
+   {
+    "id": "m2",
+    "text": "Demo memory: studies Law and Economics; exam in the autumn.",
+    "category": "about",
+    "pinned": false
+   },
+   {
+    "id": "m3",
+    "text": "Demo memory: weekly review happens on Friday at 17:00.",
+    "category": "routines",
+    "pinned": false
+   }
+  ]
+ },
+ "GET /api/muse": {
+  "files": [
+   {
+    "name": "about-me",
+    "lines": 6,
+    "always": true
+   },
+   {
+    "name": "preferences",
+    "lines": 4,
+    "always": false
+   },
+   {
+    "name": "projects",
+    "lines": 5,
+    "always": false
+   },
+   {
+    "name": "routines",
+    "lines": 3,
+    "always": false
+   }
+  ]
+ },
+ "GET /api/muse/about-me": {
+  "content": "# About me (demo)\n\nThis is sample text. In the real app this file lives on your own Mac.\n\n- Student, based in Amsterdam\n- Likes short, direct answers\n- Weekly review on Fridays"
+ },
+ "GET /api/muse/preferences": {
+  "content": "# Preferences (demo)\n\n- Answer first, detail after\n- No emojis\n- Metric units"
+ },
+ "GET /api/muse/projects": {
+  "content": "# Projects (demo)\n\n- Report on tax incidence, due Friday\n- Trip planning for Lisbon"
+ },
+ "GET /api/muse/routines": {
+  "content": "# Routines (demo)\n\n- 07:30 morning briefing\n- Friday 17:00 weekly review"
+ },
+ "GET /api/inbox": {
+  "inbox": [
+   {
+    "id": "n1",
+    "title": "Demo: Morning briefing",
+    "body": "Sample notification. Two events today, one task due. Nothing here is real.",
+    "created_at": "Today 07:30",
+    "read": 0
+   },
+   {
+    "id": "n2",
+    "title": "Demo: Research finished",
+    "body": "Sample notification. Your research report on 'tax incidence' is ready to read.",
+    "created_at": "Yesterday 16:12",
+    "read": 0
+   },
+   {
+    "id": "n3",
+    "title": "Demo: Task completed",
+    "body": "Sample notification. Weekly review ran and saved a summary.",
+    "created_at": "Fri 17:00",
+    "read": 1
+   }
+  ]
+ },
+ "GET /api/agents": {
+  "ok": true,
+  "agents": [
+   {
+    "id": "a1",
+    "kind": "task",
+    "title": "Demo: weekly review",
+    "status": "done",
+    "live": false,
+    "model": "demo-model",
+    "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
+    "created_at": "2026-10-14T09:00:00",
+    "finished_at": "2026-10-14T09:00:00"
+   },
+   {
+    "id": "a2",
+    "kind": "research",
+    "title": "Demo: tax incidence",
+    "status": "done",
+    "live": false,
+    "model": "demo-model",
+    "result": "Sample report (demo data).",
+    "created_at": "2026-10-14T09:00:00",
+    "finished_at": "2026-10-14T09:00:00"
+   }
+  ]
+ },
+ "GET /api/agents/a1": {
+  "ok": true,
+  "agent": {
+   "id": "a1",
+   "kind": "task",
+   "title": "Demo: weekly review",
+   "status": "done",
+   "live": false,
+   "model": "demo-model",
+   "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
+   "created_at": "2026-10-14T09:00:00",
+   "finished_at": "2026-10-14T09:00:00"
+  }
+ },
+ "GET /api/agents/a2": {
+  "ok": true,
+  "agent": {
+   "id": "a2",
+   "kind": "research",
+   "title": "Demo: tax incidence",
+   "status": "done",
+   "live": false,
+   "model": "demo-model",
+   "result": "Sample report (demo data).",
+   "created_at": "2026-10-14T09:00:00",
+   "finished_at": "2026-10-14T09:00:00"
+  }
+ },
+ "GET /api/skills": {
+  "skills": [
+   {
+    "id": "s1",
+    "name": "Demo: weekly review",
+    "description": "Sample learned procedure.",
+    "content": "1. List finished tasks\n2. List slipped tasks\n3. Suggest next week's three priorities",
+    "when_to_use": "When asked for a review",
+    "status": "active",
+    "confidence": 80
+   }
+  ]
+ },
+ "GET /api/tools": {
+  "tools": []
+ },
+ "GET /api/plugins": {
+  "plugins": []
+ },
+ "GET /api/mcp": {
+  "servers": []
+ },
+ "GET /api/research/library": {
+  "research": []
+ },
+ "GET /api/research/active": {
+  "active": []
+ },
+ "GET /api/email/status": {
+  "configured": false,
+  "type": "",
+  "display": "",
+  "sources": []
+ },
+ "GET /api/calendar/status": {
+  "configured": false,
+  "type": "",
+  "display": "",
+  "macos_authorized": false
+ },
+ "GET /api/calendar/events": {
+  "events": []
+ },
+ "GET /api/pulse": {
+  "pulse": {
+   "enabled": false,
+   "interval_minutes": 60,
+   "checklist": "",
+   "quiet_hours": "22:00-07:00",
+   "model": "",
+   "endpoint_id": "",
+   "last_run": "",
+   "last_spoke": ""
+  }
+ },
+ "GET /api/plan": {
+  "steps": []
+ },
+ "GET /api/push/status": {
+  "configured": false
+ },
+ "chat_reply": "This is a canned demo reply. Nothing was sent anywhere. Pair your own Mac to talk to the real JoeBro.",
+ "GET /api/session/demo-chat-1/tip": {
+  "last_id": 4,
+  "mode": "chat",
+  "model": "demo-model"
+ },
+ "GET /api/session/demo-chat-2/tip": {
+  "last_id": 4,
+  "mode": "chat",
+  "model": "demo-model"
+ },
+ "GET /api/session/demo-chat-3/tip": {
+  "last_id": 4,
+  "mode": "chat",
+  "model": "demo-model"
+ },
+ "GET /api/session/demo-joebro/tip": {
+  "last_id": 4,
+  "mode": "chat",
+  "model": "demo-model"
+ }
+}

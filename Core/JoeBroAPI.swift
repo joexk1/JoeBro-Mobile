@@ -33,6 +33,7 @@ public final class JoeBroAPI: @unchecked Sendable {
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 120
         config.httpMaximumConnectionsPerHost = 12
+        DemoMode.install(config)
         self.session = URLSession(configuration: config)
         let streaming = URLSessionConfiguration.default
         streaming.requestCachePolicy = .reloadIgnoringLocalCacheData
@@ -40,6 +41,7 @@ public final class JoeBroAPI: @unchecked Sendable {
         streaming.timeoutIntervalForRequest = 120
         streaming.timeoutIntervalForResource = 3600
         streaming.httpMaximumConnectionsPerHost = 4
+        DemoMode.install(streaming)
         self.streamSession = URLSession(configuration: streaming)
     }
 

@@ -41,12 +41,14 @@ enum ServerConfig {
     }
 
     static func forget() {
+        guard !DemoMode.active else { return }
         CredentialStore.clear()
         UserDefaults.standard.removeObject(forKey: "pairedServerName")
         UserDefaults.standard.removeObject(forKey: "pairedServerFeatures")
     }
 
     static func api() -> JoeBroAPI? {
+        if DemoMode.active { return JoeBroAPI(baseURL: DemoMode.url) }
         guard let url else { return nil }
         return JoeBroAPI(baseURL: url, token: token)
     }
