@@ -59,11 +59,18 @@ final class JoeBroActivityController {
         for (id, _) in Self.lastLive {
             if let r = agents.first(where: { $0.id == id }), r.status == "failed" { Self.failedTurn = true }
         }
-        let live = Self.uniqueBySession(agents.filter { $0.kind != .briefing && !$0.isSessionOnly && $0.isLive })
-        // Subagents nest under the run that spawned them instead of becoming runs.
+        // Subagents nest under the run that spawned them instead of becoming runs. A run whose own turn
+        // has ended stays on the Island while any of its subagents is still working.
+        let liveSubs = agents.filter { $0.kind == .subagent && $0.isLive }
+        let busyParents = Set(liveSubs.compactMap(\.parentID))
+        let live = Self.uniqueBySession(agents.filter {
+            $0.kind != .briefing && $0.kind != .subagent && !$0.isSessionOnly && ($0.isLive || busyParents.contains($0.id))
+        })
         let parents = Set(live.map(\.id))
         Self.subagents = agents.filter { $0.kind == .subagent && ($0.parentID.map(parents.contains) ?? false) }
-        Self.agents = live.filter { !Self.subagents.contains($0) }
+        // A live subagent whose parent isn't listed at all still shows, as its own run.
+        let orphans = liveSubs.filter { !($0.parentID.map(parents.contains) ?? false) }
+        Self.agents = live + orphans
         Self.lastLive = Dictionary(Self.agents.map { ($0.id, $0.displayTitle) }, uniquingKeysWith: { a, _ in a })
         await sync()
     }
@@ -269,10 +276,12 @@ final class JoeBroActivityController {
             id: agent.id,
             title: agent.displayTitle,
             kind: (agent.kind ?? .unknown).rawValue,
-            detail: agent.progress?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            detail: agent.isLive || kids.isEmpty
+                ? (agent.progress?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
+                : "\(kids.filter(\.isLive).count) subagent\(kids.filter(\.isLive).count == 1 ? "" : "s") working",
             queued: agent.status == "queued",
             subagents: kids.filter(\.isLive).count,
-            waiting: agent.status == "waiting" || agent.status == "needs_approval",
+            waiting: agent.isLive && (agent.status == "waiting" || agent.status == "needs_approval"),
             children: kids.prefix(3).map {
                 .init(id: $0.id, title: $0.displayTitle, status: $0.isLive ? ($0.status == "queued" ? "queued" : "running") : ($0.status == "failed" ? "failed" : "done"))
             }
