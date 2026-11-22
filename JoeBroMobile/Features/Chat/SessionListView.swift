@@ -20,7 +20,6 @@ struct SessionListView: View {
     @State private var folderDeleteTarget: String?
     @State private var newFolderTargetID: String?
     @State private var newFolderName = ""
-    @State private var symbolsReady = false
 
     private var ungrouped: [JBSession] { store.sessions(inFolder: "", search: search) }
 
@@ -39,27 +38,27 @@ struct SessionListView: View {
                     }
                 }
             }
-            if store.sessions.isEmpty { emptyState }
         }
-        .listStyle(.insetGrouped)
+        .overlay { if store.sessions.isEmpty { JBEmptyState(art: .inbox, text: "No chats") } }
+        .listStyle(.plain)
+        .listRowSpacing(0)
         .scrollContentBackground(.hidden)
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.24),
+        .animation(reduceMotion ? nil : JB.smooth,
                    value: store.sessions.map { "\($0.id):\($0.isImportant == true):\($0.folderKey)" })
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.24), value: store.pinnedFolders)
+        .animation(reduceMotion ? nil : JB.smooth, value: store.pinnedFolders)
         // searchable must stay attached to the List itself — attaching it to
         // the wallpaper's ZStack wrapper blanked the whole window.
-        .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search chats")
+        .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search")
         .jbWallpaper()
         .navigationTitle("Chats")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.reloadSessions() }
-        .onAppear { symbolsReady = true }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { Task { await store.newChat(); onNewChat() } } label: {
-                    Image(systemName: "square.and.pencil")
-                        .font(.jb(18, .medium))
-                        .foregroundStyle(Color.accentTint)
+                    Image(systemName: "plus")
+                        .font(.jb(18, .regular))
+                        .foregroundStyle(JB.ink)
                         .frame(width: 44, height: 44, alignment: .center)
                 }
                 .accessibilityLabel("New chat")
@@ -98,43 +97,35 @@ struct SessionListView: View {
         return Button {
             withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { store.toggleCollapsed(folder) }
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 Image(systemName: "chevron.right")
-                    .font(.jbCaption.bold())
-                    .foregroundStyle(.joeInk.opacity(0.65))
+                    .font(.jb(10, .medium))
+                    .foregroundStyle(JB.ink3)
                     .rotationEffect(.degrees(collapsed ? 0 : 90))
                     .frame(width: 12)
-                Image(systemName: collapsed ? "folder.fill" : "folder")
-                    .foregroundStyle(.accentTint)
-                    .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
-                    .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
-                Text(folder).lineLimit(1).foregroundStyle(.joeInk)
+                Text(folder).font(.jbMono(11, .medium)).textCase(.uppercase).tracking(0.9)
+                    .foregroundStyle(JB.ink3).lineLimit(1)
                 if store.pinnedFolders.contains(folder) {
-                    Image(systemName: "pin.fill").font(.jbCaption2).foregroundStyle(.orange)
+                    Image(systemName: "pin").font(.jb(10)).foregroundStyle(JB.ink3)
                 }
                 Spacer(minLength: 6)
-                Text("\(count)")
-                    .font(.jbCaption.weight(.semibold))
-                    .foregroundStyle(.joeInk.opacity(0.7))
-                    .padding(.horizontal, 8).padding(.vertical, 2)
-                    .background(.joeInk.opacity(0.12), in: Capsule())
+                Text("\(count)").font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
-            .font(.jbSubheadline.weight(.semibold))
             .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
-        .buttonStyle(SessionPressStyle(reduceMotion: reduceMotion))
-        .listRowBackground(Color.joeInk.opacity(0.12))
+        .buttonStyle(JBPressStyle())
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
         .accessibilityLabel("Folder \(folder), \(count) chats")
         .accessibilityValue("\(store.pinnedFolders.contains(folder) ? "Pinned, " : "")\(collapsed ? "collapsed" : "expanded")")
         .accessibilityHint(collapsed ? "Expands the folder" : "Collapses the folder")
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button(store.pinnedFolders.contains(folder) ? "Unpin" : "Pin",
-                   systemImage: store.pinnedFolders.contains(folder) ? "pin.slash" : "pin.fill") {
+                   systemImage: store.pinnedFolders.contains(folder) ? "pin.slash" : "pin") {
                 pinFolderAfterGesture(folder)
             }
-            .tint(.orange)
+            .tint(JB.accent)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete folder", systemImage: "trash", role: .destructive) { folderDeleteTarget = folder }
@@ -142,7 +133,7 @@ struct SessionListView: View {
                 folderRenameName = folder
                 folderRenameTarget = folder
             }
-            .tint(.indigo)
+            .tint(JB.ink3)
         }
         .contextMenu { folderMenu(folder) }
     }
@@ -168,41 +159,30 @@ struct SessionListView: View {
 
     private func row(_ session: JBSession) -> some View {
         Button { onOpen(session) } label: {
-            HStack(spacing: 12) {
-                Image(systemName: session.mode == "agent" ? "hammer.fill" : "bubble.left")
-                    .font(.jbFootnote)
-                    .foregroundStyle(session.mode == "agent" ? .orange : .joeInk.opacity(0.55))
-                    .frame(width: 18)
-                    .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
-                    .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(session.name).lineLimit(1).foregroundStyle(.joeInk)
-                    if let model = session.model, !model.isEmpty {
-                        Text(model.components(separatedBy: "/").last ?? model)
-                            .font(.jbCaption2).foregroundStyle(.secondary).lineLimit(1)
-                    }
-                }
+            HStack(spacing: 10) {
+                Text(session.name).font(.jb(16)).foregroundStyle(JB.ink).lineLimit(1)
+                if session.mode == "agent" { JBIcon(.tools, size: 12).foregroundStyle(JB.ink3) }
                 Spacer(minLength: 6)
-                if session.isImportant == true { Image(systemName: "pin.fill").font(.jbCaption2).foregroundStyle(.orange) }
-                Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.35))
+                if session.isImportant == true { Image(systemName: "pin").font(.jb(11)).foregroundStyle(JB.accent) }
+                Text(Self.stamp(session.createdAt)).font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
-            .frame(minHeight: 44)
+            .frame(minHeight: 48)
             .contentShape(Rectangle())
         }
-        .buttonStyle(SessionPressStyle(reduceMotion: reduceMotion))
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .buttonStyle(JBPressStyle())
+        .listRowBackground(Color.clear)
+        .listRowSeparatorTint(JB.line)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive) { deleteTargetID = session.id }
             Button("Archive", systemImage: "archivebox") { Task { await store.archiveSession(session.id) } }
-                .tint(.gray)
+                .tint(JB.ink3)
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button(session.isImportant == true ? "Unpin" : "Pin",
-                   systemImage: session.isImportant == true ? "pin.slash" : "pin.fill") {
+                   systemImage: session.isImportant == true ? "pin.slash" : "pin") {
                 pinChatAfterGesture(session.id)
             }
-            .tint(.orange)
+            .tint(JB.accent)
         }
         .contextMenu { rowMenu(session) }
     }
@@ -232,15 +212,19 @@ struct SessionListView: View {
         Button("Delete", systemImage: "trash", role: .destructive) { deleteTargetID = session.id }
     }
 
-    private var emptyState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "bubble.left.and.bubble.right").font(.jbLargeTitle).foregroundStyle(.secondary)
-            Text("No chats yet").font(.jbHeadline).foregroundStyle(.joeInk)
-            Text("Tap the pencil to start one.").font(.jbFootnote).foregroundStyle(.secondary)
+    /// "14:03" for today, otherwise "Nov 20".
+    private static func stamp(_ raw: String?) -> String {
+        guard let raw, raw.count >= 10 else { return "" }
+        let day = String(raw.prefix(10))
+        let parts = day.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return "" }
+        let cal = Calendar.current
+        var c = DateComponents(); c.year = parts[0]; c.month = parts[1]; c.day = parts[2]
+        guard let date = cal.date(from: c) else { return "" }
+        if cal.isDateInToday(date), raw.count >= 16 {
+            return String(raw.dropFirst(11).prefix(5))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
-        .listRowBackground(Color.clear)
+        return date.formatted(.dateTime.month(.abbreviated).day())
     }
 
     /// Let a swipe or context menu dismiss before moving its source row.
@@ -258,17 +242,6 @@ struct SessionListView: View {
                 store.toggleFolderPin(folder)
             }
         }
-    }
-}
-
-private struct SessionPressStyle: ButtonStyle {
-    let reduceMotion: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.99 : 1)
-            .opacity(configuration.isPressed ? 0.86 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.14), value: configuration.isPressed)
     }
 }
 

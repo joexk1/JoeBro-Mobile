@@ -8,7 +8,7 @@ import SwiftUI
 /// actually emits in chat and in documents.
 struct MarkdownText: View {
     let text: String
-    var textColor: Color = .joeInk
+    var textColor: Color = JB.ink
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -34,7 +34,7 @@ struct MarkdownText: View {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(Array(items.enumerated()), id: \.offset) { pair in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("•").foregroundStyle(.secondary)
+                        Text("•").foregroundStyle(JB.ink3)
                         inline(pair.element)
                     }
                 }
@@ -45,8 +45,8 @@ struct MarkdownText: View {
                 ForEach(Array(items.enumerated()), id: \.offset) { pair in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("\(pair.offset + 1).")
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
+                            .font(.jbMono(13))
+                            .foregroundStyle(JB.ink3)
                         inline(pair.element)
                     }
                 }
@@ -54,14 +54,14 @@ struct MarkdownText: View {
 
         case .quote(let content):
             HStack(alignment: .top, spacing: 10) {
-                Rectangle().fill(.joeInk.opacity(0.35)).frame(width: 3)
-                inline(content).foregroundStyle(.secondary)
+                Rectangle().fill(JB.lineStrong).frame(width: 2)
+                inline(content).foregroundStyle(JB.ink2)
             }
 
         case .code(let language, let content):
             VStack(alignment: .leading, spacing: 4) {
                 if !language.isEmpty {
-                    Text(language).font(.jbCaption2).foregroundStyle(.secondary)
+                    Text(language).font(.jbMono(10.5)).foregroundStyle(JB.ink3)
                 }
                 ScrollView(.horizontal) {
                     Text(content)
@@ -70,7 +70,8 @@ struct MarkdownText: View {
                         .padding(10)
                 }
                 .scrollIndicators(.hidden)
-                .background(.black.opacity(0.28), in: RoundedRectangle(cornerRadius: 10))
+                .background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rCard))
+                .overlay(RoundedRectangle(cornerRadius: JB.rCard).strokeBorder(JB.line))
             }
 
         case .image(let description, let address):
@@ -79,13 +80,13 @@ struct MarkdownText: View {
                     image.resizable().scaledToFit()
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 } placeholder: {
-                    ProgressView().frame(maxWidth: .infinity, minHeight: 100)
+                    JBSpinner().frame(maxWidth: .infinity, minHeight: 100)
                 }
                 .accessibilityLabel(description.isEmpty ? "Report image" : description)
             }
 
         case .rule:
-            Divider().overlay(.joeInk.opacity(0.25))
+            Rectangle().fill(JB.line).frame(height: 1)
         }
     }
 

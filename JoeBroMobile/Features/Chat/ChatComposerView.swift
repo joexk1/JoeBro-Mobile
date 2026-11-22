@@ -13,8 +13,18 @@ struct ChatComposerView: View {
     var onOpenWorkdir: (() -> Void)? = nil
     @FocusState private var inputFocused: Bool
     @State private var showPhotoPicker = false
-    @Environment(JoeBroTheme.self) private var theme
-    @Environment(\.colorScheme) private var colorScheme
+    @State private var slash = SlashCommandSource()
+    @State private var sent = 0
+
+    private var slashQuery: String? {
+        let d = store.draft
+        guard d.hasPrefix("/"), !d.contains(" "), !d.contains("\n") else { return nil }
+        return String(d.dropFirst())
+    }
+    private var suggestions: [SlashCommand] {
+        guard let q = slashQuery else { return [] }
+        return slash.commands(main: mainAgent, query: q)
+    }
 
     private var canSend: Bool {
         !store.busy && !store.uploadingAttachment
@@ -35,16 +45,16 @@ struct ChatComposerView: View {
             status
         }
         .padding(12)
-        .background {
-            if theme.preset == .monochrome {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(colorScheme == .dark ? Color.black : Color.white)
-                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(.joeInk.opacity(0.16), lineWidth: 1))
-            } else {
-                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(JB.panelFill)
+        .jbSurface(.panel, radius: JB.rPanel)
+        .overlay(alignment: .top) {
+            if !suggestions.isEmpty {
+                SlashSuggestions(items: suggestions, onPick: accept)
+                    .alignmentGuide(.top) { $0[.bottom] + 8 }
             }
         }
+        .animation(JB.snap, value: suggestions.map(\.id))
+        .sensoryFeedback(.impact(weight: .light), trigger: sent)
+        .task { await slash.loadSkills(api: store.api) }
         .padding(.horizontal, 10)
         .padding(.bottom, 5)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPhoto, matching: .images)
@@ -80,7 +90,7 @@ struct ChatComposerView: View {
                        label: "Web search") { store.useWeb.toggle() }
                 .disabled(!store.agentMode)
                 .opacity(store.agentMode ? 1 : 0.35)
-            iconToggle(symbol: "apple.terminal", isOn: store.allowBash,
+            iconToggle(symbol: "chevron.left.forwardslash.chevron.right", isOn: store.allowBash,
                        label: "Allow terminal commands") { store.allowBash.toggle() }
                 .disabled(!store.agentMode)
                 .opacity(store.agentMode ? 1 : 0.35)
@@ -93,8 +103,8 @@ struct ChatComposerView: View {
     private func iconToggle(symbol: String, isOn: Bool, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.jbSubheadline.weight(.semibold))
-                .foregroundStyle(isOn ? Color.accentTint : Color.joeInk.opacity(0.68))
+                .font(.jb(15, .medium))
+                .foregroundStyle(isOn ? JB.accent : JB.ink2)
                 .frame(width: 36, height: 44)
                 .contentShape(Rectangle())
         }
@@ -114,11 +124,11 @@ struct ChatComposerView: View {
                 Button("Bind a folder", systemImage: "folder.badge.plus", action: onOpenWorkdir)
             }
         } label: {
-            Image(systemName: store.permissionMode == "sandbox" ? "lock.fill" :
-                    store.permissionMode == "readonly" ? "eye.fill" : "lock.open.fill")
+            Image(systemName: store.permissionMode == "sandbox" ? "lock" :
+                    store.permissionMode == "readonly" ? "eye" : "lock.open")
                 .font(.jbSubheadline.weight(.semibold))
-                .foregroundStyle(store.permissionMode == "full" ? Color.red :
-                                 store.permissionMode == "readonly" ? Color.orange : Color.joeInk.opacity(0.68))
+                .foregroundStyle(store.permissionMode == "full" ? JB.danger :
+                                 store.permissionMode == "readonly" ? JB.warn : JB.ink2)
                 .frame(width: 36, height: 44)
                 .contentShape(Rectangle())
         }
@@ -143,8 +153,8 @@ struct ChatComposerView: View {
                 Menu {
                     Button("Attach file", systemImage: "paperclip") { showFilePicker = true }
                     Button("Attach photo", systemImage: "photo") { showPhotoPicker = true }
-                    Button("Dictate", systemImage: "mic.fill") { toggleVoice() }
-                } label: { composerIcon("plus.circle.fill") }
+                    Button("Dictate", systemImage: "mic") { toggleVoice() }
+                } label: { composerIcon("plus") }
                     .accessibilityLabel("Add attachment or voice")
             } else {
                 Button { showFilePicker = true } label: { composerIcon("paperclip") }
@@ -155,9 +165,9 @@ struct ChatComposerView: View {
                     .accessibilityLabel("Attach photo")
 
                 Button(action: toggleVoice) {
-                    Image(systemName: voice.isRecording ? "stop.circle.fill" : "mic.fill")
+                    Image(systemName: voice.isRecording ? "stop.circle" : "mic")
                         .font(.jbHeadline)
-                        .foregroundStyle(voice.isRecording ? Color.red : Color.joeInk.opacity(0.85))
+                        .foregroundStyle(voice.isRecording ? JB.danger : JB.ink2)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
@@ -168,21 +178,21 @@ struct ChatComposerView: View {
             TextField("Message JoeBro", text: Bindable(store).draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($inputFocused)
-                .foregroundStyle(.joeInk)
+                .font(.jbBody)
+                .foregroundStyle(JB.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 11)
-                .background(.joeInk.opacity(0.09), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.joeInk.opacity(0.14)))
+                .background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rCard + 6, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: JB.rCard + 6, style: .continuous)
+                    .strokeBorder(inputFocused ? JB.accent.opacity(0.7) : JB.line, lineWidth: 1))
+                .animation(JB.fade, value: inputFocused)
 
-            Button {
-                if store.busy { Task { await store.stopCurrentTurn() } }
-                else { store.send() }
-            } label: {
+            Button(action: submit) {
                 Image(systemName: store.busy ? (store.stopping || store.stopRequested ? "ellipsis" : "stop.fill") : "arrow.up")
-                    .font(.jbHeadline.bold())
-                    .foregroundStyle(Color.joeInverseInk)
+                    .font(.jb(16, .semibold))
+                    .foregroundStyle(JB.onAccent)
                     .frame(width: 44, height: 44)
-                    .background(store.busy || canSend ? Color.accentTint : Color.joeInk.opacity(0.25), in: Circle())
+                    .background(store.busy || canSend ? JB.accent : JB.ink3.opacity(0.5), in: Circle())
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -194,9 +204,32 @@ struct ChatComposerView: View {
     private func composerIcon(_ symbol: String) -> some View {
         Image(systemName: symbol)
             .font(.jbHeadline)
-            .foregroundStyle(.joeInk.opacity(0.85))
+            .foregroundStyle(JB.ink2)
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
+    }
+
+    private func accept(_ cmd: SlashCommand) {
+        switch cmd.kind {
+        case .skill: store.draft = cmd.name + " "; return
+        case .compact: Task { await store.compactJoeBro() }
+        case .clear: Task { await store.clearJoeBro() }
+        case .agent: store.setAgentMode(true)
+        case .chat: store.setAgentMode(false)
+        case .think: store.setThinking(true)
+        case .fast: store.setThinking(false)
+        case .web: store.useWeb.toggle()
+        }
+        store.draft = ""
+        sent += 1
+    }
+
+    private func submit() {
+        if store.busy { Task { await store.stopCurrentTurn() }; return }
+        if let cmd = suggestions.first(where: { $0.name == store.draft.trimmingCharacters(in: .whitespaces) }),
+           cmd.kind != .skill { accept(cmd); return }
+        sent += 1
+        store.send()
     }
 
     private func toggleVoice() {
@@ -214,21 +247,22 @@ struct ChatComposerView: View {
     private var status: some View {
         if store.uploadingAttachment {
             HStack(spacing: 7) {
-                ProgressView().controlSize(.mini).tint(.accentTint)
-                Text("Uploading attachment…").font(.jbCaption).foregroundStyle(.secondary)
+                JBSpinner(size: 11)
+                Text("Uploading").font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         ForEach(store.pendingAttachments) { attachment in
             HStack(spacing: 6) {
                 Label(attachment.name, systemImage: "paperclip")
-                    .font(.jbCaption).foregroundStyle(.joeInk.opacity(0.8)).lineLimit(1)
+                    .font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(1)
                 Spacer(minLength: 4)
                 Button {
                     store.pendingAttachments.removeAll { $0.id == attachment.id }
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.joeInk.opacity(0.6))
+                    Image(systemName: "xmark")
+                        .font(.jb(11, .medium))
+                        .foregroundStyle(JB.ink3)
                         .frame(width: 44, height: 30)
                         .contentShape(Rectangle())
                 }
@@ -239,10 +273,10 @@ struct ChatComposerView: View {
         }
         if voice.isRecording {
             HStack(spacing: 6) {
-                Image(systemName: "waveform").symbolEffect(.variableColor.iterative)
-                Text("Listening on this iPhone…")
+                JBStatusDot(color: JB.danger, live: true)
+                Text("Listening")
             }
-            .font(.jbCaption).foregroundStyle(.mint)
+            .font(.jbMono(11)).foregroundStyle(JB.ink2)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -285,7 +319,7 @@ struct ChatModelPicker: View {
                 }
             }
             if store.models.isEmpty {
-                Text("No models reachable — check Settings")
+                Text("No models reachable")
             }
             Divider()
             Button("Refresh models", systemImage: "arrow.clockwise") {
@@ -296,15 +330,15 @@ struct ChatModelPicker: View {
                 ProviderLogoView(model: store.selectedModel?.modelID ?? "", size: 15)
                 Text(store.selectedModel?.display ?? (store.models.isEmpty ? "No model" : "Select model"))
                     .lineLimit(1)
-                Image(systemName: "chevron.up.chevron.down").font(.jb(8, .bold))
+                Image(systemName: "chevron.up.chevron.down").font(.jb(8, .medium))
             }
-            .font(.jbCaption.weight(.semibold))
-            .foregroundStyle(.joeInk)
+            .font(.jbMono(11, .medium))
+            .foregroundStyle(JB.ink2)
             .padding(.horizontal, 11)
-            .frame(height: 44)
-            .background(.joeInk.opacity(0.09), in: Capsule())
-            .overlay(Capsule().strokeBorder(.joeInk.opacity(0.14)))
-            .contentShape(Capsule())
+            .frame(height: 36)
+            .background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rControl, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).strokeBorder(JB.line))
+            .contentShape(Rectangle())
         }
         .accessibilityLabel("Chat model")
         .accessibilityValue(store.selectedModel?.display ?? "None selected")

@@ -23,8 +23,6 @@ struct ChatTranscriptView<Composer: View>: View {
     private static var bottomID: String { "chat-bottom" }
 
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(JoeBroTheme.self) private var theme
-    @Environment(\.colorScheme) private var colorScheme
     @State private var contentBottom: CGFloat = 0
     @State private var viewportBottom: CGFloat = 0
     @State private var followingLatest = true
@@ -44,11 +42,6 @@ struct ChatTranscriptView<Composer: View>: View {
                     .overlay(alignment: .bottom) { viewportProbe }
                     .overlay(alignment: .bottom) { jumpButton(proxy) }
                 composer()
-                    .background {
-                        if theme.preset == .monochrome {
-                            colorScheme == .dark ? Color.black : Color.white
-                        }
-                    }
                     .fixedSize(horizontal: false, vertical: true)
                     .zIndex(1)
             }
@@ -91,10 +84,12 @@ struct ChatTranscriptView<Composer: View>: View {
 
     private func scroll(_ proxy: ScrollViewProxy) -> some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 18) {
                 if store.lines.isEmpty { ChatEmptyState(isMainJoeBro: store.isMainJoeBro) }
                 ForEach(store.lines) { line in
-                    ChatMessageRow(line: line, onOpenDocument: onOpenDocument).id(line.id)
+                    ChatMessageRow(line: line, fresh: line.id == store.lines.last?.id,
+                                   onOpenDocument: onOpenDocument,
+                                   onRetry: { retry(line) }).id(line.id)
                 }
                 bottomAnchor
             }
@@ -128,6 +123,16 @@ struct ChatTranscriptView<Composer: View>: View {
         }
     }
 
+    private func retry(_ line: ChatLine) {
+        guard !store.busy else { return }
+        var text = line.text
+        if line.role != "user", let index = store.lines.firstIndex(where: { $0.id == line.id }),
+           let user = store.lines[..<index].last(where: { $0.role == "user" }) { text = user.text }
+        guard !text.isEmpty else { return }
+        store.draft = text
+        store.send()
+    }
+
     private var bottomAnchor: some View {
         Color.clear
             .frame(height: 1)
@@ -154,18 +159,16 @@ struct ChatTranscriptView<Composer: View>: View {
                 jump(proxy, animated: true)
             } label: {
                 Image(systemName: "arrow.down")
-                    .font(.jbHeadline.bold())
-                    .foregroundStyle(.joeInk)
-                    .frame(width: 44, height: 44)
-                    .background(JB.panelFill, in: Circle())
-                    .overlay(Circle().strokeBorder(.joeInk.opacity(0.25)))
-                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    .font(.jb(15, .medium))
+                    .foregroundStyle(JB.ink)
+                    .frame(width: 40, height: 40)
+                    .jbFloating(radius: 20)
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Jump to latest message")
             .padding(.bottom, 18)
-            .transition(.scale(scale: 0.6).combined(with: .opacity))
+            .transition(.scale(scale: 0.8).combined(with: .opacity))
         }
     }
 
@@ -196,16 +199,10 @@ struct ChatTranscriptView<Composer: View>: View {
 struct ChatEmptyState: View {
     var isMainJoeBro = false
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
+            JBWordmark(dot: 3.4)
             if !isMainJoeBro {
-                Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72)
-                Text("What can I help with?").font(.jbTitle2.bold()).foregroundStyle(.joeInk)
-                Text("Ask a question or put JoeBro to work.")
-                    .font(.jbSubheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            } else {
-                Text("Say hello, or give me something to take care of.")
-                    .font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.7))
-                    .multilineTextAlignment(.center)
+                Text("What can I help with?").font(.jb(15)).foregroundStyle(JB.ink2)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 320)

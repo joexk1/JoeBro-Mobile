@@ -153,9 +153,10 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
         let tab = UITabBarAppearance()
         tab.configureWithTransparentBackground()
         for item in [tab.stackedLayoutAppearance, tab.inlineLayoutAppearance, tab.compactInlineLayoutAppearance] {
-            item.normal.titleTextAttributes = [.font: JBFonts.uiFont(10, .medium)]
-            item.selected.titleTextAttributes = [.font: JBFonts.uiFont(10, .semibold)]
+            item.normal.titleTextAttributes = [.font: JBFonts.uiFont(9.5, .medium, mono: true)]
+            item.selected.titleTextAttributes = [.font: JBFonts.uiFont(9.5, .semibold, mono: true)]
         }
+        tab.shadowColor = UIColor(JB.line)
         UITabBar.appearance().standardAppearance = tab
         UITabBar.appearance().scrollEdgeAppearance = tab
 
@@ -223,6 +224,20 @@ struct AsciiTopBarAnimation: View {
                 paper ? Color.white : Color.black
                 AsciiSceneWebView(name: mode.rawValue, paper: paper,
                                   paused: reduceMotion || scenePhase != .active || !visible)
+            }
+            // ASCII lives at the edges: the scene thins toward the centre and
+            // dissolves into the page along the bottom.
+            .mask {
+                LinearGradient(stops: [.init(color: .black, location: 0),
+                                       .init(color: .black.opacity(0.12), location: 0.3),
+                                       .init(color: .black.opacity(0.12), location: 0.7),
+                                       .init(color: .black, location: 1)],
+                               startPoint: .leading, endPoint: .trailing)
+            }
+            .mask {
+                LinearGradient(stops: [.init(color: .black, location: 0.55),
+                                       .init(color: .clear, location: 1)],
+                               startPoint: .top, endPoint: .bottom)
             }
             .onAppear { visible = true }
             .onDisappear { visible = false }
