@@ -210,6 +210,7 @@ struct AgentsTabView: View {
     @State private var store: AgentsStore
     @State private var open: JBAgentRecord?
     @State private var stopTarget: JBAgentRecord?
+    @State private var showNewAgent = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onOpenSettings: () -> Void = {}
     var onOpenJoeBro: () -> Void = {}
@@ -258,12 +259,20 @@ struct AgentsTabView: View {
             scroller
             .navigationTitle("Agents")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showNewAgent) {
+                NewCodingAgentSheet(api: api) { Task { await store.refresh() } }
+            }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showNewAgent = true } label: {
+                        Image(systemName: "plus").font(.jb(18, .regular)).foregroundStyle(JB.ink)
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("New coding agent")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { onOpenSettings() } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(JB.ink2)
-                            .frame(width: 44, height: 44)
+                        JBSettingsGlyph()
                     }
                         .accessibilityLabel("Settings")
                 }
@@ -461,14 +470,14 @@ struct AgentsTabView: View {
                     }
                     HStack(spacing: 7) {
                         JBStatusDot(color: statusColor(agent), live: agent.isLive && agent.status != "waiting" && agent.status != "queued", size: 6)
-                        Text(statusLabel(agent).lowercased())
+                        Text(statusLabel(agent).prefix(1).uppercased() + statusLabel(agent).dropFirst())
                         if agent.kind == .research, let count = agent.sourceCount, count > 0 { Text("· \(count) sources") }
                     }
-                    .font(.jb(11)).foregroundStyle(agent.status == "waiting" ? JB.warn : JB.ink2)
+                    .font(.jb(13, agent.isLive ? .medium : .regular))
+                    .foregroundStyle(agent.status == "waiting" ? JB.warn : agent.isLive ? JB.live : JB.ink3)
                 }
                 Spacer(minLength: 5)
-                if agent.isLive { JBSpinner() }
-                else { Image(systemName: "chevron.right").font(.jb(11)).foregroundStyle(JB.ink3) }
+                Image(systemName: "chevron.right").font(.jb(11)).foregroundStyle(JB.ink3)
             }
             if let preview = agent.isLive ? agent.progress : (agent.failed ? agent.error : agent.result),
                !preview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -477,10 +486,16 @@ struct AgentsTabView: View {
                     .lineLimit(2).multilineTextAlignment(.leading)
             }
             if let date = [agent.finishedAt, agent.startedAt, agent.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
-                Text(agentRelativeDate(date)).font(.jb(10.5)).foregroundStyle(JB.ink3)
+                Text(agentRelativeDate(date)).font(.jb(12)).foregroundStyle(JB.ink3)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Live agents carry a phosphor edge so running vs finished reads at a glance.
+        .overlay(alignment: .leading) {
+            if agent.isLive {
+                Capsule().fill(agent.status == "waiting" ? JB.warn : JB.live).frame(width: 3).padding(.vertical, 2).offset(x: -10)
+            }
+        }
         .contentShape(Rectangle())
     }
 

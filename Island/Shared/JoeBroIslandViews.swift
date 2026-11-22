@@ -1,6 +1,7 @@
 import SwiftUI
 
-let islandTint = Color(red: 0.72, green: 0.78, blue: 1)
+/// JoeBro's own colours on the always-dark island: phosphor for running, amber for "needs you".
+let islandTint = Color(red: 0x5F / 255, green: 0xD1 / 255, blue: 0xB0 / 255)
 
 func title(_ s: JoeBroActivityAttributes.ContentState, stale: Bool) -> String {
     if s.finished != nil { return s.headline ?? "Done" }
@@ -46,7 +47,7 @@ func prioritised(_ runs: [JoeBroActivityAttributes.Run]) -> [JoeBroActivityAttri
     return runs.enumerated().sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
 }
 
-let waitingTint = Color.orange
+let waitingTint = Color(red: 0xF5 / 255, green: 0xB8 / 255, blue: 0x3D / 255)
 
 /// Dot for the whole activity: orange while anything waits for approval, green when finished.
 func statusColor(_ s: JoeBroActivityAttributes.ContentState) -> Color {
@@ -72,15 +73,15 @@ struct JoeBroLockScreenActivity: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: glyph(state)).foregroundStyle(islandTint)
-                    .font(.system(size: 15)).frame(width: 18, height: 18)
+                    .font(.geist(15, .regular)).frame(width: 18, height: 18)
                 Text(title(state, stale: isStale))
-                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .font(.geist(15, .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.75)
                 Spacer(minLength: 6)
                 if state.finished == nil {
                     Text(state.startedAt, style: .timer)
-                        .font(.caption.monospacedDigit())
+                        .font(.geist(12, .medium).monospacedDigit())
                         .foregroundStyle(Color.white.opacity(0.65))
                         .frame(maxWidth: 50, alignment: .trailing)
                 }
@@ -110,7 +111,7 @@ struct JoeBroRunList: View {
             }
             if hidden > 0 {
                 Text("+\(hidden) more")
-                    .font(.caption2)
+                    .font(.geist(11))
                     .foregroundStyle(Color.white.opacity(0.65))
                     .padding(.leading, 24)
                     .frame(height: 12)
@@ -128,16 +129,16 @@ struct JoeBroRunRow: View {
         let waiting = run.waiting == true
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(size: 13, weight: .medium))
+                .font(.geist(13, .medium))
                 .foregroundStyle(waiting ? waitingTint : islandTint)
                 .frame(width: 18, height: 18)
             VStack(alignment: .leading, spacing: 0) {
                 Text(run.title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.geist(14, .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.85)
                 if detailed, !subtitle.isEmpty {
-                    Text(subtitle).font(.caption2)
+                    Text(subtitle).font(.geist(11))
                         .foregroundStyle(Color.white.opacity(0.65)).lineLimit(1)
                 }
             }
@@ -152,14 +153,14 @@ struct JoeBroRunRow: View {
             // Answer straight from the island / lock screen; the intent runs in the app.
             HStack(spacing: 6) {
                 Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: false)) {
-                    Text("Deny").font(.system(size: 12, weight: .semibold))
+                    Text("Deny").font(.geist(12, .semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10).frame(height: 24)
                         .background(Color.white.opacity(0.16), in: Capsule())
                 }
                 .buttonStyle(.plain)
                 Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: true)) {
-                    Text("Approve").font(.system(size: 12, weight: .semibold))
+                    Text("Approve").font(.geist(12, .semibold))
                         .foregroundStyle(.black)
                         .padding(.horizontal, 10).frame(height: 24)
                         .background(waitingTint, in: Capsule())
@@ -169,14 +170,14 @@ struct JoeBroRunRow: View {
         } else if waiting {
             HStack(spacing: 3) {
                 Circle().fill(waitingTint).frame(width: 6, height: 6)
-                Text("Approval").font(.system(size: 11, weight: .semibold)).foregroundStyle(waitingTint)
+                Text("Approval").font(.geist(11, .semibold)).foregroundStyle(waitingTint)
             }.fixedSize()
         } else if let n = run.subagents, n > 0 {
             Text("+\(n) subagent\(n == 1 ? "" : "s")")
-                .font(.system(size: 11)).foregroundStyle(Color.white.opacity(0.65))
+                .font(.geist(11, .regular)).foregroundStyle(Color.white.opacity(0.65))
                 .lineLimit(1).fixedSize()
         } else if run.queued {
-            Text("Queued").font(.system(size: 11)).foregroundStyle(Color.white.opacity(0.65)).fixedSize()
+            Text("Queued").font(.geist(11, .regular)).foregroundStyle(Color.white.opacity(0.65)).fixedSize()
         }
     }
 
@@ -191,5 +192,19 @@ struct JoeBroRunRow: View {
         case "coding": "chevron.left.forwardslash.chevron.right"
         default: "sparkles"
         }
+    }
+}
+
+
+extension Font {
+    /// Geist in the widget extension (bundled via UIAppFonts); falls back to the system face.
+    static func geist(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
+        let name: String
+        switch weight {
+        case .semibold, .bold, .heavy, .black: name = "Geist-SemiBold"
+        case .medium: name = "Geist-Medium"
+        default: name = "Geist-Regular"
+        }
+        return .custom(name, fixedSize: size)
     }
 }

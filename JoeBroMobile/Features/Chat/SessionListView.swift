@@ -170,7 +170,7 @@ struct SessionListView: View {
     private func row(_ session: JBSession, nested: Bool = false) -> some View {
         // Chats inside a folder sit indented under it, joined by a guide line.
         let lead: CGFloat = nested ? 44 : 16
-        Button { onOpen(session) } label: {
+        return Button { onOpen(session) } label: {
             HStack(spacing: 10) {
                 Text(session.name).font(.jb(15, .medium)).foregroundStyle(JB.ink).lineLimit(1)
                 if session.mode == "agent" { JBIcon(.tools, size: 12).foregroundStyle(JB.ink3) }

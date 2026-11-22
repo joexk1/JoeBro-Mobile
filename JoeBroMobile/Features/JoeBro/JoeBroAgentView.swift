@@ -165,10 +165,7 @@ struct JoeBroAgentView: View {
     }
 
     private var settingsLabel: some View {
-        Image(systemName: "gearshape")
-            .font(.jb(22, .regular))
-            .foregroundStyle(hasBanner ? Color.white : Color.accentTint)
-            .frame(width: 44, height: 44)
+        JBSettingsGlyph(onBanner: hasBanner)
     }
 
     @ViewBuilder private var settingsControl: some View {

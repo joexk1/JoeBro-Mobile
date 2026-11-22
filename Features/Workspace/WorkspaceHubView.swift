@@ -60,9 +60,7 @@ struct WorkspaceHubView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { onOpenSettings() } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(JB.ink2)
-                            .frame(width: 44, height: 44)
+                        JBSettingsGlyph()
                     }
                     .accessibilityLabel("Settings")
                 }

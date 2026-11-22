@@ -24,21 +24,21 @@ struct JoeBroIslandWidget: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Image(systemName: glyph(context.state))
-                        .font(.system(size: 18))
+                        .font(.geist(18, .regular))
                         .foregroundStyle(islandTint)
                         .frame(width: 24, height: 24)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.finished == nil {
                         Text(context.state.startedAt, style: .timer)
-                            .font(.system(.caption, design: .rounded).monospacedDigit())
+                            .font(.geist(12, .medium).monospacedDigit())
                             .foregroundStyle(Color.white.opacity(0.65))
                             .frame(maxWidth: 48, alignment: .trailing)
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(title(context.state, stale: context.isStale))
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .font(.geist(15, .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.75)
                 }
@@ -53,7 +53,7 @@ struct JoeBroIslandWidget: Widget {
                 } else {
                     HStack(spacing: 3) {
                         Text("\(context.state.count)")
-                            .font(.system(.subheadline, design: .rounded).weight(.bold).monospacedDigit())
+                            .font(.geist(15, .semibold).monospacedDigit())
                             .foregroundStyle(.white)
                         Circle().fill(statusColor(context.state)).frame(width: 7, height: 7)
                     }
@@ -64,7 +64,7 @@ struct JoeBroIslandWidget: Widget {
                 } else {
                     ZStack(alignment: .topTrailing) {
                         Text("\(context.state.count)")
-                            .font(.system(size: 14, weight: .bold, design: .rounded).monospacedDigit())
+                            .font(.geist(14, .semibold).monospacedDigit())
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         Circle().fill(statusColor(context.state)).frame(width: 6, height: 6)
