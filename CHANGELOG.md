@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.0 — 2026-11-22
+
+- Refreshed the chats, agents, workspace, and settings screens with the new JoeBro appearance.
+- Start or resume Claude Code, Codex, and OpenCode sessions and follow them in Chats.
+- Answer coding-agent questions and permission prompts inline. Supported Live Activities can open questions in the app and handle yes/no approvals.
+- Improved scrolling across tabs and stopped background refresh timeouts from interrupting the foreground UI.
+
 ## 1.5.0 — 2026-11-12
 
 ### Added

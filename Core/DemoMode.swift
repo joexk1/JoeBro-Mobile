@@ -19,6 +19,7 @@ enum DemoMode {
     #else
     nonisolated(unsafe) static var active = false
     static let hidesBanner = false
+    static func option(_: String) -> String? { nil }
     #endif
     static let host = "demo.joebro.invalid"
     static let url = URL(string: "https://\(host)")!
