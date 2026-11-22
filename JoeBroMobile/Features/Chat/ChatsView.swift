@@ -742,6 +742,7 @@ struct ChatsView: View {
     var onOpenSidebar: (() -> Void)? = nil
     @State private var openSession: JBSession?
     @State private var openDraft = false
+    @State private var openAgent: JBAgentRecord?
     // Capture used to be its own tab; it belongs in the composer, as on the Mac.
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var voice = VoiceCapture()
@@ -760,7 +761,11 @@ struct ChatsView: View {
                 chatDetail
             } else {
                 SessionListView(store: store, onOpen: { session in openSession = session },
-                                onNewChat: { openDraft = true }, onOpenSettings: onOpenSettings)
+                                onNewChat: { openDraft = true }, onOpenSettings: onOpenSettings,
+                                onOpenAgent: { openAgent = $0 })
+                    .navigationDestination(item: $openAgent) { agent in
+                        AgentDetailView(api: store.api, agent: agent, chatStore: store)
+                    }
                     .navigationDestination(item: $openSession) { session in
                         chatDetail
                             .task { await store.select(session.id) }
@@ -777,6 +782,11 @@ struct ChatsView: View {
             guard store.sessions.indices.contains(n - 1) else { return }
             openSession = store.sessions[n - 1]
             if let draft = DemoMode.option("-JoeBroDraft") { try? await Task.sleep(for: .milliseconds(600)); store.draft = draft }
+        }
+        // `-JoeBroOpenAgent <id>` opens a coding agent's chat (screenshots).
+        .task {
+            guard let id = DemoMode.option("-JoeBroOpenAgent") else { return }
+            if let a = (try? await store.api.agentRegistry())?.first(where: { $0.id == id }) { openAgent = a }
         }
         #endif
         .task { showSharedDraftIfNeeded() }

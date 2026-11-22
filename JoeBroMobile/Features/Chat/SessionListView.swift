@@ -11,7 +11,9 @@ struct SessionListView: View {
     var onOpen: (JBSession) -> Void
     var onNewChat: () -> Void = {}
     var onOpenSettings: () -> Void = {}
+    var onOpenAgent: (JBAgentRecord) -> Void = { _ in }
 
+    @State private var codingAgents: CodingAgentsStore?
     @State private var search = ""
     @State private var renameTargetID: String?
     @State private var renameName = ""
@@ -31,6 +33,14 @@ struct SessionListView: View {
 
     var body: some View {
         List {
+            if let agents = codingAgents?.agents, !agents.isEmpty, search.isEmpty {
+                Section {
+                    ForEach(agents) { agent in CodingAgentRow(agent: agent) { onOpenAgent(agent) } }
+                } header: {
+                    Text("Coding agents").font(.jb(13, .semibold)).foregroundStyle(JB.ink2)
+                        .textCase(nil).padding(.leading, 4)
+                }
+            }
             folderSections
             if !ungrouped.isEmpty {
                 Section {
@@ -55,7 +65,12 @@ struct SessionListView: View {
         // searchable must stay attached to the List itself — attaching it to
         // the wallpaper's ZStack wrapper blanked the whole window.
         .jbWallpaper()
-        .refreshable { await store.reloadSessions() }
+        .refreshable { await store.reloadSessions(); await codingAgents?.load() }
+        .task {
+            let agents = codingAgents ?? CodingAgentsStore(api: store.api)
+            codingAgents = agents
+            await agents.poll()
+        }
         .jbTopBar("Chats", search: $search, onAdd: { Task { await store.newChat(); onNewChat() } },
                   addLabel: "New chat", onSettings: onOpenSettings)
         .modifier(SessionListDialogs(

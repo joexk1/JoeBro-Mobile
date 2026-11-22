@@ -77,6 +77,18 @@ struct AgentChatThread: View {
 
     private var messages: [JBAgentMessage] { agent.messages ?? [] }
     private var waiting: Bool { agent.status == "waiting" }
+
+    private enum Item { case message(JBAgentMessage), tools([String]) }
+    /// Consecutive tool lines fold into one row (same as the Mac).
+    private var items: [Item] {
+        var out: [Item] = []
+        for m in messages {
+            if !["user", "assistant", "approval", "notice", "event"].contains(m.role) {
+                if case .tools(let l) = out.last { out[out.count - 1] = .tools(l + [m.content]) } else { out.append(.tools([m.content])) }
+            } else { out.append(.message(m)) }
+        }
+        return out
+    }
     private var working: Bool { agent.isLive && !waiting }
     private var canSend: Bool { agent.status != "ended" }
 
@@ -85,10 +97,13 @@ struct AgentChatThread: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     header
-                    ForEach(Array(messages.enumerated()), id: \.offset) { i, m in
-                        bubble(m, last: i == messages.count - 1)
+                    ForEach(Array(items.enumerated()), id: \.offset) { i, item in
+                        switch item {
+                        case .message(let m): bubble(m, last: i == items.count - 1)
+                        case .tools(let lines): AgentToolGroup(lines: lines, running: working && i == items.count - 1)
+                        }
                     }
-                    ForEach(Array(echoes.enumerated()).filter { e in !messages.contains { $0.content.contains(e.element.text) } },
+                    ForEach(Array(echoes.enumerated()).filter { e in !messages.contains { $0.role == "user" && sameMessage($0.content, e.element.text) } },
                             id: \.offset) { _, e in userCard(e.text, tag: e.via) }
                     if working { HStack(spacing: 6) { JBSpinner(); JBStreamCursor() } }
                     if waiting && !messages.contains(where: { $0.role == "approval" }) { approvalCard("needs your approval") }
@@ -125,6 +140,22 @@ struct AgentChatThread: View {
             MarkdownText(text: m.content).textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         case "approval": approvalCard(m.content, active: last && waiting)
+        case "notice":   // usage limit / API error: the agent stopped and why
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill").font(.jb(11)).foregroundStyle(JB.warn)
+                Text(m.content).font(.jb(12.5, .medium)).foregroundStyle(JB.ink)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).fill(JB.warn.opacity(0.12)))
+            .overlay(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).strokeBorder(JB.warn.opacity(0.35), lineWidth: 1))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        case "event":    // harness happenings (background task done, /command, compacted): a quiet centred line
+            HStack(spacing: 8) {
+                Rectangle().fill(JB.line).frame(height: 1)
+                Text(m.content).font(.jb(11.5)).foregroundStyle(JB.ink3).lineLimit(2).multilineTextAlignment(.center)
+                Rectangle().fill(JB.line).frame(height: 1)
+            }
+            .frame(maxWidth: .infinity)
         default:
             HStack(spacing: 6) {
                 JBStatusDot(color: JB.ink3, size: 5)
@@ -203,4 +234,57 @@ func handoverStripped(_ s: String) -> String {
     var t = s.replacingOccurrences(of: "[from app] ", with: "")
     if let r = t.range(of: #"^Message from [^:\n]{1,40}: "#, options: .regularExpression) { t.removeSubrange(r) }
     return t
+}
+
+
+/// Delivered-yet check: the feed collapses whitespace and clips long text, so compare normalised prefixes.
+func sameMessage(_ feed: String, _ sent: String) -> Bool {
+    func norm(_ s: String) -> String { handoverStripped(s).split(whereSeparator: \.isWhitespace).joined(separator: " ").lowercased() }
+    let a = norm(feed), b = norm(sent)
+    guard !a.isEmpty, !b.isEmpty else { return false }
+    let n = min(80, a.count, b.count)
+    return a.contains(b.prefix(n)) || b.hasPrefix(a.prefix(n))
+}
+
+struct ToolCard: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background(RoundedRectangle(cornerRadius: JB.rControl + 1, style: .continuous).fill(JB.readFill))
+            .overlay(RoundedRectangle(cornerRadius: JB.rControl + 1, style: .continuous).strokeBorder(JB.line, lineWidth: 1))
+    }
+}
+
+/// A run of a coding agent's tool calls, collapsed to one line (the latest), like JoeBro's tool rows.
+struct AgentToolGroup: View {
+    let lines: [String]
+    var running = false
+    @State private var expanded = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button { withAnimation(JB.snap) { expanded.toggle() } } label: {
+                HStack(spacing: 8) {
+                    JBStatusDot(color: running ? JB.live : JB.ink3, live: running, size: 6)
+                    Text(lines.last ?? "").font(.jb(12)).foregroundStyle(JB.ink2).lineLimit(1).truncationMode(.tail)
+                    if lines.count > 1 { Text("\(lines.count)").font(.jb(11)).foregroundStyle(JB.ink3) }
+                    Image(systemName: "chevron.right").font(.jb(7, .bold)).foregroundStyle(JB.ink3)
+                        .rotationEffect(.degrees(expanded ? 90 : 0))
+                }
+                .frame(minHeight: 22)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if expanded {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(Array(lines.enumerated()), id: \.offset) { _, l in
+                        Text(l).font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(3).textSelection(.enabled)
+                    }
+                }
+                .padding(.leading, 14)
+                .transition(.opacity)
+            }
+        }
+        .modifier(ToolCard())
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
 }

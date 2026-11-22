@@ -67,19 +67,13 @@ struct ChatComposerView: View {
     // metrics, side by side — which is what the Mac does with two SlideSwitches.
     private var switches: some View {
         HStack(spacing: 10) {
-            Picker("Mode", selection: Binding(get: { store.agentMode }, set: { store.setAgentMode($0) })) {
-                Text("Chat").tag(false)
-                Text("Agent").tag(true)
-            }
-            .pickerStyle(.segmented)
-            .accessibilityLabel("Conversation mode")
-
-            Picker("Reasoning", selection: Binding(get: { store.thinkingOn }, set: { store.setThinking($0) })) {
-                Text("Think").tag(true)
-                Text("Fast").tag(false)
-            }
-            .pickerStyle(.segmented)
-            .accessibilityLabel("Reasoning mode")
+            JBSlideSwitch(left: "Think", right: "Fast",
+                          isLeft: Binding(get: { store.thinkingOn }, set: { store.setThinking($0) }))
+                .accessibilityLabel("Reasoning mode")
+            JBSlideSwitch(left: "Agent", right: "Chat",
+                          isLeft: Binding(get: { store.agentMode }, set: { store.setAgentMode($0) }))
+                .accessibilityLabel("Conversation mode")
+            Spacer(minLength: 0)
         }
     }
 
@@ -352,5 +346,43 @@ struct ChatModelPicker: View {
         }
         .accessibilityLabel("Chat model")
         .accessibilityValue(store.selectedModel?.display ?? "None selected")
+    }
+}
+
+
+/// The Mac composer's two-way switch: accent thumb on the chosen side.
+struct JBSlideSwitch: View {
+    let left: String
+    let right: String
+    @Binding var isLeft: Bool
+    @Namespace private var ns
+
+    var body: some View {
+        HStack(spacing: 0) {
+            segment(left, active: isLeft) { isLeft = true }
+            segment(right, active: !isLeft) { isLeft = false }
+        }
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).fill(JB.hover.opacity(0.6)))
+        .fixedSize()
+        .sensoryFeedback(.selection, trigger: isLeft)
+    }
+
+    private func segment(_ label: String, active: Bool, action: @escaping () -> Void) -> some View {
+        Button { withAnimation(JB.snap) { action() } } label: {
+            Text(label)
+                .font(.jb(13, active ? .semibold : .medium))
+                .foregroundStyle(active ? JB.onAccent : JB.ink3)
+                .padding(.horizontal, 12).frame(height: 30)
+                .background {
+                    if active {
+                        RoundedRectangle(cornerRadius: JB.rControl - 2, style: .continuous)
+                            .fill(JB.accent)
+                            .matchedGeometryEffect(id: "thumb", in: ns)
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

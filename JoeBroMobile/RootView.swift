@@ -17,6 +17,8 @@ import LocalAuthentication
 
 private enum MainTab: Hashable {
     case joeBro, chats, agents, workspace
+    static let all: [MainTab] = [.joeBro, .chats, .agents, .workspace]
+    var index: Int { Self.all.firstIndex(of: self) ?? 0 }
 }
 
 struct RootView: View {
@@ -44,6 +46,7 @@ struct RootView: View {
     @State private var importingShare = false
     @State private var activityUpdate: Task<Void, Never>?
     @State private var openSharedDraft = false
+    @State private var keyboardUp = false
     @Environment(\.scenePhase) private var scenePhase
 
     private var activityPollKey: String { "\(serverURL)|\(scenePhase)" }
@@ -54,28 +57,41 @@ struct RootView: View {
             if !faceIDGate || unlocked {
                 TabView(selection: $selectedTab) {
                     JoeBroAgentView(store: runtime.joeBro, onOpenSettings: { showSettings = true })
-                        .tabItem { Label("JoeBro", systemImage: "face.smiling") }
+                        .toolbar(.hidden, for: .tabBar)
+                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
                         .tag(MainTab.joeBro)
 
                     ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft, onOpenSettings: { showSettings = true })
-                        .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
+                        .toolbar(.hidden, for: .tabBar)
+                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
                         .tag(MainTab.chats)
 
                     AgentsTabView(api: runtime.api, chatStore: runtime.chat,
                                   mainJoeBro: runtime.joeBro,
                                   onOpenSettings: { showSettings = true },
                                   onOpenJoeBro: { selectedTab = .joeBro })
-                        .tabItem { Label("Agents", systemImage: "circle.hexagongrid.fill") }
+                        .toolbar(.hidden, for: .tabBar)
+                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
                         .tag(MainTab.agents)
 
                     WorkspaceHubView(api: runtime.api,
                                      onOpenSettings: { showSettings = true })
-                        .tabItem { Label("Workspace", systemImage: "square.grid.2x2.fill") }
+                        .toolbar(.hidden, for: .tabBar)
+                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
                         .tag(MainTab.workspace)
                 }
-                .toolbarBackground(.hidden, for: .tabBar)
                 .tint(Color.accentTint)
                 .environment(theme)
+                // JoeBro's own tab bar (the system one is Liquid Glass with stock symbols).
+                .overlay(alignment: .bottom) {
+                    if !keyboardUp {
+                        JBTabBar(selection: Binding(get: { selectedTab.index }, set: { selectedTab = MainTab.all[$0] }),
+                                 items: [.init(title: "JoeBro", glyph: .agent), .init(title: "Chats", symbol: "bubble.left"),
+                                         .init(title: "Agents", glyph: .coding), .init(title: "Workspace", symbol: "square.grid.2x2")])
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardUp = true }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardUp = false }
             } else {
                 VStack(spacing: 22) {
                     Image("JoeBroLogo").resizable().scaledToFit().frame(width: 92, height: 92)

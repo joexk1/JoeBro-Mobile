@@ -94,3 +94,44 @@ extension View {
             }
     }
 }
+
+
+/// JoeBro's tab bar: a flat panel with a hairline, Geist labels, accent on the selected tab.
+struct JBTabBar: View {
+    struct Item { var title: String; var glyph: JBGlyph? = nil; var symbol: String? = nil }
+    /// Height above the home indicator; tab screens reserve this much at the bottom.
+    static let height: CGFloat = 56
+    @Binding var selection: Int
+    let items: [Item]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.offset) { i, item in
+                let on = selection == i
+                Button {
+                    guard selection != i else { return }
+                    withAnimation(JB.snap) { selection = i }
+                } label: {
+                    VStack(spacing: 4) {
+                        Group {
+                            if let g = item.glyph { JBIcon(g, size: 21) }
+                            else if let s = item.symbol { Image(systemName: s).font(.jb(19)) }
+                        }
+                        .frame(height: 24)
+                        Text(item.title).font(.jb(10.5, on ? .semibold : .medium))
+                    }
+                    .foregroundStyle(on ? JB.accent : JB.ink3)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(item.title)
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .padding(.horizontal, 8).padding(.top, 6)
+        .background(JB.panelFill.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(JB.line).frame(height: 1) }
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+}

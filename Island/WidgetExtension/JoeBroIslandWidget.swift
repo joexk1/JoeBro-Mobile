@@ -25,7 +25,7 @@ struct JoeBroIslandWidget: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     Image(systemName: glyph(context.state))
                         .font(.geist(18, .regular))
-                        .foregroundStyle(islandTint)
+                        .foregroundStyle(context.state.finished != nil ? statusColor(context.state) : islandTint)
                         .frame(width: 24, height: 24)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
@@ -46,10 +46,12 @@ struct JoeBroIslandWidget: Widget {
                     JoeBroExpandedIslandContent(state: context.state)
                 }
             } compactLeading: {
-                Image(systemName: glyph(context.state)).foregroundStyle(islandTint)
+                // The one status glyph: finished states tint it, the trailing side stays empty.
+                Image(systemName: glyph(context.state))
+                    .foregroundStyle(context.state.finished != nil ? statusColor(context.state) : islandTint)
             } compactTrailing: {
                 if context.state.finished != nil {
-                    Image(systemName: glyph(context.state)).foregroundStyle(statusColor(context.state))
+                    EmptyView()
                 } else {
                     HStack(spacing: 3) {
                         Text("\(context.state.count)")

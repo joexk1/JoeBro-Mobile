@@ -1,1815 +1,2471 @@
 {
- "GET /api/ping": {
-  "ok": true
- },
- "GET /api/models": {
-  "items": [
-   {
-    "url": "https://demo.joebro.invalid",
-    "models": [
-     "claude-opus-4",
-     "claude-sonnet-4",
-     "claude-haiku-4"
-    ],
-    "models_display": [
-     "Claude Opus 4",
-     "Claude Sonnet 4",
-     "Claude Haiku 4"
-    ],
+  "GET /api/ping": {
+    "ok": true
+  },
+  "GET /api/models": {
+    "items": [
+      {
+        "url": "https://demo.joebro.invalid",
+        "models": [
+          "claude-opus-4",
+          "claude-sonnet-4",
+          "claude-haiku-4"
+        ],
+        "models_display": [
+          "Claude Opus 4",
+          "Claude Sonnet 4",
+          "Claude Haiku 4"
+        ],
+        "endpoint_id": "anthropic",
+        "endpoint_name": "Anthropic",
+        "category": "cloud",
+        "offline": false
+      },
+      {
+        "url": "https://demo.joebro.invalid",
+        "models": [
+          "gpt-5-codex",
+          "gpt-5"
+        ],
+        "models_display": [
+          "GPT-5 Codex",
+          "GPT-5"
+        ],
+        "endpoint_id": "openai",
+        "endpoint_name": "OpenAI",
+        "category": "cloud",
+        "offline": false
+      },
+      {
+        "url": "https://demo.joebro.invalid",
+        "models": [
+          "deepseek-chat",
+          "mistral-large"
+        ],
+        "models_display": [
+          "DeepSeek V3 (your API key)",
+          "Mistral Large (your API key)"
+        ],
+        "endpoint_id": "openrouter",
+        "endpoint_name": "OpenRouter (your API key)",
+        "category": "cloud",
+        "offline": false
+      },
+      {
+        "url": "https://demo.joebro.invalid",
+        "models": [
+          "qwen3-coder-30b",
+          "llama-3.3-70b"
+        ],
+        "models_display": [
+          "Qwen3 Coder 30B",
+          "Llama 3.3 70B"
+        ],
+        "endpoint_id": "local",
+        "endpoint_name": "Local (Ollama)",
+        "category": "local",
+        "offline": false
+      }
+    ]
+  },
+  "GET /api/prefs": {
+    "prefs": {
+      "default_model": "demo-model",
+      "default_endpoint_id": "demo"
+    }
+  },
+  "GET /api/sessions": [
+    {
+      "id": "demo-chat-1",
+      "name": "Plan my week",
+      "model": "demo-model",
+      "mode": "agent",
+      "archived": false,
+      "folder": null,
+      "is_important": true,
+      "endpoint_id": "demo",
+      "created_at": "{{d-1:22:00}}"
+    },
+    {
+      "id": "demo-chat-2",
+      "name": "Summarise a reading",
+      "model": "demo-model",
+      "mode": "chat",
+      "archived": false,
+      "folder": null,
+      "is_important": false,
+      "endpoint_id": "demo",
+      "created_at": "{{d-1:22:00}}"
+    },
+    {
+      "id": "demo-chat-3",
+      "name": "Trip packing list",
+      "model": "demo-model",
+      "mode": "chat",
+      "archived": false,
+      "folder": "Personal",
+      "is_important": false,
+      "endpoint_id": "demo",
+      "created_at": "{{d-1:22:00}}"
+    }
+  ],
+  "POST /api/joebro/session": {
+    "session": {
+      "id": "demo-joebro",
+      "name": "JoeBro",
+      "model": "claude-opus-4",
+      "mode": "agent",
+      "archived": false,
+      "endpoint_id": "anthropic"
+    },
+    "model": "claude-opus-4",
     "endpoint_id": "anthropic",
-    "endpoint_name": "Anthropic",
-    "category": "cloud",
-    "offline": false
-   },
-   {
-    "url": "https://demo.joebro.invalid",
-    "models": [
-     "gpt-5-codex",
-     "gpt-5"
-    ],
-    "models_display": [
-     "GPT-5 Codex",
-     "GPT-5"
-    ],
-    "endpoint_id": "openai",
-    "endpoint_name": "OpenAI",
-    "category": "cloud",
-    "offline": false
-   },
-   {
-    "url": "https://demo.joebro.invalid",
-    "models": [
-     "deepseek-chat",
-     "mistral-large"
-    ],
-    "models_display": [
-     "DeepSeek V3 (your API key)",
-     "Mistral Large (your API key)"
-    ],
-    "endpoint_id": "openrouter",
-    "endpoint_name": "OpenRouter (your API key)",
-    "category": "cloud",
-    "offline": false
-   },
-   {
-    "url": "https://demo.joebro.invalid",
-    "models": [
-     "qwen3-coder-30b",
-     "llama-3.3-70b"
-    ],
-    "models_display": [
-     "Qwen3 Coder 30B",
-     "Llama 3.3 70B"
-    ],
-    "endpoint_id": "local",
-    "endpoint_name": "Local (Ollama)",
-    "category": "local",
-    "offline": false
-   }
-  ]
- },
- "GET /api/prefs": {
-  "prefs": {
-   "default_model": "demo-model",
-   "default_endpoint_id": "demo"
-  }
- },
- "GET /api/sessions": [
-  {
-   "id": "demo-chat-1",
-   "name": "Demo: plan my week",
-   "model": "demo-model",
-   "mode": "agent",
-   "archived": false,
-   "folder": null,
-   "is_important": true,
-   "endpoint_id": "demo",
-   "created_at": "{{d-1:22:00}}"
+    "permission_mode": "readonly",
+    "soul": "Demo assistant. Sample data only."
   },
-  {
-   "id": "demo-chat-2",
-   "name": "Demo: summarise a reading",
-   "model": "demo-model",
-   "mode": "chat",
-   "archived": false,
-   "folder": null,
-   "is_important": false,
-   "endpoint_id": "demo",
-   "created_at": "{{d-1:22:00}}"
+  "GET /api/joebro": {
+    "session": {
+      "id": "demo-joebro",
+      "name": "JoeBro",
+      "model": "claude-opus-4",
+      "mode": "agent",
+      "archived": false,
+      "endpoint_id": "anthropic"
+    },
+    "model": "claude-opus-4",
+    "endpoint_id": "anthropic",
+    "permission_mode": "readonly",
+    "soul": "Demo assistant. Sample data only."
   },
-  {
-   "id": "demo-chat-3",
-   "name": "Demo: trip packing list",
-   "model": "demo-model",
-   "mode": "chat",
-   "archived": false,
-   "folder": "Personal",
-   "is_important": false,
-   "endpoint_id": "demo",
-   "created_at": "{{d-1:22:00}}"
-  }
- ],
- "POST /api/joebro/session": {
-  "session": {
-   "id": "demo-joebro",
-   "name": "JoeBro",
-   "model": "claude-opus-4",
-   "mode": "agent",
-   "archived": false,
-   "endpoint_id": "anthropic"
-  },
-  "model": "claude-opus-4",
-  "endpoint_id": "anthropic",
-  "permission_mode": "readonly",
-  "soul": "Demo assistant. Sample data only."
- },
- "GET /api/joebro": {
-  "session": {
-   "id": "demo-joebro",
-   "name": "JoeBro",
-   "model": "claude-opus-4",
-   "mode": "agent",
-   "archived": false,
-   "endpoint_id": "anthropic"
-  },
-  "model": "claude-opus-4",
-  "endpoint_id": "anthropic",
-  "permission_mode": "readonly",
-  "soul": "Demo assistant. Sample data only."
- },
- "GET /api/history/demo-joebro": {
-  "history": [
-   {
-    "role": "user",
-    "content": "restart what I was working on yesterday",
-    "metadata": {
-     "_db_id": 1
-    }
-   },
-   {
-    "role": "assistant",
-    "content": "Found it. Yesterday evening you were in **atlas**, on branch `feature/auth-middleware`, running Claude Code on \"migrate auth middleware\".\n\nI resumed that session on your MacBook in the same worktree. It has 6 files edited and the refresh-flow tests still to finish. Next it will write the remaining test cases and review its own diff for regressions.\n\nI will ping you when it is ready for review.",
-    "metadata": {
-     "tool_events": [
+  "GET /api/history/demo-joebro": {
+    "history": [
       {
-       "tool": "coding_sessions",
-       "command": "recent sessions since yesterday",
-       "output": "atlas: Claude Code, migrate auth middleware (feature/auth-middleware)",
-       "exit_code": 0
+        "role": "user",
+        "content": "restart what I was working on yesterday",
+        "metadata": {
+          "_db_id": 1
+        }
       },
       {
-       "tool": "coding_agents",
-       "command": "resume Claude Code in atlas on feature/auth-middleware",
-       "output": "resumed on MacBook, 6 files edited",
-       "exit_code": 0
+        "role": "assistant",
+        "content": "Found it. Yesterday evening you were in **atlas**, on branch `feature/auth-middleware`, running Claude Code on \"migrate auth middleware\".\n\nI resumed that session on your MacBook in the same worktree. It has 6 files edited and the refresh-flow tests still to finish. Next it will write the remaining test cases and review its own diff for regressions.\n\nI will ping you when it is ready for review.",
+        "metadata": {
+          "tool_events": [
+            {
+              "tool": "coding_sessions",
+              "command": "recent sessions since yesterday",
+              "output": "atlas: Claude Code, migrate auth middleware (feature/auth-middleware)",
+              "exit_code": 0
+            },
+            {
+              "tool": "coding_agents",
+              "command": "resume Claude Code in atlas on feature/auth-middleware",
+              "output": "resumed on MacBook, 6 files edited",
+              "exit_code": 0
+            }
+          ],
+          "_db_id": 2
+        }
       }
-     ],
-     "_db_id": 2
-    }
-   }
-  ],
-  "model": "claude-opus-4",
-  "name": "JoeBro"
- },
- "GET /api/history/demo-chat-1": {
-  "history": [
-   {
-    "role": "user",
-    "content": "Demo conversation. Plan my week: two lectures, a gym session and the report due Friday.",
-    "metadata": {
-     "_db_id": 1
-    }
-   },
-   {
-    "role": "assistant",
-    "content": "Here is a sample plan. This is demo data, not a real reply.\n\n**Monday**: lecture 10:00, start the report outline\n**Wednesday**: lecture 14:00, gym at 18:00\n**Thursday**: write the report body\n**Friday**: proofread, then submit before 17:00\n\nI also checked your tasks and saved a reminder for Thursday morning.",
-    "metadata": {
-     "tool_events": [
+    ],
+    "model": "claude-opus-4",
+    "name": "JoeBro"
+  },
+  "GET /api/history/demo-chat-1": {
+    "history": [
       {
-       "tool": "calendar",
-       "command": "list events this week",
-       "output": "3 events found (demo)",
-       "exit_code": 0
+        "role": "user",
+        "content": "Demo conversation. Plan my week: two lectures, a gym session and the report due Friday.",
+        "metadata": {
+          "_db_id": 1
+        }
       },
       {
-       "tool": "tasks",
-       "command": "add reminder: write report body",
-       "output": "saved (demo)",
-       "exit_code": 0
+        "role": "assistant",
+        "content": "Here is a sample plan. This is demo data, not a real reply.\n\n**Monday**: lecture 10:00, start the report outline\n**Wednesday**: lecture 14:00, gym at 18:00\n**Thursday**: write the report body\n**Friday**: proofread, then submit before 17:00\n\nI also checked your tasks and saved a reminder for Thursday morning.",
+        "metadata": {
+          "tool_events": [
+            {
+              "tool": "calendar",
+              "command": "list events this week",
+              "output": "3 events found (demo)",
+              "exit_code": 0
+            },
+            {
+              "tool": "tasks",
+              "command": "add reminder: write report body",
+              "output": "saved (demo)",
+              "exit_code": 0
+            }
+          ],
+          "_db_id": 2
+        }
+      },
+      {
+        "role": "user",
+        "content": "Thanks. Keep Friday afternoon free.",
+        "metadata": {
+          "_db_id": 3
+        }
+      },
+      {
+        "role": "assistant",
+        "content": "Done in this demo: Friday afternoon stays empty. In the real app this goes to the JoeBro running on your own Mac.",
+        "metadata": {
+          "_db_id": 4
+        }
       }
-     ],
-     "_db_id": 2
-    }
-   },
-   {
-    "role": "user",
-    "content": "Thanks. Keep Friday afternoon free.",
-    "metadata": {
-     "_db_id": 3
-    }
-   },
-   {
-    "role": "assistant",
-    "content": "Done in this demo: Friday afternoon stays empty. In the real app this goes to the JoeBro running on your own Mac.",
-    "metadata": {
-     "_db_id": 4
-    }
-   }
-  ],
-  "model": "demo-model",
-  "name": "Demo"
- },
- "GET /api/history/demo-chat-2": {
-  "history": [
-   {
-    "role": "user",
-    "content": "Demo: summarise chapter 3 in three bullets.",
-    "metadata": {
-     "_db_id": 1
-    }
-   },
-   {
-    "role": "assistant",
-    "content": "Sample summary (demo data):\n\n- Costs shape behaviour more than intentions do.\n- Rules matter when enforcement is cheap.\n- Exceptions need a stated reason.",
-    "metadata": {
-     "_db_id": 2
-    }
-   }
-  ],
-  "model": "demo-model",
-  "name": "Demo"
- },
- "GET /api/history/demo-chat-3": {
-  "history": [
-   {
-    "role": "user",
-    "content": "Demo: what do I pack for four days in Lisbon?",
-    "metadata": {
-     "_db_id": 1
-    }
-   },
-   {
-    "role": "assistant",
-    "content": "Sample list (demo data): light jacket, walking shoes, charger, passport, a small umbrella.",
-    "metadata": {
-     "_db_id": 2
-    }
-   }
-  ],
-  "model": "demo-model",
-  "name": "Demo"
- },
- "GET /api/tasks": {
-  "tasks": [
-   {
-    "id": "t1",
-    "name": "Demo: morning briefing",
-    "prompt": "Summarise my calendar and unread mail.",
-    "schedule": "daily",
-    "scheduled_time": "07:30",
-    "status": "active",
-    "permission_mode": "readonly",
-    "repeat_day": 0,
-    "scope": "general"
-   },
-   {
-    "id": "t2",
-    "name": "Demo: weekly review",
-    "prompt": "List what I finished this week and what slipped.",
-    "schedule": "weekly",
-    "scheduled_time": "17:00",
-    "status": "active",
-    "permission_mode": "readonly",
-    "repeat_day": 5,
-    "scope": "general"
-   },
-   {
-    "id": "t3",
-    "name": "Demo: tidy downloads folder",
-    "prompt": "Suggest files to archive.",
-    "schedule": "weekly",
-    "scheduled_time": "09:00",
-    "status": "paused",
-    "permission_mode": "readonly",
-    "repeat_day": 1,
-    "scope": "general"
-   }
-  ]
- },
- "GET /api/memory": {
-  "memory": [
-   {
-    "id": "m1",
-    "text": "Demo memory: prefers short answers with a clear next step.",
-    "category": "preferences",
-    "pinned": true
-   },
-   {
-    "id": "m2",
-    "text": "Demo memory: studies Law and Economics; exam in the autumn.",
-    "category": "about",
-    "pinned": false
-   },
-   {
-    "id": "m3",
-    "text": "Demo memory: weekly review happens on Friday at 17:00.",
-    "category": "routines",
-    "pinned": false
-   }
-  ]
- },
- "GET /api/muse": {
-  "files": [
-   {
-    "name": "about-me",
-    "lines": 6,
-    "always": true
-   },
-   {
-    "name": "preferences",
-    "lines": 4,
-    "always": false
-   },
-   {
-    "name": "projects",
-    "lines": 5,
-    "always": false
-   },
-   {
-    "name": "routines",
-    "lines": 3,
-    "always": false
-   }
-  ]
- },
- "GET /api/muse/about-me": {
-  "content": "# About me (demo)\n\nThis is sample text. In the real app this file lives on your own Mac.\n\n- Student, based in Amsterdam\n- Likes short, direct answers\n- Weekly review on Fridays"
- },
- "GET /api/muse/preferences": {
-  "content": "# Preferences (demo)\n\n- Answer first, detail after\n- No emojis\n- Metric units"
- },
- "GET /api/muse/projects": {
-  "content": "# Projects (demo)\n\n- Report on tax incidence, due Friday\n- Trip planning for Lisbon"
- },
- "GET /api/muse/routines": {
-  "content": "# Routines (demo)\n\n- 07:30 morning briefing\n- Friday 17:00 weekly review"
- },
- "GET /api/inbox": {
-  "inbox": [
-   {
-    "id": "n1",
-    "title": "Demo: Morning briefing",
-    "body": "Sample notification. Two events today, one task due. Nothing here is real.",
-    "created_at": "Today 07:30",
-    "read": 0
-   },
-   {
-    "id": "n2",
-    "title": "Demo: Research finished",
-    "body": "Sample notification. Your research report on 'tax incidence' is ready to read.",
-    "created_at": "Yesterday 16:12",
-    "read": 0
-   },
-   {
-    "id": "n3",
-    "title": "Demo: Task completed",
-    "body": "Sample notification. Weekly review ran and saved a summary.",
-    "created_at": "Fri 17:00",
-    "read": 1
-   }
-  ]
- },
- "GET /api/agents": {
-  "ok": true,
-  "agents": [
-   {
-    "id": "c1",
-    "kind": "coding",
-    "title": "Claude Code: migrate auth middleware",
-    "status": "running",
-    "live": true,
-    "model": "claude-opus-4",
-    "created_at": "{{m-8}}",
-    "started_at": "{{m-8}}",
-    "progress": "Editing 6 files, tests running"
-   },
-   {
-    "id": "c1s1",
-    "kind": "subagent",
-    "title": "Explore: find session token usage",
-    "status": "done",
-    "live": false,
-    "model": "claude-haiku-4",
-    "created_at": "{{m-7}}",
-    "started_at": "{{m-7}}",
-    "parent_id": "c1",
-    "finished_at": "{{m-6}}",
-    "result": "Sample result (demo data)."
-   },
-   {
-    "id": "c1s2",
-    "kind": "subagent",
-    "title": "Write tests for refresh flow",
-    "status": "running",
-    "live": true,
-    "model": "claude-sonnet-4",
-    "created_at": "{{m-7}}",
-    "started_at": "{{m-7}}",
-    "parent_id": "c1",
-    "progress": "3 of 5 cases written"
-   },
-   {
-    "id": "c1s3",
-    "kind": "subagent",
-    "title": "Review diff for regressions",
-    "status": "queued",
-    "live": true,
-    "model": "claude-opus-4",
-    "created_at": "{{m-6}}",
-    "started_at": "{{m-6}}",
-    "parent_id": "c1"
-   },
-   {
-    "id": "x1",
-    "kind": "coding",
-    "title": "Codex: fix flaky upload test",
-    "status": "running",
-    "live": true,
-    "model": "gpt-5-codex",
-    "created_at": "{{m-4}}",
-    "started_at": "{{m-4}}",
-    "progress": "Bisecting the failure"
-   },
-   {
-    "id": "x1s1",
-    "kind": "subagent",
-    "title": "Reproduce failure locally",
-    "status": "done",
-    "live": false,
-    "model": "gpt-5-codex",
-    "created_at": "{{m-4}}",
-    "started_at": "{{m-4}}",
-    "parent_id": "x1",
-    "finished_at": "{{m-3}}",
-    "result": "Sample result (demo data)."
-   },
-   {
-    "id": "o1",
-    "kind": "coding",
-    "title": "OpenCode: refactor settings screen",
-    "status": "running",
-    "live": true,
-    "model": "qwen3-coder-30b (local)",
-    "created_at": "{{m-5}}",
-    "started_at": "{{m-5}}",
-    "progress": "Splitting SettingsView"
-   },
-   {
-    "id": "o1s1",
-    "kind": "subagent",
-    "title": "Extract section views",
-    "status": "running",
-    "live": true,
-    "model": "qwen3-coder-30b (local)",
-    "created_at": "{{m-5}}",
-    "started_at": "{{m-5}}",
-    "parent_id": "o1",
-    "progress": "4 of 7 sections"
-   },
-   {
-    "id": "r1",
-    "kind": "research",
-    "title": "Research: on-device model options",
-    "status": "done",
-    "live": false,
-    "model": "claude-sonnet-4",
-    "created_at": "{{d-1:22:08}}",
-    "started_at": "{{d-1:22:08}}",
-    "finished_at": "{{d-1:22:13}}",
-    "result": "Sample result (demo data)."
-   },
-   {
-    "id": "t1",
-    "kind": "task",
-    "title": "Weekly review",
-    "status": "done",
-    "live": false,
+    ],
     "model": "demo-model",
-    "created_at": "{{d-1:22:09}}",
-    "started_at": "{{d-1:22:09}}",
-    "finished_at": "{{d-1:22:14}}",
-    "result": "Sample result (demo data)."
-   },
-   {
-    "id": "b1",
-    "kind": "briefing",
-    "title": "Morning briefing",
-    "status": "done",
-    "live": false,
-    "model": "claude-haiku-4",
-    "created_at": "{{d-1:22:10}}",
-    "started_at": "{{d-1:22:10}}",
-    "finished_at": "{{d-1:22:15}}",
-    "result": "Sample result (demo data)."
-   },
-   {
-    "id": "c2",
-    "kind": "coding",
-    "title": "Claude Code: add dark mode to settings",
-    "status": "done",
-    "live": false,
-    "model": "claude-opus-4",
-    "created_at": "{{d-1:22:10}}",
-    "started_at": "{{d-1:22:10}}",
-    "finished_at": "{{d-1:22:10}}",
-    "result": "Sample result (demo data).",
-    "session_id": "demo-c2"
-   },
-   {
-    "id": "x2",
-    "kind": "coding",
-    "title": "Codex: bump dependencies and fix lint",
-    "status": "done",
-    "live": false,
-    "model": "gpt-5-codex",
-    "created_at": "{{d-1:22:13}}",
-    "started_at": "{{d-1:22:13}}",
-    "finished_at": "{{d-1:22:13}}",
-    "result": "Sample result (demo data).",
-    "session_id": "demo-x2"
-   },
-   {
-    "id": "o2",
-    "kind": "coding",
-    "title": "OpenCode: write API docs for the uploader",
-    "status": "done",
-    "live": false,
-    "model": "qwen3-coder-30b",
-    "created_at": "{{d-1:22:14}}",
-    "started_at": "{{d-1:22:14}}",
-    "finished_at": "{{d-1:22:14}}",
-    "result": "Sample result (demo data).",
-    "session_id": "demo-o2"
-   },
-   {
-    "id": "ch1",
-    "kind": "chat",
-    "title": "Plan the Lisbon trip",
-    "status": "running",
-    "live": true,
-    "model": "claude-sonnet-4",
-    "created_at": "{{m-3}}",
-    "started_at": "{{m-3}}",
-    "progress": "Comparing flights and hotels"
-   },
-   {
-    "id": "r2",
-    "kind": "research",
-    "title": "Research: offline-first sync patterns",
-    "status": "running",
-    "live": true,
-    "model": "claude-opus-4",
-    "created_at": "{{m-2}}",
-    "started_at": "{{m-2}}",
-    "progress": "Reading 6 of 12 sources"
-   },
-   {
-    "id": "t2",
-    "kind": "task",
-    "title": "Daily repo digest",
-    "status": "running",
-    "live": true,
-    "model": "claude-haiku-4",
-    "created_at": "{{m-1}}",
-    "started_at": "{{m-1}}",
-    "progress": "Summarising 14 commits"
-   }
-  ]
- },
- "GET /api/agents/a1": {
-  "ok": true,
-  "agent": {
-   "id": "a1",
-   "kind": "task",
-   "title": "Demo: weekly review",
-   "status": "done",
-   "live": false,
-   "model": "demo-model",
-   "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
-   "created_at": "{{d-1:22:00}}",
-   "finished_at": "{{d-1:22:00}}"
-  }
- },
- "GET /api/agents/a2": {
-  "ok": true,
-  "agent": {
-   "id": "a2",
-   "kind": "research",
-   "title": "Demo: tax incidence",
-   "status": "done",
-   "live": false,
-   "model": "demo-model",
-   "result": "Sample report (demo data).",
-   "created_at": "{{d-1:22:00}}",
-   "finished_at": "{{d-1:22:00}}"
-  }
- },
- "GET /api/skills": {
-  "skills": [
-   {
-    "id": "s1",
-    "name": "Demo: weekly review",
-    "description": "Sample learned procedure.",
-    "content": "1. List finished tasks\n2. List slipped tasks\n3. Suggest next week's three priorities",
-    "when_to_use": "When asked for a review",
-    "status": "active",
-    "confidence": 80
-   }
-  ]
- },
- "GET /api/tools": {
-  "tools": []
- },
- "GET /api/plugins": {
-  "plugins": []
- },
- "GET /api/mcp": {
-  "servers": []
- },
- "GET /api/research/library": {
-  "research": []
- },
- "GET /api/research/active": {
-  "active": []
- },
- "GET /api/email/status": {
-  "configured": false,
-  "type": "",
-  "display": "",
-  "sources": []
- },
- "GET /api/calendar/status": {
-  "configured": false,
-  "type": "",
-  "display": "",
-  "macos_authorized": false
- },
- "GET /api/calendar/events": {
-  "events": []
- },
- "GET /api/pulse": {
-  "pulse": {
-   "enabled": false,
-   "interval_minutes": 60,
-   "checklist": "",
-   "quiet_hours": "22:00-07:00",
-   "model": "",
-   "endpoint_id": "",
-   "last_run": "",
-   "last_spoke": ""
-  }
- },
- "GET /api/plan": {
-  "steps": []
- },
- "GET /api/push/status": {
-  "configured": false
- },
- "chat_reply": "This is a canned demo reply. Nothing was sent anywhere. Pair your own Mac to talk to the real JoeBro.",
- "GET /api/session/demo-chat-1/tip": {
-  "last_id": 4,
-  "mode": "chat",
-  "model": "demo-model"
- },
- "GET /api/session/demo-chat-2/tip": {
-  "last_id": 4,
-  "mode": "chat",
-  "model": "demo-model"
- },
- "GET /api/session/demo-chat-3/tip": {
-  "last_id": 4,
-  "mode": "chat",
-  "model": "demo-model"
- },
- "GET /api/session/demo-joebro/tip": {
-  "last_id": 4,
-  "mode": "chat",
-  "model": "demo-model"
- },
- "GET /api/agents/c1": {
-  "ok": true,
-  "agent": {
-   "id": "c1",
-   "kind": "coding",
-   "title": "Claude Code: migrate auth middleware",
-   "status": "running",
-   "live": true,
-   "model": "claude-opus-4",
-   "created_at": "{{d-1:22:00}}",
-   "started_at": "{{d-1:22:00}}",
-   "progress": "Editing 6 files, tests running"
-  }
- },
- "GET /api/agents/c1s1": {
-  "ok": true,
-  "agent": {
-   "id": "c1s1",
-   "kind": "subagent",
-   "title": "Explore: find session token usage",
-   "status": "done",
-   "live": false,
-   "model": "claude-haiku-4",
-   "created_at": "{{d-1:22:01}}",
-   "started_at": "{{d-1:22:01}}",
-   "parent_id": "c1",
-   "finished_at": "{{d-1:22:06}}",
-   "result": "Sample result (demo data)."
-  }
- },
- "GET /api/agents/c1s2": {
-  "ok": true,
-  "agent": {
-   "id": "c1s2",
-   "kind": "subagent",
-   "title": "Write tests for refresh flow",
-   "status": "running",
-   "live": true,
-   "model": "claude-sonnet-4",
-   "created_at": "{{d-1:22:02}}",
-   "started_at": "{{d-1:22:02}}",
-   "parent_id": "c1",
-   "progress": "3 of 5 cases written"
-  }
- },
- "GET /api/agents/c1s3": {
-  "ok": true,
-  "agent": {
-   "id": "c1s3",
-   "kind": "subagent",
-   "title": "Review diff for regressions",
-   "status": "queued",
-   "live": true,
-   "model": "claude-opus-4",
-   "created_at": "{{d-1:22:03}}",
-   "started_at": "{{d-1:22:03}}",
-   "parent_id": "c1"
-  }
- },
- "GET /api/agents/x1": {
-  "ok": true,
-  "agent": {
-   "id": "x1",
-   "kind": "coding",
-   "title": "Codex: fix flaky upload test",
-   "status": "running",
-   "live": true,
-   "model": "gpt-5-codex",
-   "created_at": "{{d-1:22:04}}",
-   "started_at": "{{d-1:22:04}}",
-   "progress": "Bisecting the failure"
-  }
- },
- "GET /api/agents/x1s1": {
-  "ok": true,
-  "agent": {
-   "id": "x1s1",
-   "kind": "subagent",
-   "title": "Reproduce failure locally",
-   "status": "done",
-   "live": false,
-   "model": "gpt-5-codex",
-   "created_at": "{{d-1:22:05}}",
-   "started_at": "{{d-1:22:05}}",
-   "parent_id": "x1",
-   "finished_at": "{{d-1:22:10}}",
-   "result": "Sample result (demo data)."
-  }
- },
- "GET /api/agents/o1": {
-  "ok": true,
-  "agent": {
-   "id": "o1",
-   "kind": "coding",
-   "title": "OpenCode: refactor settings screen",
-   "status": "running",
-   "live": true,
-   "model": "qwen3-coder-30b (local)",
-   "created_at": "{{d-1:22:06}}",
-   "started_at": "{{d-1:22:06}}",
-   "progress": "Splitting SettingsView"
-  }
- },
- "GET /api/agents/o1s1": {
-  "ok": true,
-  "agent": {
-   "id": "o1s1",
-   "kind": "subagent",
-   "title": "Extract section views",
-   "status": "running",
-   "live": true,
-   "model": "qwen3-coder-30b (local)",
-   "created_at": "{{d-1:22:07}}",
-   "started_at": "{{d-1:22:07}}",
-   "parent_id": "o1",
-   "progress": "4 of 7 sections"
-  }
- },
- "GET /api/agents/r1": {
-  "ok": true,
-  "agent": {
-   "id": "r1",
-   "kind": "research",
-   "title": "Research: on-device model options",
-   "status": "done",
-   "live": false,
-   "model": "claude-sonnet-4",
-   "created_at": "{{d-1:22:08}}",
-   "started_at": "{{d-1:22:08}}",
-   "finished_at": "{{d-1:22:13}}",
-   "result": "Sample result (demo data)."
-  }
- },
- "GET /api/agents/t1": {
-  "ok": true,
-  "agent": {
-   "id": "t1",
-   "kind": "task",
-   "title": "Weekly review",
-   "status": "done",
-   "live": false,
-   "model": "demo-model",
-   "created_at": "{{d-1:22:09}}",
-   "started_at": "{{d-1:22:09}}",
-   "finished_at": "{{d-1:22:14}}",
-   "result": "Sample result (demo data)."
-  }
- },
- "GET /api/agents/b1": {
-  "ok": true,
-  "agent": {
-   "id": "b1",
-   "kind": "briefing",
-   "title": "Morning briefing",
-   "status": "done",
-   "live": false,
-   "model": "claude-haiku-4",
-   "created_at": "{{d-1:22:10}}",
-   "started_at": "{{d-1:22:10}}",
-   "finished_at": "{{d-1:22:15}}",
-   "result": "Sample result (demo data)."
-  }
- },
- "GET /api/night-shift": {
-  "ok": true,
-  "tasks": [
-   {
-    "id": "ns1",
-    "title": "Add retry with backoff to the uploader",
-    "position": 0,
-    "repo": "/code/atlas",
-    "repo_name": "atlas",
-    "prompt": "Add retry with backoff to the uploader",
-    "agent": "claude",
-    "model": "opus",
-    "host": "",
-    "status": "review",
-    "branch": "joebro/night/ns1-add-retry-with-backoff-t",
-    "test_command": "make test",
-    "on_approve": "keep",
-    "result": {
-     "summary": "Added exponential backoff with full jitter (cap 30s) to the uploader, honouring Retry-After. Six new tests, including the 429 and truncated-body cases. No public API changed.",
-     "learned": [
-      "Uploader retries must be idempotent: the server dedupes on the checksum header."
-     ],
-     "commits": 2,
-     "duration_s": 1320,
-     "cost_usd": 1.2,
-     "screenshot": false,
-     "diff": {
-      "files": 6,
-      "insertions": 212,
-      "deletions": 40,
-      "file_list": [
-       {
-        "path": "src/upload.py",
-        "added": 120,
-        "removed": 12
-       },
-       {
-        "path": "src/backoff.py",
-        "added": 54,
-        "removed": 0
-       },
-       {
-        "path": "tests/test_upload.py",
-        "added": 38,
-        "removed": 28
-       }
+    "name": "Demo"
+  },
+  "GET /api/history/demo-chat-2": {
+    "history": [
+      {
+        "role": "user",
+        "content": "Summarise chapter 3 in three bullets.",
+        "metadata": {
+          "_db_id": 1
+        }
+      },
+      {
+        "role": "assistant",
+        "content": "Sample summary (demo data):\n\n- Costs shape behaviour more than intentions do.\n- Rules matter when enforcement is cheap.\n- Exceptions need a stated reason.",
+        "metadata": {
+          "thinking": "Chapter 3 is about incentives. Three bullets means one idea each: costs, enforcement, exceptions. Keep it short.",
+          "thinking_time": 2.1,
+          "_db_id": 2
+        }
+      }
+    ],
+    "model": "demo-model",
+    "name": "Demo"
+  },
+  "GET /api/history/demo-chat-3": {
+    "history": [
+      {
+        "role": "user",
+        "content": "What do I pack for four days in Lisbon?",
+        "metadata": {
+          "_db_id": 1
+        }
+      },
+      {
+        "role": "assistant",
+        "content": "Sample list (demo data): light jacket, walking shoes, charger, passport, a small umbrella.",
+        "metadata": {
+          "_db_id": 2
+        }
+      }
+    ],
+    "model": "demo-model",
+    "name": "Demo"
+  },
+  "GET /api/tasks": {
+    "tasks": [
+      {
+        "id": "t1",
+        "name": "Morning briefing",
+        "prompt": "Summarise my calendar and unread mail.",
+        "schedule": "daily",
+        "scheduled_time": "07:30",
+        "status": "active",
+        "permission_mode": "readonly",
+        "repeat_day": 0,
+        "scope": "general"
+      },
+      {
+        "id": "t2",
+        "name": "Weekly review",
+        "prompt": "List what I finished this week and what slipped.",
+        "schedule": "weekly",
+        "scheduled_time": "17:00",
+        "status": "active",
+        "permission_mode": "readonly",
+        "repeat_day": 5,
+        "scope": "general"
+      },
+      {
+        "id": "t3",
+        "name": "Tidy downloads folder",
+        "prompt": "Suggest files to archive.",
+        "schedule": "weekly",
+        "scheduled_time": "09:00",
+        "status": "paused",
+        "permission_mode": "readonly",
+        "repeat_day": 1,
+        "scope": "general"
+      }
+    ]
+  },
+  "GET /api/memory": {
+    "memory": [
+      {
+        "id": "m1",
+        "text": "Demo memory: prefers short answers with a clear next step.",
+        "category": "preferences",
+        "pinned": true
+      },
+      {
+        "id": "m2",
+        "text": "Demo memory: studies Law and Economics; exam in the autumn.",
+        "category": "about",
+        "pinned": false
+      },
+      {
+        "id": "m3",
+        "text": "Demo memory: weekly review happens on Friday at 17:00.",
+        "category": "routines",
+        "pinned": false
+      }
+    ]
+  },
+  "GET /api/muse": {
+    "files": [
+      {
+        "name": "about-me",
+        "lines": 6,
+        "always": true
+      },
+      {
+        "name": "preferences",
+        "lines": 4,
+        "always": false
+      },
+      {
+        "name": "projects",
+        "lines": 5,
+        "always": false
+      },
+      {
+        "name": "routines",
+        "lines": 3,
+        "always": false
+      }
+    ]
+  },
+  "GET /api/muse/about-me": {
+    "content": "# About me (demo)\n\nThis is sample text. In the real app this file lives on your own Mac.\n\n- Student, based in Amsterdam\n- Likes short, direct answers\n- Weekly review on Fridays"
+  },
+  "GET /api/muse/preferences": {
+    "content": "# Preferences (demo)\n\n- Answer first, detail after\n- No emojis\n- Metric units"
+  },
+  "GET /api/muse/projects": {
+    "content": "# Projects (demo)\n\n- Report on tax incidence, due Friday\n- Trip planning for Lisbon"
+  },
+  "GET /api/muse/routines": {
+    "content": "# Routines (demo)\n\n- 07:30 morning briefing\n- Friday 17:00 weekly review"
+  },
+  "GET /api/inbox": {
+    "inbox": [
+      {
+        "id": "n1",
+        "kind": "agent",
+        "title": "Claude Code finished: fix flaky sync test",
+        "body": "The test now uses an injected clock and passed 50 runs in a row.",
+        "created_at": "{{m-12}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n2",
+        "kind": "agent",
+        "title": "Codex needs your approval",
+        "body": "ledger-api wants to run `go test ./...`. Tap to review.",
+        "created_at": "{{m-25}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n3",
+        "kind": "task",
+        "title": "Research ready: urban heat islands",
+        "body": "12 sources read. The report covers green roofs, albedo and street trees.",
+        "created_at": "{{m-90}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n4",
+        "kind": "pulse",
+        "title": "Calendar: Thesis supervision at 14:00",
+        "body": "Starts in 30 minutes. Chapter 3 draft is attached.",
+        "created_at": "{{m-150}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n5",
+        "kind": "task",
+        "title": "Night Shift review ready",
+        "body": "Three overnight changes are waiting for you: 2 safe, 1 needs a look.",
+        "created_at": "{{m-420}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n6",
+        "kind": "pulse",
+        "title": "Email summary: 9 new since yesterday",
+        "body": "2 need a reply, 1 invoice, 6 can wait. Drafts are ready.",
+        "created_at": "{{m-600}}",
+        "read": 1,
+        "source": "joebro"
+      },
+      {
+        "id": "n7",
+        "kind": "agent",
+        "title": "Memory added",
+        "body": "Remembered: Sam prefers British spelling and short commit messages.",
+        "created_at": "{{m-1500}}",
+        "read": 1,
+        "source": "joebro"
+      }
+    ],
+    "messages": [
+      {
+        "id": "n1",
+        "kind": "agent",
+        "title": "Claude Code finished: fix flaky sync test",
+        "body": "The test now uses an injected clock and passed 50 runs in a row.",
+        "created_at": "{{m-12}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n2",
+        "kind": "agent",
+        "title": "Codex needs your approval",
+        "body": "ledger-api wants to run `go test ./...`. Tap to review.",
+        "created_at": "{{m-25}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n3",
+        "kind": "task",
+        "title": "Research ready: urban heat islands",
+        "body": "12 sources read. The report covers green roofs, albedo and street trees.",
+        "created_at": "{{m-90}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n4",
+        "kind": "pulse",
+        "title": "Calendar: Thesis supervision at 14:00",
+        "body": "Starts in 30 minutes. Chapter 3 draft is attached.",
+        "created_at": "{{m-150}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n5",
+        "kind": "task",
+        "title": "Night Shift review ready",
+        "body": "Three overnight changes are waiting for you: 2 safe, 1 needs a look.",
+        "created_at": "{{m-420}}",
+        "read": 0,
+        "source": "joebro"
+      },
+      {
+        "id": "n6",
+        "kind": "pulse",
+        "title": "Email summary: 9 new since yesterday",
+        "body": "2 need a reply, 1 invoice, 6 can wait. Drafts are ready.",
+        "created_at": "{{m-600}}",
+        "read": 1,
+        "source": "joebro"
+      },
+      {
+        "id": "n7",
+        "kind": "agent",
+        "title": "Memory added",
+        "body": "Remembered: Sam prefers British spelling and short commit messages.",
+        "created_at": "{{m-1500}}",
+        "read": 1,
+        "source": "joebro"
+      }
+    ],
+    "unread": 5
+  },
+  "GET /api/agents": {
+    "ok": true,
+    "agents": [
+      {
+        "id": "c1",
+        "kind": "coding",
+        "title": "Claude Code: migrate atlas-web to sessions v2",
+        "status": "running",
+        "live": true,
+        "model": "claude-opus-4",
+        "created_at": "{{d0:08:41}}",
+        "started_at": "{{d0:08:41}}",
+        "progress": "Updating tests, 31 of 42 passing",
+        "host": "mac",
+        "source": "claude",
+        "cwd": "~/projects/atlas-web",
+        "can_send": true,
+        "node": "MacBook",
+        "agent": "claude-code"
+      },
+      {
+        "id": "c1s1",
+        "kind": "subagent",
+        "title": "Explore: find session token usage",
+        "status": "done",
+        "live": false,
+        "model": "claude-haiku-4",
+        "created_at": "{{m-7}}",
+        "started_at": "{{m-7}}",
+        "parent_id": "c1",
+        "finished_at": "{{m-6}}",
+        "result": "Sample result (demo data)."
+      },
+      {
+        "id": "c1s2",
+        "kind": "subagent",
+        "title": "Write tests for refresh flow",
+        "status": "running",
+        "live": true,
+        "model": "claude-sonnet-4",
+        "created_at": "{{m-7}}",
+        "started_at": "{{m-7}}",
+        "parent_id": "c1",
+        "progress": "3 of 5 cases written"
+      },
+      {
+        "id": "c1s3",
+        "kind": "subagent",
+        "title": "Review diff for regressions",
+        "status": "queued",
+        "live": true,
+        "model": "claude-opus-4",
+        "created_at": "{{m-6}}",
+        "started_at": "{{m-6}}",
+        "parent_id": "c1"
+      },
+      {
+        "id": "x1",
+        "kind": "coding",
+        "title": "Codex: add retry with backoff to ledger-api uploader",
+        "status": "waiting",
+        "live": true,
+        "model": "gpt-5-codex",
+        "created_at": "{{d0:09:10}}",
+        "started_at": "{{d0:09:10}}",
+        "progress": "Waiting for approval to run go test",
+        "host": "pc",
+        "source": "codex",
+        "cwd": "~/projects/ledger-api",
+        "can_send": true,
+        "node": "PC",
+        "agent": "codex"
+      },
+      {
+        "id": "x1s1",
+        "kind": "subagent",
+        "title": "Reproduce failure locally",
+        "status": "done",
+        "live": false,
+        "model": "gpt-5-codex",
+        "created_at": "{{m-4}}",
+        "started_at": "{{m-4}}",
+        "parent_id": "x1",
+        "finished_at": "{{d0:09:20}}",
+        "result": "Sample result (demo data)."
+      },
+      {
+        "id": "o1",
+        "kind": "coding",
+        "title": "OpenCode: split Tide's SettingsView into sections",
+        "status": "idle",
+        "live": false,
+        "model": "qwen3-coder:30b",
+        "created_at": "{{d0:08:15}}",
+        "started_at": "{{d0:08:15}}",
+        "progress": "",
+        "host": "mac",
+        "source": "opencode",
+        "cwd": "~/projects/tide",
+        "can_send": true,
+        "node": "MacBook",
+        "agent": "opencode"
+      },
+      {
+        "id": "o1s1",
+        "kind": "subagent",
+        "title": "Extract section views",
+        "status": "done",
+        "live": false,
+        "model": "qwen3-coder-30b (local)",
+        "created_at": "{{m-5}}",
+        "started_at": "{{m-5}}",
+        "parent_id": "o1",
+        "finished_at": "{{d0:09:20}}",
+        "result": "Finished."
+      },
+      {
+        "id": "r1",
+        "kind": "research",
+        "title": "Research: on-device model options",
+        "status": "done",
+        "live": false,
+        "model": "claude-sonnet-4",
+        "created_at": "{{d-1:22:08}}",
+        "started_at": "{{d-1:22:08}}",
+        "finished_at": "{{d-1:22:13}}",
+        "result": "Sample result (demo data)."
+      },
+      {
+        "id": "t1",
+        "kind": "task",
+        "title": "Weekly review",
+        "status": "done",
+        "live": false,
+        "model": "demo-model",
+        "created_at": "{{d-1:22:09}}",
+        "started_at": "{{d-1:22:09}}",
+        "finished_at": "{{d-1:22:14}}",
+        "result": "Sample result (demo data)."
+      },
+      {
+        "id": "b1",
+        "kind": "briefing",
+        "title": "Morning briefing",
+        "status": "done",
+        "live": false,
+        "model": "claude-haiku-4",
+        "created_at": "{{d-1:22:10}}",
+        "started_at": "{{d-1:22:10}}",
+        "finished_at": "{{d-1:22:15}}",
+        "result": "Sample result (demo data)."
+      },
+      {
+        "id": "c2",
+        "kind": "coding",
+        "title": "Claude Code: add dark mode to settings",
+        "status": "done",
+        "live": false,
+        "model": "claude-opus-4",
+        "created_at": "{{d-1:22:10}}",
+        "started_at": "{{d-1:22:10}}",
+        "finished_at": "{{d-1:22:10}}",
+        "result": "Sample result (demo data).",
+        "session_id": "demo-c2"
+      },
+      {
+        "id": "x2",
+        "kind": "coding",
+        "title": "Codex: bump dependencies and fix lint",
+        "status": "done",
+        "live": false,
+        "model": "gpt-5-codex",
+        "created_at": "{{d-1:22:13}}",
+        "started_at": "{{d-1:22:13}}",
+        "finished_at": "{{d-1:22:13}}",
+        "result": "Sample result (demo data).",
+        "session_id": "demo-x2"
+      },
+      {
+        "id": "o2",
+        "kind": "coding",
+        "title": "OpenCode: write API docs for the uploader",
+        "status": "done",
+        "live": false,
+        "model": "qwen3-coder-30b",
+        "created_at": "{{d-1:22:14}}",
+        "started_at": "{{d-1:22:14}}",
+        "finished_at": "{{d-1:22:14}}",
+        "result": "Sample result (demo data).",
+        "session_id": "demo-o2"
+      },
+      {
+        "id": "ch1",
+        "kind": "chat",
+        "title": "Plan the Lisbon trip",
+        "status": "running",
+        "live": true,
+        "model": "claude-sonnet-4",
+        "created_at": "{{m-3}}",
+        "started_at": "{{m-3}}",
+        "progress": "Comparing flights and hotels"
+      },
+      {
+        "id": "r2",
+        "kind": "research",
+        "title": "Research: offline-first sync patterns",
+        "status": "running",
+        "live": true,
+        "model": "claude-opus-4",
+        "created_at": "{{m-2}}",
+        "started_at": "{{m-2}}",
+        "progress": "Reading 6 of 12 sources"
+      },
+      {
+        "id": "t2",
+        "kind": "task",
+        "title": "Daily repo digest",
+        "status": "running",
+        "live": true,
+        "model": "claude-haiku-4",
+        "created_at": "{{m-1}}",
+        "started_at": "{{m-1}}",
+        "progress": "Summarising 14 commits"
+      }
+    ]
+  },
+  "GET /api/agents/a1": {
+    "ok": true,
+    "agent": {
+      "id": "a1",
+      "kind": "task",
+      "title": "Weekly review",
+      "status": "done",
+      "live": false,
+      "model": "demo-model",
+      "result": "Sample result (demo data): 4 tasks finished, 1 slipped to next week.",
+      "created_at": "{{d-1:22:00}}",
+      "finished_at": "{{d-1:22:00}}"
+    }
+  },
+  "GET /api/agents/a2": {
+    "ok": true,
+    "agent": {
+      "id": "a2",
+      "kind": "research",
+      "title": "Tax incidence",
+      "status": "done",
+      "live": false,
+      "model": "demo-model",
+      "result": "Sample report (demo data).",
+      "created_at": "{{d-1:22:00}}",
+      "finished_at": "{{d-1:22:00}}"
+    }
+  },
+  "GET /api/skills": {
+    "skills": [
+      {
+        "id": "sk1",
+        "name": "release-notes",
+        "description": "Turns merged pull requests into friendly release notes, grouped by area, with the headline change first.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Turns merged pull requests into friendly release notes",
+        "status": "active",
+        "enabled": true,
+        "source": "joebro",
+        "category": "writing",
+        "uses": 14,
+        "confidence": 73
+      },
+      {
+        "id": "sk2",
+        "name": "pr-review",
+        "description": "Reviews a diff for bugs, missing tests and unclear names, then writes comments you could post as they are.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Reviews a diff for bugs",
+        "status": "active",
+        "enabled": true,
+        "source": "claude-code",
+        "category": "code",
+        "uses": 31,
+        "confidence": 76
+      },
+      {
+        "id": "sk3",
+        "name": "thesis-citations",
+        "description": "Checks citations in the urban heat islands thesis against the reference list and flags anything missing or mismatched.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Checks citations in the urban heat islands thesis against the reference list and flags anything missing or mismatched.",
+        "status": "active",
+        "enabled": true,
+        "source": "joebro",
+        "category": "research",
+        "uses": 9,
+        "confidence": 79
+      },
+      {
+        "id": "sk4",
+        "name": "weekly-review",
+        "description": "Looks back over finished and slipped tasks and suggests next week's three priorities.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Looks back over finished and slipped tasks and suggests next week's three priorities.",
+        "status": "active",
+        "enabled": true,
+        "source": "joebro",
+        "category": "planning",
+        "uses": 22,
+        "confidence": 82
+      },
+      {
+        "id": "sk5",
+        "name": "inbox-zero",
+        "description": "Sorts the inbox into reply, delegate and archive, and drafts the short replies.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Sorts the inbox into reply",
+        "status": "active",
+        "enabled": true,
+        "source": "joebro",
+        "category": "email",
+        "uses": 17,
+        "confidence": 85
+      },
+      {
+        "id": "sk6",
+        "name": "figma-to-swiftui",
+        "description": "Reads a Figma frame and writes a SwiftUI view using the project's existing spacing and colour tokens.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Reads a Figma frame and writes a SwiftUI view using the project's existing spacing and colour tokens.",
+        "status": "active",
+        "enabled": true,
+        "source": "claude-code",
+        "category": "design",
+        "uses": 6,
+        "confidence": 88
+      },
+      {
+        "id": "sk7",
+        "name": "sql-explain",
+        "description": "Explains a slow query plan in plain English and suggests the index that would fix it.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Explains a slow query plan in plain English and suggests the index that would fix it.",
+        "status": "disabled",
+        "enabled": false,
+        "source": "claude-code",
+        "category": "data",
+        "uses": 11,
+        "confidence": 91
+      },
+      {
+        "id": "sk8",
+        "name": "trip-planner",
+        "description": "Builds a day-by-day itinerary around your calendar, with travel times and a sensible amount of slack.",
+        "content": "1. Gather the relevant context\n2. Draft the result\n3. Check it against your preferences",
+        "when_to_use": "Builds a day-by-day itinerary around your calendar",
+        "status": "active",
+        "enabled": true,
+        "source": "joebro",
+        "category": "travel",
+        "uses": 4,
+        "confidence": 94
+      }
+    ]
+  },
+  "GET /api/tools": {
+    "tools": [
+      {
+        "id": "tl1",
+        "name": "Weather",
+        "func_name": "get_weather",
+        "base_url": "https://api.open-meteo.com/v1",
+        "has_key": false,
+        "method": "GET",
+        "description": "Current conditions and a 7 day forecast for any city.",
+        "is_enabled": true
+      },
+      {
+        "id": "tl2",
+        "name": "Currency rates",
+        "func_name": "convert_currency",
+        "base_url": "https://api.frankfurter.app",
+        "has_key": true,
+        "method": "GET",
+        "description": "Converts between currencies at the latest published rate.",
+        "is_enabled": true
+      },
+      {
+        "id": "tl3",
+        "name": "Package tracker",
+        "func_name": "track_parcel",
+        "base_url": "https://api.parcels.example/v2",
+        "has_key": false,
+        "method": "GET",
+        "description": "Looks up a parcel by tracking number and reports its stage.",
+        "is_enabled": true
+      },
+      {
+        "id": "tl4",
+        "name": "Reading list",
+        "func_name": "add_reading",
+        "base_url": "https://readlater.example/api",
+        "has_key": true,
+        "method": "POST",
+        "description": "Saves an article to the reading list with tags.",
+        "is_enabled": true
+      },
+      {
+        "id": "tl5",
+        "name": "Air quality",
+        "func_name": "air_quality",
+        "base_url": "https://air-quality-api.open-meteo.com/v1",
+        "has_key": false,
+        "method": "GET",
+        "description": "Hourly air quality and pollen for a location.",
+        "is_enabled": true
+      },
+      {
+        "id": "tl6",
+        "name": "Transit times",
+        "func_name": "next_departures",
+        "base_url": "https://transit.example/api",
+        "has_key": true,
+        "method": "GET",
+        "description": "Next departures from a stop, live.",
+        "is_enabled": true
+      }
+    ]
+  },
+  "GET /api/plugins": {
+    "plugins": [
+      {
+        "id": "pl1",
+        "name": "Focus timer",
+        "kind": "tool",
+        "description": "Starts a focus session, blocks distractions and logs the time.",
+        "is_enabled": true,
+        "source": "local",
+        "slug": "focus-timer",
+        "version": "1.2.0",
+        "managed": true,
+        "contributes": {
+          "tools": [
+            {
+              "name": "focus_timer"
+            }
+          ],
+          "panels": [],
+          "guardrail": false
+        }
+      },
+      {
+        "id": "pl2",
+        "name": "Commit guard",
+        "kind": "guardrail",
+        "description": "Asks before any agent pushes, force-pushes or deletes a branch.",
+        "is_enabled": true,
+        "source": "local",
+        "slug": "commit-guard",
+        "version": "1.0.3",
+        "managed": true,
+        "contributes": {
+          "tools": [],
+          "panels": [],
+          "guardrail": true
+        }
+      },
+      {
+        "id": "pl3",
+        "name": "Reading stats",
+        "kind": "panel",
+        "description": "A side panel with pages read per week and your current streak.",
+        "is_enabled": true,
+        "source": "local",
+        "slug": "reading-stats",
+        "version": "0.9.1",
+        "managed": true,
+        "contributes": {
+          "tools": [],
+          "panels": [
+            {
+              "id": "main",
+              "title": "Reading stats"
+            }
+          ],
+          "guardrail": false
+        }
+      },
+      {
+        "id": "pl4",
+        "name": "Standup writer",
+        "kind": "tool",
+        "description": "Drafts a standup from yesterday's commits and calendar.",
+        "is_enabled": false,
+        "source": "local",
+        "slug": "standup-writer",
+        "version": "1.1.0",
+        "managed": true,
+        "contributes": {
+          "tools": [
+            {
+              "name": "standup_writer"
+            }
+          ],
+          "panels": [],
+          "guardrail": false
+        }
+      }
+    ]
+  },
+  "GET /api/mcp": {
+    "servers": [
+      {
+        "id": "mcp1",
+        "name": "github",
+        "command": "npx",
+        "args": "-y @modelcontextprotocol/server-github",
+        "enabled": true,
+        "status": "connected",
+        "tool_count": 8,
+        "tools": [
+          "search_issues",
+          "get_pull_request",
+          "create_pull_request",
+          "list_commits",
+          "add_comment",
+          "get_file",
+          "create_branch",
+          "merge_pull_request"
+        ]
+      },
+      {
+        "id": "mcp2",
+        "name": "linear",
+        "command": "npx",
+        "args": "-y mcp-remote https://mcp.linear.app/sse",
+        "enabled": true,
+        "status": "connected",
+        "tool_count": 6,
+        "tools": [
+          "list_issues",
+          "create_issue",
+          "update_issue",
+          "list_projects",
+          "add_comment",
+          "search"
+        ]
+      },
+      {
+        "id": "mcp3",
+        "name": "figma",
+        "command": "npx",
+        "args": "-y figma-developer-mcp --stdio",
+        "enabled": true,
+        "status": "connected",
+        "tool_count": 5,
+        "tools": [
+          "get_file",
+          "get_node",
+          "export_image",
+          "list_components",
+          "get_styles"
+        ]
+      },
+      {
+        "id": "mcp4",
+        "name": "filesystem",
+        "command": "npx",
+        "args": "-y @modelcontextprotocol/server-filesystem ~/projects",
+        "enabled": true,
+        "status": "connected",
+        "tool_count": 4,
+        "tools": [
+          "read_file",
+          "write_file",
+          "list_directory",
+          "search_files"
+        ]
+      }
+    ]
+  },
+  "GET /api/research/library": {
+    "research": []
+  },
+  "GET /api/research/active": {
+    "active": []
+  },
+  "GET /api/email/status": {
+    "configured": false,
+    "type": "",
+    "display": "",
+    "sources": []
+  },
+  "GET /api/calendar/status": {
+    "configured": false,
+    "type": "",
+    "display": "",
+    "macos_authorized": false
+  },
+  "GET /api/calendar/events": {
+    "events": []
+  },
+  "GET /api/pulse": {
+    "pulse": {
+      "enabled": false,
+      "interval_minutes": 60,
+      "checklist": "",
+      "quiet_hours": "22:00-07:00",
+      "model": "",
+      "endpoint_id": "",
+      "last_run": "",
+      "last_spoke": ""
+    }
+  },
+  "GET /api/plan": {
+    "steps": []
+  },
+  "GET /api/push/status": {
+    "configured": false
+  },
+  "chat_reply": "This is a canned demo reply. Nothing was sent anywhere. Pair your own Mac to talk to the real JoeBro.",
+  "GET /api/session/demo-chat-1/tip": {
+    "last_id": 4,
+    "mode": "chat",
+    "model": "demo-model"
+  },
+  "GET /api/session/demo-chat-2/tip": {
+    "last_id": 4,
+    "mode": "chat",
+    "model": "demo-model"
+  },
+  "GET /api/session/demo-chat-3/tip": {
+    "last_id": 4,
+    "mode": "chat",
+    "model": "demo-model"
+  },
+  "GET /api/session/demo-joebro/tip": {
+    "last_id": 4,
+    "mode": "chat",
+    "model": "demo-model"
+  },
+  "GET /api/agents/c1": {
+    "ok": true,
+    "agent": {
+      "id": "c1",
+      "kind": "coding",
+      "title": "Claude Code: migrate atlas-web to sessions v2",
+      "status": "running",
+      "live": true,
+      "model": "claude-opus-4",
+      "created_at": "{{d0:08:41}}",
+      "started_at": "{{d0:08:41}}",
+      "progress": "Updating tests, 31 of 42 passing",
+      "host": "mac",
+      "source": "claude",
+      "cwd": "~/projects/atlas-web",
+      "can_send": true,
+      "node": "MacBook",
+      "agent": "claude-code",
+      "result": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "The auth middleware still reads the old token cookie. Can you move atlas-web over to sessions v2 without logging everyone out?",
+          "created_at": "{{d0:08:41}}"
+        },
+        {
+          "role": "assistant",
+          "content": "On it. I will find every place the legacy cookie is read or written first, then migrate in small steps so existing sessions keep working.",
+          "created_at": "{{d0:08:41}}"
+        },
+        {
+          "role": "tool",
+          "content": "Grep: legacy_token",
+          "created_at": "{{d0:08:42}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: src/middleware.ts",
+          "created_at": "{{d0:08:42}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: src/lib/auth.ts",
+          "created_at": "{{d0:08:43}}"
+        },
+        {
+          "role": "event",
+          "content": "Explore subagent finished",
+          "created_at": "{{d0:08:44}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Found 14 references in 6 files. Only `session.ts` and `refresh.ts` write the cookie; the rest only read it. Plan:\n\n- Add a `getSession()` helper that reads v2 first, then falls back to the legacy cookie\n- Rewrite `middleware.ts` to use it\n- Migrate users to v2 silently on their next refresh\n- Delete the fallback once the migration window closes",
+          "created_at": "{{d0:08:45}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: src/lib/auth.ts",
+          "created_at": "{{d0:08:47}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: src/middleware.ts",
+          "created_at": "{{d0:08:49}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: src/app/page.tsx",
+          "created_at": "{{d0:08:51}}"
+        },
+        {
+          "role": "tool",
+          "content": "Grep: useSession",
+          "created_at": "{{d0:08:52}}"
+        },
+        {
+          "role": "assistant",
+          "content": "The helper and middleware are done. `useSession` is called in 9 components, so I am leaving its signature alone and changing only what it reads from.",
+          "created_at": "{{d0:08:54}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: src/hooks/useSession.ts",
+          "created_at": "{{d0:08:56}}"
+        },
+        {
+          "role": "tool",
+          "content": "Bash: pnpm test",
+          "created_at": "{{d0:08:58}}"
+        },
+        {
+          "role": "assistant",
+          "content": "31 of 42 tests pass. The 11 failures are all in `refresh.test.ts`: they stub the old cookie name. I will update the fixtures rather than the code.",
+          "created_at": "{{d0:09:01}}"
+        },
+        {
+          "role": "user",
+          "content": "Good. Please don't touch the billing routes, they have their own session handling.",
+          "created_at": "{{d0:09:03}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Understood, `src/app/billing/**` is off limits. I will keep the change inside `lib`, `hooks` and `middleware`.",
+          "created_at": "{{d0:09:03}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: tests/refresh.test.ts",
+          "created_at": "{{d0:09:05}}"
+        },
+        {
+          "role": "tool",
+          "content": "Bash: pnpm test refresh",
+          "created_at": "{{d0:09:08}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Fixtures updated and the refresh tests are green. Running the full suite once more, then I will write up the migration notes.",
+          "created_at": "{{d0:09:10}}"
+        }
       ]
-     },
-     "tests": {
-      "command": "make test",
-      "passed": true,
-      "duration_s": 41,
-      "output_tail": "148 passed in 41.2s"
-     }
     }
-   },
-   {
-    "id": "ns2",
-    "title": "Migrate auth middleware to sessions v2",
-    "position": 0,
-    "repo": "/code/atlas",
-    "repo_name": "atlas",
-    "prompt": "Migrate auth middleware to sessions v2",
-    "agent": "codex",
-    "model": "gpt-5-codex",
-    "host": "pi",
-    "status": "review",
-    "branch": "joebro/night/ns2-migrate-auth-middleware-",
-    "test_command": "make test",
-    "on_approve": "keep",
-    "result": {
-     "summary": "Moved all middleware to the v2 session store and removed the legacy cookie path. Existing sessions are upgraded on first request. Found and fixed a race in token refresh.",
-     "learned": [],
-     "commits": 2,
-     "duration_s": 2820,
-     "cost_usd": 1.2,
-     "screenshot": false,
-     "diff": {
-      "files": 11,
-      "insertions": 388,
-      "deletions": 214,
-      "file_list": [
-       {
-        "path": "src/auth/session.ts",
-        "added": 140,
-        "removed": 80
-       },
-       {
-        "path": "src/auth/refresh.ts",
-        "added": 96,
-        "removed": 61
-       },
-       {
-        "path": "src/auth/middleware.ts",
-        "added": 70,
-        "removed": 44
-       }
+  },
+  "GET /api/agents/c1s1": {
+    "ok": true,
+    "agent": {
+      "id": "c1s1",
+      "kind": "subagent",
+      "title": "Explore: find session token usage",
+      "status": "done",
+      "live": false,
+      "model": "claude-haiku-4",
+      "created_at": "{{d-1:22:01}}",
+      "started_at": "{{d-1:22:01}}",
+      "parent_id": "c1",
+      "finished_at": "{{d-1:22:06}}",
+      "result": "Sample result (demo data)."
+    }
+  },
+  "GET /api/agents/c1s2": {
+    "ok": true,
+    "agent": {
+      "id": "c1s2",
+      "kind": "subagent",
+      "title": "Write tests for refresh flow",
+      "status": "running",
+      "live": true,
+      "model": "claude-sonnet-4",
+      "created_at": "{{d-1:22:02}}",
+      "started_at": "{{d-1:22:02}}",
+      "parent_id": "c1",
+      "progress": "3 of 5 cases written"
+    }
+  },
+  "GET /api/agents/c1s3": {
+    "ok": true,
+    "agent": {
+      "id": "c1s3",
+      "kind": "subagent",
+      "title": "Review diff for regressions",
+      "status": "queued",
+      "live": true,
+      "model": "claude-opus-4",
+      "created_at": "{{d-1:22:03}}",
+      "started_at": "{{d-1:22:03}}",
+      "parent_id": "c1"
+    }
+  },
+  "GET /api/agents/x1": {
+    "ok": true,
+    "agent": {
+      "id": "x1",
+      "kind": "coding",
+      "title": "Codex: add retry with backoff to ledger-api uploader",
+      "status": "waiting",
+      "live": true,
+      "model": "gpt-5-codex",
+      "created_at": "{{d0:09:10}}",
+      "started_at": "{{d0:09:10}}",
+      "progress": "Waiting for approval to run go test",
+      "host": "pc",
+      "source": "codex",
+      "cwd": "~/projects/ledger-api",
+      "can_send": true,
+      "node": "PC",
+      "agent": "codex",
+      "result": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "The uploader gives up after one failed chunk. Add retry with exponential backoff to ledger-api, and make it configurable.",
+          "created_at": "{{d0:09:10}}"
+        },
+        {
+          "role": "assistant",
+          "content": "I will add a small retry wrapper around `uploadChunk` with jitter, capped at five attempts, with the limits set through config.",
+          "created_at": "{{d0:09:10}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: internal/upload/uploader.go",
+          "created_at": "{{d0:09:11}}"
+        },
+        {
+          "role": "tool",
+          "content": "Grep: uploadChunk",
+          "created_at": "{{d0:09:12}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: internal/config/config.go",
+          "created_at": "{{d0:09:12}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Only `uploader.go` calls it, so the change is contained. I am adding `UploadRetries` and `UploadBackoffMs` to the config and a `retry.go` helper next to the uploader.",
+          "created_at": "{{d0:09:15}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: internal/upload/retry.go",
+          "created_at": "{{d0:09:18}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: internal/upload/uploader.go",
+          "created_at": "{{d0:09:20}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Implemented. The wrapper retries only on network errors and `503`, never on `4xx`, so a bad request still fails fast. Next I want to run the full suite, including the integration tests.",
+          "created_at": "{{d0:09:23}}"
+        },
+        {
+          "role": "approval",
+          "content": "Bash: go test ./... needs your approval",
+          "created_at": "{{d0:09:24}}"
+        }
       ]
-     },
-     "tests": {
-      "command": "make test",
-      "passed": true,
-      "duration_s": 41,
-      "output_tail": "148 passed in 41.2s"
-     }
     }
-   },
-   {
-    "id": "ns3",
-    "title": "Upgrade to React 19 and fix type errors",
-    "position": 0,
-    "repo": "/code/web",
-    "repo_name": "web",
-    "prompt": "Upgrade to React 19 and fix type errors",
-    "agent": "opencode",
-    "model": "qwen3-coder:30b",
-    "host": "linux-box",
-    "status": "review",
-    "branch": "joebro/night/ns3-upgrade-to-react-19-and-",
-    "test_command": "make test",
-    "on_approve": "keep",
-    "result": {
-     "summary": "Codemod replaced 38 forwardRef wrappers. Two tests still fail in the charting wrapper because the library types lag behind; everything else type-checks.",
-     "learned": [
-      "Charting library types lag React 19; keep the wrapper typed loosely."
-     ],
-     "commits": 2,
-     "duration_s": 3480,
-     "cost_usd": 1.2,
-     "screenshot": false,
-     "diff": {
-      "files": 38,
-      "insertions": 540,
-      "deletions": 505,
-      "file_list": [
-       {
-        "path": "src/components/Chart.tsx",
-        "added": 44,
-        "removed": 30
-       },
-       {
-        "path": "src/components/Button.tsx",
-        "added": 12,
-        "removed": 15
-       }
+  },
+  "GET /api/agents/x1s1": {
+    "ok": true,
+    "agent": {
+      "id": "x1s1",
+      "kind": "subagent",
+      "title": "Reproduce failure locally",
+      "status": "done",
+      "live": false,
+      "model": "gpt-5-codex",
+      "created_at": "{{d-1:22:05}}",
+      "started_at": "{{d-1:22:05}}",
+      "parent_id": "x1",
+      "finished_at": "{{d0:09:20}}",
+      "result": "Sample result (demo data).",
+      "progress": ""
+    }
+  },
+  "GET /api/agents/o1": {
+    "ok": true,
+    "agent": {
+      "id": "o1",
+      "kind": "coding",
+      "title": "OpenCode: split Tide's SettingsView into sections",
+      "status": "idle",
+      "live": false,
+      "model": "qwen3-coder:30b",
+      "created_at": "{{d0:08:15}}",
+      "started_at": "{{d0:08:15}}",
+      "progress": "",
+      "host": "mac",
+      "source": "opencode",
+      "cwd": "~/projects/tide",
+      "can_send": true,
+      "node": "MacBook",
+      "agent": "opencode",
+      "result": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tide's settings screen has grown a bit wild. Can you split SettingsView into sensible sections and keep behaviour the same?",
+          "created_at": "{{d0:08:15}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Yes. I will extract each section into its own view and keep `SettingsView` as a thin list that composes them.",
+          "created_at": "{{d0:08:15}}"
+        },
+        {
+          "role": "tool",
+          "content": "Read: Tide/Settings/SettingsView.swift",
+          "created_at": "{{d0:08:16}}"
+        },
+        {
+          "role": "tool",
+          "content": "Grep: @AppStorage",
+          "created_at": "{{d0:08:17}}"
+        },
+        {
+          "role": "assistant",
+          "content": "The file is 612 lines with seven natural sections: Reminders, Appearance, Units, Widgets, Sync, Data and About. Settings are shared through a single `SettingsStore`, so the pieces can stay small.",
+          "created_at": "{{d0:08:20}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: Tide/Settings/RemindersSection.swift",
+          "created_at": "{{d0:08:24}}"
+        },
+        {
+          "role": "tool",
+          "content": "Edit: Tide/Settings/SettingsView.swift",
+          "created_at": "{{d0:08:28}}"
+        },
+        {
+          "role": "tool",
+          "content": "Bash: xcodebuild -scheme Tide build",
+          "created_at": "{{d0:08:31}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Done. `SettingsView.swift` is now 74 lines, the build is clean, and the previews render all seven sections. Nothing changed in behaviour. Want me to add snapshot tests next?",
+          "created_at": "{{d0:08:36}}"
+        }
       ]
-     },
-     "tests": {
-      "command": "make test",
-      "passed": false,
-      "duration_s": 41,
-      "output_tail": "2 failed, 146 passed\nFAILED tests/test_upload.py::test_retry_cap"
-     }
     }
-   },
-   {
-    "id": "ns4",
-    "title": "Write migration guide for the v2 API",
-    "position": 1,
-    "repo": "/code/atlas",
-    "repo_name": "atlas",
-    "prompt": "Write migration guide for the v2 API",
-    "agent": "claude",
-    "model": "sonnet",
-    "status": "queued"
-   },
-   {
-    "id": "ns5",
-    "title": "Add dark mode to the settings screens",
-    "position": 2,
-    "repo": "/code/web",
-    "repo_name": "web",
-    "prompt": "Add dark mode to the settings screens",
-    "agent": "opencode",
-    "model": "llama3.3:70b",
-    "status": "queued"
-   },
-   {
-    "id": "ns6",
-    "title": "Profile and fix the slow dashboard query",
-    "position": 3,
-    "repo": "/code/atlas",
-    "repo_name": "atlas",
-    "prompt": "Profile and fix the slow dashboard query",
-    "agent": "codex",
-    "model": "gpt-5",
-    "status": "queued"
-   }
-  ],
-  "config": {
-   "enabled": true,
-   "window_start": "23:00",
-   "window_end": "07:00",
-   "default_agent": "claude"
   },
-  "running": 0,
-  "queued": 3
- },
- "GET /api/night-shift/ns1/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/night-shift/ns2/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/night-shift/ns3/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/night-shift/ns4/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/night-shift/ns5/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/night-shift/ns6/diff": {
-  "ok": true,
-  "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
-  "truncated": false
- },
- "GET /api/shared-memory/projects": {
-  "ok": true,
-  "projects": [
-   {
-    "key": "user",
-    "name": "You",
-    "active": 2,
-    "archived": 0
-   },
-   {
-    "key": "global",
-    "name": "Global",
-    "active": 2,
-    "archived": 0
-   },
-   {
-    "key": "github.com/acme/atlas",
-    "name": "atlas",
-    "active": 5,
-    "archived": 3
-   },
-   {
-    "key": "github.com/acme/web",
-    "name": "web",
-    "active": 1,
-    "archived": 0
-   }
-  ]
- },
- "GET /api/shared-memory": {
-  "ok": true,
-  "facts": [
-   {
-    "id": "sm1",
-    "project": "user",
-    "project_name": "You",
-    "scope": "user",
-    "topic": "style",
-    "kind": "preference",
-    "text": "Prefers short answers with a clear next step, and code over prose.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.95,
-    "recalls": 9,
-    "created_at": "{{d-3:09:00}}",
-    "updated_at": "{{d-0:09:00}}",
-    "provenance": {
-     "agent": "app",
-     "model": "",
-     "host": "MacBook",
-     "source": "app"
+  "GET /api/agents/o1s1": {
+    "ok": true,
+    "agent": {
+      "id": "o1s1",
+      "kind": "subagent",
+      "title": "Extract section views",
+      "status": "done",
+      "live": false,
+      "model": "qwen3-coder-30b (local)",
+      "created_at": "{{d-1:22:07}}",
+      "started_at": "{{d-1:22:07}}",
+      "parent_id": "o1",
+      "progress": "",
+      "finished_at": "{{d0:09:20}}",
+      "result": "Finished."
     }
-   },
-   {
-    "id": "sm2",
-    "project": "user",
-    "project_name": "You",
-    "scope": "user",
-    "topic": "review",
-    "kind": "preference",
-    "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.8,
-    "recalls": 5,
-    "created_at": "{{d-5:09:00}}",
-    "updated_at": "{{d-2:09:00}}",
-    "provenance": {
-     "agent": "joebro",
-     "model": "claude-sonnet-4",
-     "host": "MacBook",
-     "source": "app"
-    }
-   },
-   {
-    "id": "sm3",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "testing",
-    "kind": "fact",
-    "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.88,
-    "recalls": 12,
-    "created_at": "{{d-4:09:00}}",
-    "updated_at": "{{d-1:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm4",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "sync",
-    "kind": "decision",
-    "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.82,
-    "recalls": 7,
-    "created_at": "{{d-5:09:00}}",
-    "updated_at": "{{d-2:09:00}}",
-    "provenance": {
-     "agent": "codex",
-     "model": "gpt-5-codex",
-     "host": "Pi",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm5",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "migrations",
-    "kind": "gotcha",
-    "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.74,
-    "recalls": 6,
-    "created_at": "{{d-7:09:00}}",
-    "updated_at": "{{d-4:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm6",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "auth",
-    "kind": "learned",
-    "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.66,
-    "recalls": 3,
-    "created_at": "{{d-4:09:00}}",
-    "updated_at": "{{d-1:09:00}}",
-    "provenance": {
-     "agent": "opencode",
-     "model": "qwen3-coder:30b",
-     "host": "Linux box",
-     "source": "night_shift"
-    }
-   },
-   {
-    "id": "sm7",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "uploader",
-    "kind": "handoff",
-    "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.58,
-    "recalls": 2,
-    "created_at": "{{d-3:09:00}}",
-    "updated_at": "{{d-0:09:00}}",
-    "provenance": {
-     "agent": "codex",
-     "model": "gpt-5-codex",
-     "host": "Pi",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm8",
-    "project": "github.com/acme/web",
-    "project_name": "web",
-    "scope": "project",
-    "topic": "react",
-    "kind": "decision",
-    "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.7,
-    "recalls": 4,
-    "created_at": "{{d-6:09:00}}",
-    "updated_at": "{{d-3:09:00}}",
-    "provenance": {
-     "agent": "opencode",
-     "model": "qwen3-coder:30b",
-     "host": "Linux box",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm9",
-    "project": "global",
-    "project_name": "Global",
-    "scope": "global",
-    "topic": "commits",
-    "kind": "preference",
-    "text": "Small commits with a imperative subject line; never push without being asked.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.9,
-    "recalls": 15,
-    "created_at": "{{d-9:09:00}}",
-    "updated_at": "{{d-6:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
-    }
-   },
-   {
-    "id": "sm10",
-    "project": "global",
-    "project_name": "Global",
-    "scope": "global",
-    "topic": "machines",
-    "kind": "fact",
-    "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.77,
-    "recalls": 8,
-    "created_at": "{{d-8:09:00}}",
-    "updated_at": "{{d-5:09:00}}",
-    "provenance": {
-     "agent": "app",
-     "model": "",
-     "host": "MacBook",
-     "source": "app"
-    }
-   }
-  ],
-  "count": 10
- },
- "GET /api/shared-memory/sm1": {
-  "ok": true,
-  "fact": {
-   "id": "sm1",
-   "project": "user",
-   "project_name": "You",
-   "scope": "user",
-   "topic": "style",
-   "kind": "preference",
-   "text": "Prefers short answers with a clear next step, and code over prose.",
-   "status": "active",
-   "pinned": true,
-   "strength": 0.95,
-   "recalls": 9,
-   "created_at": "{{d-3:09:00}}",
-   "updated_at": "{{d-0:09:00}}",
-   "provenance": {
-    "agent": "app",
-    "model": "",
-    "host": "MacBook",
-    "source": "app"
-   }
   },
-  "history": [
-   {
-    "id": "sm1",
-    "project": "user",
-    "project_name": "You",
-    "scope": "user",
-    "topic": "style",
-    "kind": "preference",
-    "text": "Prefers short answers with a clear next step, and code over prose.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.95,
-    "recalls": 9,
-    "created_at": "{{d-3:09:00}}",
-    "updated_at": "{{d-0:09:00}}",
-    "provenance": {
-     "agent": "app",
-     "model": "",
-     "host": "MacBook",
-     "source": "app"
+  "GET /api/agents/r1": {
+    "ok": true,
+    "agent": {
+      "id": "r1",
+      "kind": "research",
+      "title": "Research: on-device model options",
+      "status": "done",
+      "live": false,
+      "model": "claude-sonnet-4",
+      "created_at": "{{d-1:22:08}}",
+      "started_at": "{{d-1:22:08}}",
+      "finished_at": "{{d-1:22:13}}",
+      "result": "Sample result (demo data)."
     }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm2": {
-  "ok": true,
-  "fact": {
-   "id": "sm2",
-   "project": "user",
-   "project_name": "You",
-   "scope": "user",
-   "topic": "review",
-   "kind": "preference",
-   "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.8,
-   "recalls": 5,
-   "created_at": "{{d-5:09:00}}",
-   "updated_at": "{{d-2:09:00}}",
-   "provenance": {
-    "agent": "joebro",
-    "model": "claude-sonnet-4",
-    "host": "MacBook",
-    "source": "app"
-   }
   },
-  "history": [
-   {
-    "id": "sm2",
-    "project": "user",
-    "project_name": "You",
-    "scope": "user",
-    "topic": "review",
-    "kind": "preference",
-    "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.8,
-    "recalls": 5,
-    "created_at": "{{d-5:09:00}}",
-    "updated_at": "{{d-2:09:00}}",
-    "provenance": {
-     "agent": "joebro",
-     "model": "claude-sonnet-4",
-     "host": "MacBook",
-     "source": "app"
+  "GET /api/agents/t1": {
+    "ok": true,
+    "agent": {
+      "id": "t1",
+      "kind": "task",
+      "title": "Weekly review",
+      "status": "done",
+      "live": false,
+      "model": "demo-model",
+      "created_at": "{{d-1:22:09}}",
+      "started_at": "{{d-1:22:09}}",
+      "finished_at": "{{d-1:22:14}}",
+      "result": "Sample result (demo data)."
     }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm3": {
-  "ok": true,
-  "fact": {
-   "id": "sm3",
-   "project": "github.com/acme/atlas",
-   "project_name": "atlas",
-   "scope": "project",
-   "topic": "testing",
-   "kind": "fact",
-   "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
-   "status": "active",
-   "pinned": true,
-   "strength": 0.88,
-   "recalls": 12,
-   "created_at": "{{d-4:09:00}}",
-   "updated_at": "{{d-1:09:00}}",
-   "provenance": {
-    "agent": "claude",
-    "model": "claude-opus-4",
-    "host": "MacBook",
-    "source": "mcp"
-   }
   },
-  "history": [
-   {
-    "id": "sm3",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "testing",
-    "kind": "fact",
-    "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.88,
-    "recalls": 12,
-    "created_at": "{{d-4:09:00}}",
-    "updated_at": "{{d-1:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
+  "GET /api/agents/b1": {
+    "ok": true,
+    "agent": {
+      "id": "b1",
+      "kind": "briefing",
+      "title": "Morning briefing",
+      "status": "done",
+      "live": false,
+      "model": "claude-haiku-4",
+      "created_at": "{{d-1:22:10}}",
+      "started_at": "{{d-1:22:10}}",
+      "finished_at": "{{d-1:22:15}}",
+      "result": "Sample result (demo data)."
     }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm4": {
-  "ok": true,
-  "fact": {
-   "id": "sm4",
-   "project": "github.com/acme/atlas",
-   "project_name": "atlas",
-   "scope": "project",
-   "topic": "sync",
-   "kind": "decision",
-   "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.82,
-   "recalls": 7,
-   "created_at": "{{d-5:09:00}}",
-   "updated_at": "{{d-2:09:00}}",
-   "provenance": {
-    "agent": "codex",
-    "model": "gpt-5-codex",
-    "host": "Pi",
-    "source": "mcp"
-   }
   },
-  "history": [
-   {
-    "id": "sm4",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "sync",
-    "kind": "decision",
-    "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.82,
-    "recalls": 7,
-    "created_at": "{{d-5:09:00}}",
-    "updated_at": "{{d-2:09:00}}",
-    "provenance": {
-     "agent": "codex",
-     "model": "gpt-5-codex",
-     "host": "Pi",
-     "source": "mcp"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm5": {
-  "ok": true,
-  "fact": {
-   "id": "sm5",
-   "project": "github.com/acme/atlas",
-   "project_name": "atlas",
-   "scope": "project",
-   "topic": "migrations",
-   "kind": "gotcha",
-   "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.74,
-   "recalls": 6,
-   "created_at": "{{d-7:09:00}}",
-   "updated_at": "{{d-4:09:00}}",
-   "provenance": {
-    "agent": "claude",
-    "model": "claude-opus-4",
-    "host": "MacBook",
-    "source": "mcp"
-   }
+  "GET /api/night-shift": {
+    "ok": true,
+    "tasks": [
+      {
+        "id": "ns1",
+        "title": "Add retry with backoff to the uploader",
+        "position": 0,
+        "repo": "/code/atlas",
+        "repo_name": "atlas",
+        "prompt": "Add retry with backoff to the uploader",
+        "agent": "claude",
+        "model": "opus",
+        "host": "",
+        "status": "review",
+        "branch": "joebro/night/ns1-add-retry-with-backoff-t",
+        "test_command": "make test",
+        "on_approve": "keep",
+        "result": {
+          "summary": "Added exponential backoff with full jitter (cap 30s) to the uploader, honouring Retry-After. Six new tests, including the 429 and truncated-body cases. No public API changed.",
+          "learned": [
+            "Uploader retries must be idempotent: the server dedupes on the checksum header."
+          ],
+          "commits": 2,
+          "duration_s": 1320,
+          "cost_usd": 1.2,
+          "screenshot": false,
+          "diff": {
+            "files": 6,
+            "insertions": 212,
+            "deletions": 40,
+            "file_list": [
+              {
+                "path": "src/upload.py",
+                "added": 120,
+                "removed": 12
+              },
+              {
+                "path": "src/backoff.py",
+                "added": 54,
+                "removed": 0
+              },
+              {
+                "path": "tests/test_upload.py",
+                "added": 38,
+                "removed": 28
+              }
+            ]
+          },
+          "tests": {
+            "command": "make test",
+            "passed": true,
+            "duration_s": 41,
+            "output_tail": "148 passed in 41.2s"
+          }
+        }
+      },
+      {
+        "id": "ns2",
+        "title": "Migrate auth middleware to sessions v2",
+        "position": 0,
+        "repo": "/code/atlas",
+        "repo_name": "atlas",
+        "prompt": "Migrate auth middleware to sessions v2",
+        "agent": "codex",
+        "model": "gpt-5-codex",
+        "host": "pi",
+        "status": "review",
+        "branch": "joebro/night/ns2-migrate-auth-middleware-",
+        "test_command": "make test",
+        "on_approve": "keep",
+        "result": {
+          "summary": "Moved all middleware to the v2 session store and removed the legacy cookie path. Existing sessions are upgraded on first request. Found and fixed a race in token refresh.",
+          "learned": [],
+          "commits": 2,
+          "duration_s": 2820,
+          "cost_usd": 1.2,
+          "screenshot": false,
+          "diff": {
+            "files": 11,
+            "insertions": 388,
+            "deletions": 214,
+            "file_list": [
+              {
+                "path": "src/auth/session.ts",
+                "added": 140,
+                "removed": 80
+              },
+              {
+                "path": "src/auth/refresh.ts",
+                "added": 96,
+                "removed": 61
+              },
+              {
+                "path": "src/auth/middleware.ts",
+                "added": 70,
+                "removed": 44
+              }
+            ]
+          },
+          "tests": {
+            "command": "make test",
+            "passed": true,
+            "duration_s": 41,
+            "output_tail": "148 passed in 41.2s"
+          }
+        }
+      },
+      {
+        "id": "ns3",
+        "title": "Upgrade to React 19 and fix type errors",
+        "position": 0,
+        "repo": "/code/web",
+        "repo_name": "web",
+        "prompt": "Upgrade to React 19 and fix type errors",
+        "agent": "opencode",
+        "model": "qwen3-coder:30b",
+        "host": "linux-box",
+        "status": "review",
+        "branch": "joebro/night/ns3-upgrade-to-react-19-and-",
+        "test_command": "make test",
+        "on_approve": "keep",
+        "result": {
+          "summary": "Codemod replaced 38 forwardRef wrappers. Two tests still fail in the charting wrapper because the library types lag behind; everything else type-checks.",
+          "learned": [
+            "Charting library types lag React 19; keep the wrapper typed loosely."
+          ],
+          "commits": 2,
+          "duration_s": 3480,
+          "cost_usd": 1.2,
+          "screenshot": false,
+          "diff": {
+            "files": 38,
+            "insertions": 540,
+            "deletions": 505,
+            "file_list": [
+              {
+                "path": "src/components/Chart.tsx",
+                "added": 44,
+                "removed": 30
+              },
+              {
+                "path": "src/components/Button.tsx",
+                "added": 12,
+                "removed": 15
+              }
+            ]
+          },
+          "tests": {
+            "command": "make test",
+            "passed": false,
+            "duration_s": 41,
+            "output_tail": "2 failed, 146 passed\nFAILED tests/test_upload.py::test_retry_cap"
+          }
+        }
+      },
+      {
+        "id": "ns4",
+        "title": "Write migration guide for the v2 API",
+        "position": 1,
+        "repo": "/code/atlas",
+        "repo_name": "atlas",
+        "prompt": "Write migration guide for the v2 API",
+        "agent": "claude",
+        "model": "sonnet",
+        "status": "queued"
+      },
+      {
+        "id": "ns5",
+        "title": "Add dark mode to the settings screens",
+        "position": 2,
+        "repo": "/code/web",
+        "repo_name": "web",
+        "prompt": "Add dark mode to the settings screens",
+        "agent": "opencode",
+        "model": "llama3.3:70b",
+        "status": "queued"
+      },
+      {
+        "id": "ns6",
+        "title": "Profile and fix the slow dashboard query",
+        "position": 3,
+        "repo": "/code/atlas",
+        "repo_name": "atlas",
+        "prompt": "Profile and fix the slow dashboard query",
+        "agent": "codex",
+        "model": "gpt-5",
+        "status": "queued"
+      }
+    ],
+    "config": {
+      "enabled": true,
+      "window_start": "23:00",
+      "window_end": "07:00",
+      "default_agent": "claude"
+    },
+    "running": 0,
+    "queued": 3
   },
-  "history": [
-   {
-    "id": "sm5",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "migrations",
-    "kind": "gotcha",
-    "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.74,
-    "recalls": 6,
-    "created_at": "{{d-7:09:00}}",
-    "updated_at": "{{d-4:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm6": {
-  "ok": true,
-  "fact": {
-   "id": "sm6",
-   "project": "github.com/acme/atlas",
-   "project_name": "atlas",
-   "scope": "project",
-   "topic": "auth",
-   "kind": "learned",
-   "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.66,
-   "recalls": 3,
-   "created_at": "{{d-4:09:00}}",
-   "updated_at": "{{d-1:09:00}}",
-   "provenance": {
-    "agent": "opencode",
-    "model": "qwen3-coder:30b",
-    "host": "Linux box",
-    "source": "night_shift"
-   }
+  "GET /api/night-shift/ns1/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
   },
-  "history": [
-   {
-    "id": "sm6",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "auth",
-    "kind": "learned",
-    "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.66,
-    "recalls": 3,
-    "created_at": "{{d-4:09:00}}",
-    "updated_at": "{{d-1:09:00}}",
-    "provenance": {
-     "agent": "opencode",
-     "model": "qwen3-coder:30b",
-     "host": "Linux box",
-     "source": "night_shift"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm7": {
-  "ok": true,
-  "fact": {
-   "id": "sm7",
-   "project": "github.com/acme/atlas",
-   "project_name": "atlas",
-   "scope": "project",
-   "topic": "uploader",
-   "kind": "handoff",
-   "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.58,
-   "recalls": 2,
-   "created_at": "{{d-3:09:00}}",
-   "updated_at": "{{d-0:09:00}}",
-   "provenance": {
-    "agent": "codex",
-    "model": "gpt-5-codex",
-    "host": "Pi",
-    "source": "mcp"
-   }
+  "GET /api/night-shift/ns2/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
   },
-  "history": [
-   {
-    "id": "sm7",
-    "project": "github.com/acme/atlas",
-    "project_name": "atlas",
-    "scope": "project",
-    "topic": "uploader",
-    "kind": "handoff",
-    "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.58,
-    "recalls": 2,
-    "created_at": "{{d-3:09:00}}",
-    "updated_at": "{{d-0:09:00}}",
-    "provenance": {
-     "agent": "codex",
-     "model": "gpt-5-codex",
-     "host": "Pi",
-     "source": "mcp"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm8": {
-  "ok": true,
-  "fact": {
-   "id": "sm8",
-   "project": "github.com/acme/web",
-   "project_name": "web",
-   "scope": "project",
-   "topic": "react",
-   "kind": "decision",
-   "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.7,
-   "recalls": 4,
-   "created_at": "{{d-6:09:00}}",
-   "updated_at": "{{d-3:09:00}}",
-   "provenance": {
-    "agent": "opencode",
-    "model": "qwen3-coder:30b",
-    "host": "Linux box",
-    "source": "mcp"
-   }
+  "GET /api/night-shift/ns3/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
   },
-  "history": [
-   {
-    "id": "sm8",
-    "project": "github.com/acme/web",
-    "project_name": "web",
-    "scope": "project",
-    "topic": "react",
-    "kind": "decision",
-    "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.7,
-    "recalls": 4,
-    "created_at": "{{d-6:09:00}}",
-    "updated_at": "{{d-3:09:00}}",
-    "provenance": {
-     "agent": "opencode",
-     "model": "qwen3-coder:30b",
-     "host": "Linux box",
-     "source": "mcp"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm9": {
-  "ok": true,
-  "fact": {
-   "id": "sm9",
-   "project": "global",
-   "project_name": "Global",
-   "scope": "global",
-   "topic": "commits",
-   "kind": "preference",
-   "text": "Small commits with a imperative subject line; never push without being asked.",
-   "status": "active",
-   "pinned": true,
-   "strength": 0.9,
-   "recalls": 15,
-   "created_at": "{{d-9:09:00}}",
-   "updated_at": "{{d-6:09:00}}",
-   "provenance": {
-    "agent": "claude",
-    "model": "claude-opus-4",
-    "host": "MacBook",
-    "source": "mcp"
-   }
+  "GET /api/night-shift/ns4/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
   },
-  "history": [
-   {
-    "id": "sm9",
-    "project": "global",
-    "project_name": "Global",
-    "scope": "global",
-    "topic": "commits",
-    "kind": "preference",
-    "text": "Small commits with a imperative subject line; never push without being asked.",
-    "status": "active",
-    "pinned": true,
-    "strength": 0.9,
-    "recalls": 15,
-    "created_at": "{{d-9:09:00}}",
-    "updated_at": "{{d-6:09:00}}",
-    "provenance": {
-     "agent": "claude",
-     "model": "claude-opus-4",
-     "host": "MacBook",
-     "source": "mcp"
-    }
-   }
-  ],
-  "log": []
- },
- "GET /api/shared-memory/sm10": {
-  "ok": true,
-  "fact": {
-   "id": "sm10",
-   "project": "global",
-   "project_name": "Global",
-   "scope": "global",
-   "topic": "machines",
-   "kind": "fact",
-   "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
-   "status": "active",
-   "pinned": false,
-   "strength": 0.77,
-   "recalls": 8,
-   "created_at": "{{d-8:09:00}}",
-   "updated_at": "{{d-5:09:00}}",
-   "provenance": {
-    "agent": "app",
-    "model": "",
-    "host": "MacBook",
-    "source": "app"
-   }
+  "GET /api/night-shift/ns5/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
   },
-  "history": [
-   {
-    "id": "sm10",
-    "project": "global",
-    "project_name": "Global",
-    "scope": "global",
-    "topic": "machines",
-    "kind": "fact",
-    "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
-    "status": "active",
-    "pinned": false,
-    "strength": 0.77,
-    "recalls": 8,
-    "created_at": "{{d-8:09:00}}",
-    "updated_at": "{{d-5:09:00}}",
-    "provenance": {
-     "agent": "app",
-     "model": "",
-     "host": "MacBook",
-     "source": "app"
-    }
-   }
-  ],
-  "log": []
- }
+  "GET /api/night-shift/ns6/diff": {
+    "ok": true,
+    "diff": "diff --git a/src/upload.py b/src/upload.py\n--- a/src/upload.py\n+++ b/src/upload.py\n@@ -41,7 +41,19 @@ def send(chunk):\n-    return post(chunk)\n+    for attempt in range(MAX_ATTEMPTS):\n+        try:\n+            return post(chunk)\n+        except Retryable as err:\n+            time.sleep(backoff(attempt, err.retry_after))\n+    raise UploadFailed(chunk.id)\n",
+    "truncated": false
+  },
+  "GET /api/shared-memory/projects": {
+    "ok": true,
+    "projects": [
+      {
+        "key": "user",
+        "name": "You",
+        "active": 2,
+        "archived": 0
+      },
+      {
+        "key": "global",
+        "name": "Global",
+        "active": 2,
+        "archived": 0
+      },
+      {
+        "key": "github.com/acme/atlas",
+        "name": "atlas",
+        "active": 5,
+        "archived": 3
+      },
+      {
+        "key": "github.com/acme/web",
+        "name": "web",
+        "active": 1,
+        "archived": 0
+      }
+    ]
+  },
+  "GET /api/shared-memory": {
+    "ok": true,
+    "facts": [
+      {
+        "id": "sm1",
+        "project": "user",
+        "project_name": "You",
+        "scope": "user",
+        "topic": "style",
+        "kind": "preference",
+        "text": "Prefers short answers with a clear next step, and code over prose.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.95,
+        "recalls": 9,
+        "created_at": "{{d-3:09:00}}",
+        "updated_at": "{{d-0:09:00}}",
+        "provenance": {
+          "agent": "app",
+          "model": "",
+          "host": "MacBook",
+          "source": "app"
+        }
+      },
+      {
+        "id": "sm2",
+        "project": "user",
+        "project_name": "You",
+        "scope": "user",
+        "topic": "review",
+        "kind": "preference",
+        "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.8,
+        "recalls": 5,
+        "created_at": "{{d-5:09:00}}",
+        "updated_at": "{{d-2:09:00}}",
+        "provenance": {
+          "agent": "joebro",
+          "model": "claude-sonnet-4",
+          "host": "MacBook",
+          "source": "app"
+        }
+      },
+      {
+        "id": "sm3",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "testing",
+        "kind": "fact",
+        "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.88,
+        "recalls": 12,
+        "created_at": "{{d-4:09:00}}",
+        "updated_at": "{{d-1:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm4",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "sync",
+        "kind": "decision",
+        "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.82,
+        "recalls": 7,
+        "created_at": "{{d-5:09:00}}",
+        "updated_at": "{{d-2:09:00}}",
+        "provenance": {
+          "agent": "codex",
+          "model": "gpt-5-codex",
+          "host": "Pi",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm5",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "migrations",
+        "kind": "gotcha",
+        "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.74,
+        "recalls": 6,
+        "created_at": "{{d-7:09:00}}",
+        "updated_at": "{{d-4:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm6",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "auth",
+        "kind": "learned",
+        "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.66,
+        "recalls": 3,
+        "created_at": "{{d-4:09:00}}",
+        "updated_at": "{{d-1:09:00}}",
+        "provenance": {
+          "agent": "opencode",
+          "model": "qwen3-coder:30b",
+          "host": "Linux box",
+          "source": "night_shift"
+        }
+      },
+      {
+        "id": "sm7",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "uploader",
+        "kind": "handoff",
+        "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.58,
+        "recalls": 2,
+        "created_at": "{{d-3:09:00}}",
+        "updated_at": "{{d-0:09:00}}",
+        "provenance": {
+          "agent": "codex",
+          "model": "gpt-5-codex",
+          "host": "Pi",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm8",
+        "project": "github.com/acme/web",
+        "project_name": "web",
+        "scope": "project",
+        "topic": "react",
+        "kind": "decision",
+        "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.7,
+        "recalls": 4,
+        "created_at": "{{d-6:09:00}}",
+        "updated_at": "{{d-3:09:00}}",
+        "provenance": {
+          "agent": "opencode",
+          "model": "qwen3-coder:30b",
+          "host": "Linux box",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm9",
+        "project": "global",
+        "project_name": "Global",
+        "scope": "global",
+        "topic": "commits",
+        "kind": "preference",
+        "text": "Small commits with a imperative subject line; never push without being asked.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.9,
+        "recalls": 15,
+        "created_at": "{{d-9:09:00}}",
+        "updated_at": "{{d-6:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      },
+      {
+        "id": "sm10",
+        "project": "global",
+        "project_name": "Global",
+        "scope": "global",
+        "topic": "machines",
+        "kind": "fact",
+        "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.77,
+        "recalls": 8,
+        "created_at": "{{d-8:09:00}}",
+        "updated_at": "{{d-5:09:00}}",
+        "provenance": {
+          "agent": "app",
+          "model": "",
+          "host": "MacBook",
+          "source": "app"
+        }
+      }
+    ],
+    "count": 10
+  },
+  "GET /api/shared-memory/sm1": {
+    "ok": true,
+    "fact": {
+      "id": "sm1",
+      "project": "user",
+      "project_name": "You",
+      "scope": "user",
+      "topic": "style",
+      "kind": "preference",
+      "text": "Prefers short answers with a clear next step, and code over prose.",
+      "status": "active",
+      "pinned": true,
+      "strength": 0.95,
+      "recalls": 9,
+      "created_at": "{{d-3:09:00}}",
+      "updated_at": "{{d-0:09:00}}",
+      "provenance": {
+        "agent": "app",
+        "model": "",
+        "host": "MacBook",
+        "source": "app"
+      }
+    },
+    "history": [
+      {
+        "id": "sm1",
+        "project": "user",
+        "project_name": "You",
+        "scope": "user",
+        "topic": "style",
+        "kind": "preference",
+        "text": "Prefers short answers with a clear next step, and code over prose.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.95,
+        "recalls": 9,
+        "created_at": "{{d-3:09:00}}",
+        "updated_at": "{{d-0:09:00}}",
+        "provenance": {
+          "agent": "app",
+          "model": "",
+          "host": "MacBook",
+          "source": "app"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm2": {
+    "ok": true,
+    "fact": {
+      "id": "sm2",
+      "project": "user",
+      "project_name": "You",
+      "scope": "user",
+      "topic": "review",
+      "kind": "preference",
+      "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.8,
+      "recalls": 5,
+      "created_at": "{{d-5:09:00}}",
+      "updated_at": "{{d-2:09:00}}",
+      "provenance": {
+        "agent": "joebro",
+        "model": "claude-sonnet-4",
+        "host": "MacBook",
+        "source": "app"
+      }
+    },
+    "history": [
+      {
+        "id": "sm2",
+        "project": "user",
+        "project_name": "You",
+        "scope": "user",
+        "topic": "review",
+        "kind": "preference",
+        "text": "Reviews diffs in the morning; wants the test result and a one-paragraph summary first.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.8,
+        "recalls": 5,
+        "created_at": "{{d-5:09:00}}",
+        "updated_at": "{{d-2:09:00}}",
+        "provenance": {
+          "agent": "joebro",
+          "model": "claude-sonnet-4",
+          "host": "MacBook",
+          "source": "app"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm3": {
+    "ok": true,
+    "fact": {
+      "id": "sm3",
+      "project": "github.com/acme/atlas",
+      "project_name": "atlas",
+      "scope": "project",
+      "topic": "testing",
+      "kind": "fact",
+      "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
+      "status": "active",
+      "pinned": true,
+      "strength": 0.88,
+      "recalls": 12,
+      "created_at": "{{d-4:09:00}}",
+      "updated_at": "{{d-1:09:00}}",
+      "provenance": {
+        "agent": "claude",
+        "model": "claude-opus-4",
+        "host": "MacBook",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm3",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "testing",
+        "kind": "fact",
+        "text": "Run tests with `make test`; the suite needs Postgres on port 5433.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.88,
+        "recalls": 12,
+        "created_at": "{{d-4:09:00}}",
+        "updated_at": "{{d-1:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm4": {
+    "ok": true,
+    "fact": {
+      "id": "sm4",
+      "project": "github.com/acme/atlas",
+      "project_name": "atlas",
+      "scope": "project",
+      "topic": "sync",
+      "kind": "decision",
+      "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.82,
+      "recalls": 7,
+      "created_at": "{{d-5:09:00}}",
+      "updated_at": "{{d-2:09:00}}",
+      "provenance": {
+        "agent": "codex",
+        "model": "gpt-5-codex",
+        "host": "Pi",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm4",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "sync",
+        "kind": "decision",
+        "text": "Staleness is decided in one place, `isStale` in clock.ts. Ties are broken by device id.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.82,
+        "recalls": 7,
+        "created_at": "{{d-5:09:00}}",
+        "updated_at": "{{d-2:09:00}}",
+        "provenance": {
+          "agent": "codex",
+          "model": "gpt-5-codex",
+          "host": "Pi",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm5": {
+    "ok": true,
+    "fact": {
+      "id": "sm5",
+      "project": "github.com/acme/atlas",
+      "project_name": "atlas",
+      "scope": "project",
+      "topic": "migrations",
+      "kind": "gotcha",
+      "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.74,
+      "recalls": 6,
+      "created_at": "{{d-7:09:00}}",
+      "updated_at": "{{d-4:09:00}}",
+      "provenance": {
+        "agent": "claude",
+        "model": "claude-opus-4",
+        "host": "MacBook",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm5",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "migrations",
+        "kind": "gotcha",
+        "text": "Never edit an applied migration; the checksum guard fails the whole deploy. Add a new one.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.74,
+        "recalls": 6,
+        "created_at": "{{d-7:09:00}}",
+        "updated_at": "{{d-4:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm6": {
+    "ok": true,
+    "fact": {
+      "id": "sm6",
+      "project": "github.com/acme/atlas",
+      "project_name": "atlas",
+      "scope": "project",
+      "topic": "auth",
+      "kind": "learned",
+      "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.66,
+      "recalls": 3,
+      "created_at": "{{d-4:09:00}}",
+      "updated_at": "{{d-1:09:00}}",
+      "provenance": {
+        "agent": "opencode",
+        "model": "qwen3-coder:30b",
+        "host": "Linux box",
+        "source": "night_shift"
+      }
+    },
+    "history": [
+      {
+        "id": "sm6",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "auth",
+        "kind": "learned",
+        "text": "The legacy token cookie is written only by session.ts and refresh.ts; everything else just reads it.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.66,
+        "recalls": 3,
+        "created_at": "{{d-4:09:00}}",
+        "updated_at": "{{d-1:09:00}}",
+        "provenance": {
+          "agent": "opencode",
+          "model": "qwen3-coder:30b",
+          "host": "Linux box",
+          "source": "night_shift"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm7": {
+    "ok": true,
+    "fact": {
+      "id": "sm7",
+      "project": "github.com/acme/atlas",
+      "project_name": "atlas",
+      "scope": "project",
+      "topic": "uploader",
+      "kind": "handoff",
+      "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.58,
+      "recalls": 2,
+      "created_at": "{{d-3:09:00}}",
+      "updated_at": "{{d-0:09:00}}",
+      "provenance": {
+        "agent": "codex",
+        "model": "gpt-5-codex",
+        "host": "Pi",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm7",
+        "project": "github.com/acme/atlas",
+        "project_name": "atlas",
+        "scope": "project",
+        "topic": "uploader",
+        "kind": "handoff",
+        "text": "Retry with backoff is half done: curve chosen (full jitter, cap 30s), integration tests still to write.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.58,
+        "recalls": 2,
+        "created_at": "{{d-3:09:00}}",
+        "updated_at": "{{d-0:09:00}}",
+        "provenance": {
+          "agent": "codex",
+          "model": "gpt-5-codex",
+          "host": "Pi",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm8": {
+    "ok": true,
+    "fact": {
+      "id": "sm8",
+      "project": "github.com/acme/web",
+      "project_name": "web",
+      "scope": "project",
+      "topic": "react",
+      "kind": "decision",
+      "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.7,
+      "recalls": 4,
+      "created_at": "{{d-6:09:00}}",
+      "updated_at": "{{d-3:09:00}}",
+      "provenance": {
+        "agent": "opencode",
+        "model": "qwen3-coder:30b",
+        "host": "Linux box",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm8",
+        "project": "github.com/acme/web",
+        "project_name": "web",
+        "scope": "project",
+        "topic": "react",
+        "kind": "decision",
+        "text": "Staying on React 19 with the compiler off until the charting library ships its types.",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.7,
+        "recalls": 4,
+        "created_at": "{{d-6:09:00}}",
+        "updated_at": "{{d-3:09:00}}",
+        "provenance": {
+          "agent": "opencode",
+          "model": "qwen3-coder:30b",
+          "host": "Linux box",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm9": {
+    "ok": true,
+    "fact": {
+      "id": "sm9",
+      "project": "global",
+      "project_name": "Global",
+      "scope": "global",
+      "topic": "commits",
+      "kind": "preference",
+      "text": "Small commits with a imperative subject line; never push without being asked.",
+      "status": "active",
+      "pinned": true,
+      "strength": 0.9,
+      "recalls": 15,
+      "created_at": "{{d-9:09:00}}",
+      "updated_at": "{{d-6:09:00}}",
+      "provenance": {
+        "agent": "claude",
+        "model": "claude-opus-4",
+        "host": "MacBook",
+        "source": "mcp"
+      }
+    },
+    "history": [
+      {
+        "id": "sm9",
+        "project": "global",
+        "project_name": "Global",
+        "scope": "global",
+        "topic": "commits",
+        "kind": "preference",
+        "text": "Small commits with a imperative subject line; never push without being asked.",
+        "status": "active",
+        "pinned": true,
+        "strength": 0.9,
+        "recalls": 15,
+        "created_at": "{{d-9:09:00}}",
+        "updated_at": "{{d-6:09:00}}",
+        "provenance": {
+          "agent": "claude",
+          "model": "claude-opus-4",
+          "host": "MacBook",
+          "source": "mcp"
+        }
+      }
+    ],
+    "log": []
+  },
+  "GET /api/shared-memory/sm10": {
+    "ok": true,
+    "fact": {
+      "id": "sm10",
+      "project": "global",
+      "project_name": "Global",
+      "scope": "global",
+      "topic": "machines",
+      "kind": "fact",
+      "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
+      "status": "active",
+      "pinned": false,
+      "strength": 0.77,
+      "recalls": 8,
+      "created_at": "{{d-8:09:00}}",
+      "updated_at": "{{d-5:09:00}}",
+      "provenance": {
+        "agent": "app",
+        "model": "",
+        "host": "MacBook",
+        "source": "app"
+      }
+    },
+    "history": [
+      {
+        "id": "sm10",
+        "project": "global",
+        "project_name": "Global",
+        "scope": "global",
+        "topic": "machines",
+        "kind": "fact",
+        "text": "Three machines are linked: MacBook (daily driver), Pi (always on, runs Night Shift), Linux box (GPU, local models).",
+        "status": "active",
+        "pinned": false,
+        "strength": 0.77,
+        "recalls": 8,
+        "created_at": "{{d-8:09:00}}",
+        "updated_at": "{{d-5:09:00}}",
+        "provenance": {
+          "agent": "app",
+          "model": "",
+          "host": "MacBook",
+          "source": "app"
+        }
+      }
+    ],
+    "log": []
+  }
 }

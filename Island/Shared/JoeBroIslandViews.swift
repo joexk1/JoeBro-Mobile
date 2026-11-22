@@ -4,8 +4,15 @@ import SwiftUI
 let islandTint = Color(red: 0x5F / 255, green: 0xD1 / 255, blue: 0xB0 / 255)
 
 func title(_ s: JoeBroActivityAttributes.ContentState, stale: Bool) -> String {
-    if s.finished != nil { return s.headline ?? "Done" }
+    // The glyph carries the status; a check or warning mark in the text would double it.
+    if s.finished != nil { return stripMarks(s.headline ?? "Done") }
     return stale ? "Update paused" : s.headline ?? summary(s.count)
+}
+
+private func stripMarks(_ t: String) -> String {
+    let marks = Set("\u{2713}\u{2714}\u{2705}\u{2611}\u{26A0}\u{274C}\u{2717}\u{2718}\u{FE0F}")
+    let out = String(t.filter { !marks.contains($0) }).trimmingCharacters(in: .whitespaces)
+    return out.isEmpty ? "Done" : out
 }
 
 /// "3 subagents" / "1 waiting", or nil when there is nothing to add.
@@ -72,7 +79,7 @@ struct JoeBroLockScreenActivity: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: glyph(state)).foregroundStyle(islandTint)
+                Image(systemName: glyph(state)).foregroundStyle(state.finished != nil ? statusColor(state) : islandTint)
                     .font(.geist(15, .regular)).frame(width: 18, height: 18)
                 Text(title(state, stale: isStale))
                     .font(.geist(15, .semibold))
