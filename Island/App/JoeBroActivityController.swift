@@ -37,6 +37,8 @@ final class JoeBroActivityController {
     private static var chatOrder: [String] = []
     private static var chatBegan: [String: Date] = [:]
     private static var keepAlive: Task<Void, Never>?
+    private static var endTask: Task<Void, Never>?
+    private static let finishedLinger: TimeInterval = 300
     private static var lastLive: [String: String] = [:]   // live agent id -> title, to name the outcome
     private static var failedTurn = false
 
@@ -109,6 +111,19 @@ final class JoeBroActivityController {
         }
     }
 
+    /// Really ends the (finished) activity after the linger, unless work resumed meanwhile.
+    private static func scheduleEnd() {
+        guard endTask == nil else { return }
+        endTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(finishedLinger))
+            endTask = nil
+            guard !Task.isCancelled, chatTurns.isEmpty, agents.isEmpty else { return }
+            for activity in Activity<JoeBroActivityAttributes>.activities where activity.content.state.finished != nil {
+                await activity.end(nil, dismissalPolicy: .immediate)
+            }
+        }
+    }
+
     private func sync() async {
         let chats = Self.chatOrder.compactMap { id in Self.chatTurns[id].map { (id, $0) } }
         var current = Activity<JoeBroActivityAttributes>.activities.first {
@@ -126,6 +141,8 @@ final class JoeBroActivityController {
             current = nil
         }
         guard !chats.isEmpty || !Self.agents.isEmpty else {
+            // Idle. Show the finished card but keep the activity alive, so work that starts again soon
+            // repopulates this same card; it is only ended after `finishedLinger` seconds of quiet.
             if let current {
                 if current.content.state.finished == nil {
                     let failed = Self.failedTurn
@@ -133,16 +150,18 @@ final class JoeBroActivityController {
                         state: JoeBroActivityAttributes.ContentState(count: 0, runs: [], startedAt: current.content.state.startedAt,
                                      headline: failed ? "Something went wrong" : "JoeBro finished",
                                      finished: failed ? "failed" : "done"),
-                        staleDate: nil)
-                    await current.end(done, dismissalPolicy: .after(.now.addingTimeInterval(300)))
+                        staleDate: .now.addingTimeInterval(Self.finishedLinger + 60))
+                    await current.update(done)
                     Self.failedTurn = false
                     Self.lastLive = [:]
                 }
-                // A turn may have begun while the end was in flight.
+                Self.scheduleEnd()
+                // A turn may have begun while the update was in flight.
                 if !Self.chatTurns.isEmpty || !Self.agents.isEmpty { await sync() }
             }
             return
         }
+        Self.endTask?.cancel(); Self.endTask = nil
         guard isAvailable else { return }
         // A streaming chat turn is also registered by the backend as a "chat" agent
         // with the same session: show it once (as the reply), never twice.
@@ -166,7 +185,7 @@ final class JoeBroActivityController {
         let state = JoeBroActivityAttributes.ContentState(
             count: all.count,
             runs: Array(ordered.prefix(Self.maxRuns)),
-            startedAt: current?.content.state.startedAt ?? .now,
+            startedAt: current.flatMap { $0.content.state.finished == nil ? $0.content.state.startedAt : nil } ?? .now,
             headline: headline,
             finished: nil,
             subagents: Self.subagents.filter(\.isLive).count,

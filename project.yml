@@ -82,6 +82,15 @@ targets:
     sources:
       - path: Island/Shared
       - path: Island/WidgetExtension
+      # Geist faces for the Live Activity (registered through UIAppFonts in its Info.plist).
+      - path: JoeBroMobile/Design/Fonts
+        includes:
+          - "Geist-Medium.ttf"
+          - "Geist-Regular.ttf"
+          - "Geist-SemiBold.ttf"
+          - "GeistMono-Regular.ttf"
+          - "GeistMono-Medium.ttf"
+          - "GeistMono-SemiBold.ttf"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(JOEBRO_BUNDLE_ID).island
