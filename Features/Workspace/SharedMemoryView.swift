@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// The one memory screen: what you told JoeBro (You), what every agent learned about a
+/// The one memory surface: what you told JoeBro (You), what every agent learned about a
 /// project (Projects) and what applies everywhere (Global), each fact with who wrote it.
+/// The plain-text Files the phone agent reads live under it too.
 struct SharedMemoryView: View {
     let ws: WorkspaceAPI
     @Environment(JoeBroTheme.self) private var theme
@@ -29,32 +30,36 @@ struct SharedMemoryView: View {
 
     var body: some View {
         List {
-            Section {
-                Picker("Scope", selection: $scope) { ForEach(Scope.allCases, id: \.self) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented)
-                if scope == .projects || scope == .all {
-                    Picker("Project", selection: $project) {
-                        Text("Every project").tag("__all")
-                        ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
+            VStack(alignment: .leading, spacing: 8) {
+                JBSegments(options: Scope.allCases.map { ($0, $0.rawValue) }, selection: $scope)
+                HStack(spacing: 8) {
+                    if (scope == .projects || scope == .all) && projects.count > 2 {
+                        Picker("", selection: $project) {
+                            Text("Every project").tag("__all")
+                            ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
+                        }.labelsHidden().tint(JB.ink2)
                     }
-                }
-                Toggle("Show archived", isOn: $showArchived).tint(Color.accentTint)
-            }.listRowBackground(Color.joeInk.opacity(0.06))
-            Section {
-                if shown.isEmpty { empty("brain", "Nothing here yet", "Agents add facts as they work. You can add your own with +.") }
-                ForEach(Array(shown.prefix(DemoMode.option("-JoeBroMemMax").flatMap(Int.init) ?? .max))) { fact in
-                    Button { editing = fact } label: { FactRow(fact: fact) }.buttonStyle(.plain)
-                        .listRowBackground(Color.joeInk.opacity(0.06))
-                        .swipeActions(edge: .leading) {
-                            Button(fact.isPinned ? "Unpin" : "Pin", systemImage: "pin") { Task { await act { try await ws.memoryPin(fact.id, pinned: !fact.isPinned) } } }.tint(.orange)
-                        }
-                        .swipeActions(edge: .trailing) {
-                            if fact.isArchived { Button("Restore", systemImage: "arrow.uturn.backward") { Task { await act { try await ws.memoryRestore(fact.id) } } }.tint(.green) }
-                            else { Button("Archive", systemImage: "archivebox") { Task { await act { try await ws.memoryArchive(fact.id) } } }.tint(.gray) }
-                        }
+                    Spacer()
+                    Button { showArchived.toggle() } label: { JBChip(text: "archived", tint: showArchived ? JB.accent : nil) }.buttonStyle(.plain)
+                    NavigationLink { MuseView(ws: ws) } label: { JBChip(text: "files") }.buttonStyle(.plain)
                 }
             }
+            .listRowBackground(Color.clear).listRowSeparator(.hidden).listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 4, trailing: 14))
+            if shown.isEmpty { JBEmptyRow(art: .inbox, text: "Nothing here yet") }
+            ForEach(Array(shown.prefix(DemoMode.option("-JoeBroMemMax").flatMap(Int.init) ?? .max))) { fact in
+                Button { editing = fact } label: { FactRow(fact: fact) }.buttonStyle(.plain)
+                    .jbListRow()
+                    .swipeActions(edge: .leading) {
+                        Button(fact.isPinned ? "Unpin" : "Pin", systemImage: "pin") { Task { await act { try await ws.memoryPin(fact.id, pinned: !fact.isPinned) } } }.tint(JB.accent)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        if fact.isArchived { Button("Restore", systemImage: "arrow.uturn.backward") { Task { await act { try await ws.memoryRestore(fact.id) } } }.tint(JB.live) }
+                        else { Button("Archive", systemImage: "archivebox") { Task { await act { try await ws.memoryArchive(fact.id) } } }.tint(JB.ink3) }
+                    }
+            }
         }
-        .listStyle(.insetGrouped).scrollContentBackground(.hidden).jbWallpaper()
+        .animation(JB.smooth, value: shown.map(\.id))
+        .jbPlainList()
         .navigationTitle("Memory").navigationBarTitleDisplayMode(.inline)
         .searchable(text: $search, prompt: "Search memory")
         .onSubmit(of: .search) { Task { await load() } }
@@ -62,7 +67,7 @@ struct SharedMemoryView: View {
         .onChange(of: project) { _, _ in Task { await load() } }
         .onChange(of: showArchived) { _, _ in Task { await load() } }
         .refreshable { await load() }.task { await load() }
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { adding = true } label: { Image(systemName: "plus").foregroundStyle(Color.accentTint) } } }
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { JBPlusButton(label: "Add to memory") { adding = true } } }
         .sheet(item: $editing) { f in FactEditor(ws: ws, fact: f) { Task { await load() } }.environment(theme) }
         .sheet(isPresented: $adding) { FactAdder(ws: ws, projects: projects, current: project) { Task { await load() } }.environment(theme) }
         .alert("Memory", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
@@ -86,22 +91,19 @@ private struct FactRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: fact.kindSymbol).font(.jbCaption).foregroundStyle(Color.accentTint)
-                Text(fact.kindLabel).font(.jbCaption.weight(.semibold)).foregroundStyle(.secondary)
-                if let t = fact.topic, !t.isEmpty { Text("· " + t).font(.jbCaption).foregroundStyle(.secondary) }
+                Text(((fact.topic ?? "").isEmpty ? fact.kindLabel : (fact.topic ?? "")).lowercased()).font(.jbMono(11)).foregroundStyle(JB.ink3)
                 Spacer()
-                if fact.isPinned { Image(systemName: "pin.fill").font(.jbCaption).foregroundStyle(.orange) }
-                if fact.isArchived { Text("Archived").font(.jbCaption2).foregroundStyle(.secondary) }
+                if fact.isPinned { Circle().fill(JB.accent).frame(width: 6, height: 6) }
+                Text(nsRelative(fact.updatedAt)).font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
-            Text(fact.text).font(.jbSubheadline).foregroundStyle(.joeInk).fixedSize(horizontal: false, vertical: true)
+            Text(fact.text).font(.jb(15)).foregroundStyle(JB.ink).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
-                ProgressView(value: fact.strengthValue).tint(fact.strengthValue < 0.3 ? .orange : Color.accentTint).frame(width: 54)
-                Text(fact.provenanceLine).font(.jbCaption2).foregroundStyle(.secondary).lineLimit(1)
-                Spacer(minLength: 0)
-                Text(nsRelative(fact.updatedAt)).font(.jbCaption2).foregroundStyle(.secondary)
+                Capsule().fill(JB.line).frame(width: 40, height: 2)
+                    .overlay(alignment: .leading) { Capsule().fill(fact.strengthValue < 0.3 ? JB.warn : JB.accent).frame(width: 40 * fact.strengthValue, height: 2) }
+                Text([fact.provenanceLine, fact.scope == "project" ? fact.projectName ?? "" : ""].filter { !$0.isEmpty }.joined(separator: " · "))
+                    .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
             }
-            if fact.scope == "project", let n = fact.projectName { Text(n).font(.jbCaption2).foregroundStyle(.tertiary) }
-        }.padding(.vertical, 4).contentShape(Rectangle())
+        }.contentShape(Rectangle()).opacity(fact.isArchived ? 0.5 : 1)
     }
 }
 
@@ -118,26 +120,27 @@ struct FactEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Fact") { TextField("Fact", text: $text, axis: .vertical).lineLimit(2...10) }
+                Section { TextField("Fact", text: $text, axis: .vertical).lineLimit(2...10) }.jbFormRow()
                 Section {
                     TextField("Topic", text: $topic)
-                    Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference", "handoff", "learned"], id: \.self) { Text($0.capitalized).tag($0) } }
-                }
-                Section("Provenance") {
-                    LabeledContent("Written by", value: fact.provenanceLine.isEmpty ? "Unknown" : fact.provenanceLine)
+                    Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference", "handoff", "learned"], id: \.self) { Text($0).tag($0) } }
+                }.jbFormRow()
+                Section {
+                    LabeledContent("By", value: fact.provenanceLine.isEmpty ? "unknown" : fact.provenanceLine)
                     LabeledContent("Strength", value: "\(Int(fact.strengthValue * 100))%")
-                    LabeledContent("Recalled", value: "\(fact.recalls ?? 0) times")
-                }
+                    LabeledContent("Recalled", value: "\(fact.recalls ?? 0)x")
+                }.font(.jbMono(13)).jbFormRow()
                 if history.count > 1 {
-                    Section("Earlier versions") { ForEach(history.dropLast()) { Text($0.text).font(.jbFootnote).foregroundStyle(.secondary) } }
+                    Section { ForEach(history.dropLast()) { Text($0.text).font(.jbFootnote).foregroundStyle(JB.ink3) } } header: { JBSectionHeader("Earlier", count: history.count - 1) }.jbFormRow()
                 }
                 Section {
                     Button(fact.isPinned ? "Unpin" : "Pin") { Task { await run { try await ws.memoryPin(fact.id, pinned: !fact.isPinned) } } }
                     if fact.isArchived { Button("Restore") { Task { await run { try await ws.memoryRestore(fact.id) } } } }
                     else { Button("Archive", role: .destructive) { Task { await run { try await ws.memoryArchive(fact.id) } } } }
-                }
-                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
+                }.jbFormRow()
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)) }
             }
+            .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Memory").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -169,9 +172,10 @@ struct FactAdder: View {
                     Text("You").tag("user"); Text("Everywhere").tag("global")
                     ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
                 }
-                Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference"], id: \.self) { Text($0.capitalized).tag($0) } }
-                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
+                Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference"], id: \.self) { Text($0).tag($0) } }
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)) }
             }
+            .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Add to memory").navigationBarTitleDisplayMode(.inline)
             .onAppear { if current != "__all" { target = current } }
             .toolbar {

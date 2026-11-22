@@ -12,7 +12,7 @@ struct WorkspaceHubView: View {
         switch DemoMode.option("-JoeBroScreen") ?? "" {
         case "tasks": TasksView(ws: ws)
         case "memory": MuseView(ws: ws)
-        case "brain": BrainView(api: api, ws: ws)
+        case "brain": SharedMemoryView(ws: ws)
         case "night": NightShiftView(ws: ws)
         case "sharedmemory": SharedMemoryView(ws: ws)
         case "models": DemoModelList(api: api)
@@ -44,8 +44,6 @@ struct WorkspaceHubView: View {
                 } header: { JBSectionHeader("Work") }
                 Section {
                     row(.memory, "Memory") { SharedMemoryView(ws: ws) }
-                    row(.memory, Flavor.brainTitle) { BrainView(api: api, ws: ws) }
-                    row(.agent, Flavor.memoryTitle) { MuseView(ws: ws) }
                     row(.skills, "Skills") { SkillsView(ws: ws) }
                     row(.tools, "Tools") { ToolsView(ws: ws) }
                     row("checkmark.shield", "AI Check") { AICheckView(ws: ws) }
