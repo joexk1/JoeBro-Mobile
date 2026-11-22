@@ -95,7 +95,7 @@ struct DocumentEditorView: View {
     private var loadingState: some View {
         VStack(spacing: 12) {
             JBSpinner()
-            Text(fallbackTitle).font(.jbMono(11)).foregroundStyle(JB.ink3)
+            Text(fallbackTitle).font(.jb(11)).foregroundStyle(JB.ink3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -104,7 +104,7 @@ struct DocumentEditorView: View {
         VStack(spacing: 12) {
             Text(JBEmptyState.drawing(.plug)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
             Text(message)
-                .font(.jbMono(12)).foregroundStyle(JB.ink2)
+                .font(.jb(12)).foregroundStyle(JB.ink2)
                 .multilineTextAlignment(.center)
             Button("Try again") { Task { await store.load() } }
                 .buttonStyle(.jbPrimary)
@@ -249,7 +249,7 @@ private struct DocumentPreview: View {
     private func codeBody(_ text: String) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             Text(text)
-                .font(.jbMono(13))
+                .font(.jb(13))
                 .lineSpacing(3)
                 .foregroundStyle(JB.ink)
                 .textSelection(.enabled)
@@ -259,7 +259,7 @@ private struct DocumentPreview: View {
     }
 
     private var emptyBody: some View {
-        Text("Empty").font(.jbMono(12)).foregroundStyle(JB.ink3)
+        Text("Empty").font(.jb(12)).foregroundStyle(JB.ink3)
             .padding(.vertical, 20)
     }
 }
@@ -319,7 +319,7 @@ private struct DocumentStatusBar: View {
         HStack(spacing: 10) {
             JBChip(text: store.language.isEmpty ? "text" : store.language)
             Text(store.countSummary)
-                .font(.jbMono(11))
+                .font(.jb(11))
                 .foregroundStyle(JB.ink3)
             Spacer(minLength: 6)
             saveState
@@ -345,7 +345,7 @@ private struct DocumentStatusBar: View {
                 JBStatusDot(color: JB.ink3, size: 6)
             }
         }
-        .font(.jbMono(11))
+        .font(.jb(11))
         .foregroundStyle(JB.ink3)
         .accessibilityElement(children: .combine)
     }

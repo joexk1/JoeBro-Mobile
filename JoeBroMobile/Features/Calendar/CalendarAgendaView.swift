@@ -48,7 +48,7 @@ struct CalendarAgendaView: View {
         ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     sourceCard
-                    if let message { Text(message).font(.jbMono(12)).foregroundStyle(JB.warn).padding(14).jbSurface(.panel, radius: JB.rCard) }
+                    if let message { Text(message).font(.jb(12)).foregroundStyle(JB.warn).padding(14).jbSurface(.panel, radius: JB.rCard) }
                     controls
                     if mode == .month { monthGrid }
                     if mode == .week { weekStrip }
@@ -85,7 +85,7 @@ struct CalendarAgendaView: View {
         HStack(spacing: 8) {
             JBStatusDot(color: macSource || calDAVSource ? JB.live : JB.ink3, size: 6)
             Text(macSource ? "iPhone Calendar" : calDAVSource ? (status?.display ?? "CalDAV") : "Calendar unavailable")
-                .font(.jbMono(11)).foregroundStyle(JB.ink2)
+                .font(.jb(11)).foregroundStyle(JB.ink2)
             Spacer(minLength: 0)
             if macSource && !canReadDeviceCalendar {
                 if EKEventStore.authorizationStatus(for: .event) == .denied {
@@ -118,7 +118,7 @@ struct CalendarAgendaView: View {
                 Button { step(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
                     .accessibilityLabel("Next period")
                 Button("Today") { anchor = cal.startOfDay(for: .now); selectedDay = anchor }
-                    .font(.jbMono(12, .medium)).foregroundStyle(JB.accent)
+                    .font(.jb(12, .medium)).foregroundStyle(JB.accent)
             }
             .buttonStyle(.plain)
         }
@@ -160,7 +160,7 @@ struct CalendarAgendaView: View {
             HStack(spacing: 0) {
                 ForEach(0..<7, id: \.self) { offset in
                     Text(cal.veryShortStandaloneWeekdaySymbols[(cal.firstWeekday - 1 + offset) % 7])
-                        .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+                        .font(.jb(10.5)).foregroundStyle(JB.ink3)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -187,8 +187,8 @@ struct CalendarAgendaView: View {
         let count = eventsOn(day).count
         return Button { withAnimation(JB.snap) { selectedDay = day } } label: {
             VStack(spacing: 3) {
-                if !compact { Text(day.formatted(.dateTime.weekday(.narrow))).font(.jbMono(10)).foregroundStyle(JB.ink3) }
-                Text(day.formatted(.dateTime.day())).font(.jbMono(14, selected ? .semibold : .regular))
+                if !compact { Text(day.formatted(.dateTime.weekday(.narrow))).font(.jb(10)).foregroundStyle(JB.ink3) }
+                Text(day.formatted(.dateTime.day())).font(.jb(14, selected ? .semibold : .regular))
                     .foregroundStyle(selected ? JB.onAccent : cal.isDate(day, equalTo: anchor, toGranularity: .month) ? JB.ink : JB.ink3)
                 Circle().fill(count > 0 ? (selected ? JB.onAccent : JB.accent) : .clear).frame(width: 4, height: 4)
             }
@@ -206,7 +206,7 @@ struct CalendarAgendaView: View {
             let shown = mode == .agenda ? eventsInRange : eventsOn(mode == .day ? anchor : selectedDay)
             if shown.isEmpty {
                 VStack(spacing: 12) {
-                    Text(JBEmptyState.drawing(.done)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+                    Text(JBEmptyState.drawing(.done)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
                     Text("No events").font(.jb(13)).foregroundStyle(JB.ink2)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 32)
@@ -223,14 +223,14 @@ struct CalendarAgendaView: View {
     private func eventRow(_ event: MobileEvent) -> some View {
         HStack(alignment: .top, spacing: 13) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.start.formatted(.dateTime.day().month(.abbreviated))).font(.jbMono(11, .medium))
+                Text(event.start.formatted(.dateTime.day().month(.abbreviated))).font(.jb(11, .medium))
                 Text(event.allDay ? "All day" : event.start.formatted(date: .omitted, time: .shortened))
-                    .font(.jbMono(11))
+                    .font(.jb(11))
             }
             .foregroundStyle(JB.ink3).frame(width: 64, alignment: .leading)
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.title).font(.jb(15, .medium)).foregroundStyle(JB.ink)
-                if !event.location.isEmpty { Label(event.location, systemImage: "mappin").font(.jbMono(11)).foregroundStyle(JB.ink3) }
+                if !event.location.isEmpty { Label(event.location, systemImage: "mappin").font(.jb(11)).foregroundStyle(JB.ink3) }
             }
             Spacer(minLength: 0)
         }

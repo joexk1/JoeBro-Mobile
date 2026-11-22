@@ -260,7 +260,7 @@ private struct ToolRow: View {
                     Text(subtitle).font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(2)
                 }
                 if let detail, !detail.isEmpty {
-                    Text(detail).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
+                    Text(detail).font(.jb(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
                 }
             }
             Spacer(minLength: 8)
@@ -281,7 +281,7 @@ private struct MCPRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(server.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
                     Text(server.command.isEmpty ? "No command set" : server.command)
-                        .font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(1)
+                        .font(.jb(11)).foregroundStyle(JB.ink2).lineLimit(1)
                 }
                 Spacer(minLength: 8)
                 WSToggle(label: "\(server.name) enabled", isOn: server.enabled, set: setOn)
@@ -290,11 +290,11 @@ private struct MCPRow: View {
                 Label(server.error, systemImage: "exclamationmark.triangle")
                     .font(.jbCaption2).foregroundStyle(JB.warn).lineLimit(3)
             } else if server.tools.isEmpty {
-                if server.enabled { Text("No tools yet").font(.jbMono(10.5)).foregroundStyle(JB.ink3) }
+                if server.enabled { Text("No tools yet").font(.jb(10.5)).foregroundStyle(JB.ink3) }
             } else {
                 Text("\(server.tools.count) tools · " + server.tools.prefix(4).joined(separator: ", ")
                      + (server.tools.count > 4 ? "…" : ""))
-                    .font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(2)
+                    .font(.jb(10.5)).foregroundStyle(JB.ink3).lineLimit(2)
             }
         }
         .frame(minHeight: 48)

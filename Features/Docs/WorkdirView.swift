@@ -111,16 +111,16 @@ struct WorkdirView: View {
                     .font(.jbCaption)
                     .foregroundStyle(JB.ink2)
                 Text(rootName)
-                    .font(.jbMono(12, .medium))
+                    .font(.jb(12, .medium))
                     .foregroundStyle(JB.ink)
                 Spacer(minLength: 4)
                 Text("\(store.entries(at: "").count)")
-                    .font(.jbMono(10.5))
+                    .font(.jb(10.5))
                     .foregroundStyle(JB.ink3)
             }
             if !rootParent.isEmpty {
                 Text(rootParent)
-                    .font(.jbMono(10.5))
+                    .font(.jb(10.5))
                     .foregroundStyle(JB.ink3)
                     .lineLimit(1)
                     .truncationMode(.head)
@@ -249,7 +249,7 @@ struct WorkdirView: View {
 
     private var unboundState: some View {
         VStack(spacing: 12) {
-            Text(JBEmptyState.drawing(.files)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+            Text(JBEmptyState.drawing(.files)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
             Text("No folder bound").font(.jb(13)).foregroundStyle(JB.ink2)
             Button("Choose folder") { showBind = true }
                 .buttonStyle(.jbPrimary)
@@ -283,7 +283,7 @@ private struct WorkdirRow: View {
             disclosure
             glyph
             Text(entry.name)
-                .font(entry.isDir ? .jb(15, .medium) : .jbMono(13.5))
+                .font(entry.isDir ? .jb(15, .medium) : .jb(13.5))
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .foregroundStyle(entry.isDir ? JB.ink : JB.ink.opacity(0.88))
@@ -373,7 +373,7 @@ struct FolderPickerView: View {
                     .listRowBackground(JB.panelFill)
                 }
                 if entries.isEmpty && !loading {
-                    Text("No subfolders").font(.jbMono(12)).foregroundStyle(JB.ink3)
+                    Text("No subfolders").font(.jb(12)).foregroundStyle(JB.ink3)
                         .listRowBackground(Color.clear)
                 }
             }

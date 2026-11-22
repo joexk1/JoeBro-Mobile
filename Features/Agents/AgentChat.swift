@@ -41,7 +41,7 @@ struct AgentApprovalButtons: View {
             Button("Approve") { Task { await decide(true) } }.buttonStyle(.jbPrimary)
             Button("Deny") { Task { await decide(false) } }.buttonStyle(.jbDanger)
             if busy { JBSpinner() }
-            if let note { Text(note).font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1) }
+            if let note { Text(note).font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1) }
             Spacer(minLength: 0)
         }
         .disabled(busy)
@@ -127,7 +127,7 @@ struct AgentChatThread: View {
         default:
             HStack(spacing: 6) {
                 JBStatusDot(color: JB.ink3, size: 5)
-                Text(m.content).font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(2)
+                Text(m.content).font(.jb(11)).foregroundStyle(JB.ink2).lineLimit(2)
             }
         }
     }
@@ -143,7 +143,7 @@ struct AgentChatThread: View {
     private func approvalCard(_ text: String, active: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) { JBStatusDot(color: JB.warn, live: active, size: 6); Text("Needs you").jbEyebrow() }
-            Text(text).font(.jbMono(12)).foregroundStyle(JB.ink)
+            Text(text).font(.jb(12)).foregroundStyle(JB.ink)
             if active { AgentApprovalButtons(api: api, agentID: agent.id, onDone: onChanged) }
         }
         .jbCard(padding: 12)
@@ -166,7 +166,7 @@ struct AgentChatThread: View {
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
                     .accessibilityLabel("Send")
             }
-            if let error { Text(error).font(.jbMono(11)).foregroundStyle(JB.danger) }
+            if let error { Text(error).font(.jb(11)).foregroundStyle(JB.danger) }
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(JB.surface)

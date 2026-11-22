@@ -91,17 +91,17 @@ private struct FactRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Text(((fact.topic ?? "").isEmpty ? fact.kindLabel : (fact.topic ?? "")).lowercased()).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(((fact.topic ?? "").isEmpty ? fact.kindLabel : (fact.topic ?? "")).lowercased()).font(.jb(11)).foregroundStyle(JB.ink3)
                 Spacer()
                 if fact.isPinned { Circle().fill(JB.accent).frame(width: 6, height: 6) }
-                Text(nsRelative(fact.updatedAt)).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(nsRelative(fact.updatedAt)).font(.jb(11)).foregroundStyle(JB.ink3)
             }
             Text(fact.text).font(.jb(15)).foregroundStyle(JB.ink).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
                 Capsule().fill(JB.line).frame(width: 40, height: 2)
                     .overlay(alignment: .leading) { Capsule().fill(fact.strengthValue < 0.3 ? JB.warn : JB.accent).frame(width: 40 * fact.strengthValue, height: 2) }
                 Text([fact.provenanceLine, fact.scope == "project" ? fact.projectName ?? "" : ""].filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+                    .font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1)
             }
         }.contentShape(Rectangle()).opacity(fact.isArchived ? 0.5 : 1)
     }
@@ -129,7 +129,7 @@ struct FactEditor: View {
                     LabeledContent("By", value: fact.provenanceLine.isEmpty ? "unknown" : fact.provenanceLine)
                     LabeledContent("Strength", value: "\(Int(fact.strengthValue * 100))%")
                     LabeledContent("Recalled", value: "\(fact.recalls ?? 0)x")
-                }.font(.jbMono(13)).jbFormRow()
+                }.font(.jb(13)).jbFormRow()
                 if history.count > 1 {
                     Section { ForEach(history.dropLast()) { Text($0.text).font(.jbFootnote).foregroundStyle(JB.ink3) } } header: { JBSectionHeader("Earlier", count: history.count - 1) }.jbFormRow()
                 }
@@ -138,7 +138,7 @@ struct FactEditor: View {
                     if fact.isArchived { Button("Restore") { Task { await run { try await ws.memoryRestore(fact.id) } } } }
                     else { Button("Archive", role: .destructive) { Task { await run { try await ws.memoryArchive(fact.id) } } } }
                 }.jbFormRow()
-                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)) }
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jb(12)) }
             }
             .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Memory").navigationBarTitleDisplayMode(.inline)
@@ -173,7 +173,7 @@ struct FactAdder: View {
                     ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
                 }
                 Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference"], id: \.self) { Text($0).tag($0) } }
-                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)) }
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jb(12)) }
             }
             .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Add to memory").navigationBarTitleDisplayMode(.inline)

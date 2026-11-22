@@ -79,7 +79,7 @@ struct DocsView: View {
             Spacer(minLength: 6)
             if let updated = doc.updatedAt, !updated.isEmpty {
                 Text(updated.prefix(10))
-                    .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+                    .font(.jb(10.5)).foregroundStyle(JB.ink3)
             }
         }
         .frame(minHeight: 44)

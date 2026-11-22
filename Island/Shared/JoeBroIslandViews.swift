@@ -1,34 +1,6 @@
 import SwiftUI
-import AppIntents
 
-// Live Activity / Dynamic Island views. This file is compiled into the widget extension, which cannot
-// import Design/*: the few JB tokens it needs are mirrored here (dark values; the lock screen is dark).
-
-enum IslandInk {
-    static let bg = Color(red: 0.039, green: 0.039, blue: 0.043)        // JB.bg dark 0A0A0B
-    static let raised = Color(red: 0.102, green: 0.102, blue: 0.110)    // 1A1A1C
-    static let line = Color(red: 0.145, green: 0.145, blue: 0.157)      // 252528
-    static let ink = Color(red: 0.929, green: 0.929, blue: 0.925)       // EDEDEC
-    static let ink2 = Color(red: 0.604, green: 0.604, blue: 0.624)      // 9A9A9F
-    static let ink3 = Color(red: 0.369, green: 0.369, blue: 0.388)      // 5E5E63
-    static let live = Color(red: 0.373, green: 0.820, blue: 0.690)      // 5FD1B0
-    static let warn = Color(red: 0.961, green: 0.722, blue: 0.239)      // F5B83D
-    static let danger = Color(red: 1, green: 0.353, blue: 0.290)        // FF5A4A
-}
-
-/// Geist (Mono) when the extension bundles it; the system faces otherwise.
-extension Font {
-    static func islandMono(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        let face = weight == .semibold || weight == .bold ? "GeistMono-SemiBold" : weight == .medium ? "GeistMono-Medium" : "GeistMono-Regular"
-        return .custom(face, size: size)
-    }
-    static func islandSans(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        .custom(weight == .semibold || weight == .bold ? "Geist-SemiBold" : weight == .medium ? "Geist-Medium" : "Geist-Regular", size: size)
-    }
-}
-
-let islandTint = IslandInk.live
-let waitingTint = IslandInk.warn
+let islandTint = Color(red: 0.72, green: 0.78, blue: 1)
 
 func title(_ s: JoeBroActivityAttributes.ContentState, stale: Bool) -> String {
     if s.finished != nil { return s.headline ?? "Done" }
@@ -43,79 +15,27 @@ func extras(_ s: JoeBroActivityAttributes.ContentState) -> String? {
     return parts.isEmpty ? nil : parts.joined(separator: " · ")
 }
 
+func glyph(_ s: JoeBroActivityAttributes.ContentState) -> String {
+    switch s.finished {
+    case "done": "checkmark.circle.fill"
+    case "failed": "exclamationmark.triangle.fill"
+    default: "sparkles"
+    }
+}
+
 func summary(_ count: Int) -> String {
     count == 1 ? "1 agent working" : "\(count) agents working"
 }
 
-/// Mono ASCII mark for a run kind or the activity state, drawn in a hairline square.
-func islandMark(_ s: JoeBroActivityAttributes.ContentState) -> String {
-    switch s.finished {
-    case "done": "ok"
-    case "failed": "!!"
-    default: "o_o"
-    }
-}
-
-func runMark(_ kind: String) -> String {
-    switch kind {
-    case "coding": ">_"
-    case "research": "/?"
-    case "task": "[]"
-    case "reply", "chat": "..."
-    default: "o_o"
-    }
-}
-
-struct IslandMark: View {
-    let text: String
-    var tint: Color = IslandInk.ink2
-    var size: CGFloat = 20
-    var body: some View {
-        Text(text).font(.islandMono(size * 0.45, .semibold)).foregroundStyle(tint)
-            .frame(width: size, height: size)
-            .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(IslandInk.line, lineWidth: 1))
-    }
-}
-
-/// Dot-matrix numerals, the same 3x5 grid as JBDotNumber in the app.
-struct IslandDots: View {
-    let value: Int
-    var dot: CGFloat = 2
-    var tint: Color = IslandInk.ink
-    private static let digits: [Character: [String]] = [
-        "0": ["###", "#.#", "#.#", "#.#", "###"], "1": [".#.", "##.", ".#.", ".#.", "###"],
-        "2": ["###", "..#", "###", "#..", "###"], "3": ["###", "..#", ".##", "..#", "###"],
-        "4": ["#.#", "#.#", "###", "..#", "..#"], "5": ["###", "#..", "###", "..#", "###"],
-        "6": ["###", "#..", "###", "#.#", "###"], "7": ["###", "..#", ".#.", ".#.", ".#."],
-        "8": ["###", "#.#", "###", "#.#", "###"], "9": ["###", "#.#", "###", "..#", "..#"]
-    ]
-    var body: some View {
-        let chars = Array(String(min(max(value, 0), 99)))
-        let pitch = dot * 1.9
-        Canvas { ctx, _ in
-            for (i, ch) in chars.enumerated() {
-                guard let rows = Self.digits[ch] else { continue }
-                for (y, row) in rows.enumerated() {
-                    for (x, c) in row.enumerated() where c == "#" {
-                        let px = CGFloat(i * 4 + x) * pitch, py = CGFloat(y) * pitch
-                        ctx.fill(Path(ellipseIn: CGRect(x: px, y: py, width: dot, height: dot)), with: .color(tint))
-                    }
-                }
-            }
-        }
-        .frame(width: CGFloat(chars.count * 4 - 1) * pitch, height: 5 * pitch - (pitch - dot))
-    }
-}
-
 func activityBackdrop(scene: String?) -> some View {
     ZStack {
-        IslandInk.bg
         if let scene, scene != "off" {
+            Color.black
             GeometryReader { geo in
                 Image("scene-" + scene).resizable().scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height).clipped()
             }
-            Color.black.opacity(0.62)
+            Color.black.opacity(0.48)
         }
     }.clipped()
 }
@@ -126,10 +46,12 @@ func prioritised(_ runs: [JoeBroActivityAttributes.Run]) -> [JoeBroActivityAttri
     return runs.enumerated().sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
 }
 
-/// Dot for the whole activity: amber while anything waits for approval, phosphor while running.
+let waitingTint = Color.orange
+
+/// Dot for the whole activity: orange while anything waits for approval, green when finished.
 func statusColor(_ s: JoeBroActivityAttributes.ContentState) -> Color {
-    if s.finished == "failed" { return IslandInk.danger }
-    if s.finished != nil { return IslandInk.ink2 }
+    if s.finished == "failed" { return .red }
+    if s.finished != nil { return .green }
     return (s.waiting ?? 0) > 0 || s.runs.contains { $0.waiting == true } ? waitingTint : islandTint
 }
 
@@ -137,7 +59,7 @@ func statusColor(_ s: JoeBroActivityAttributes.ContentState) -> Color {
 struct JoeBroExpandedIslandContent: View {
     let state: JoeBroActivityAttributes.ContentState
     var body: some View {
-        JoeBroRunList(state: state, rows: state.count <= 3 ? 3 : 2, rowHeight: 22)
+        JoeBroRunList(state: state, rows: state.count <= 3 ? 3 : 2, rowHeight: 20)
             .padding(.horizontal, 4)
     }
 }
@@ -147,22 +69,23 @@ struct JoeBroLockScreenActivity: View {
     let isStale: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                IslandMark(text: islandMark(state), tint: statusColor(state), size: 22)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: glyph(state)).foregroundStyle(islandTint)
+                    .font(.system(size: 15)).frame(width: 18, height: 18)
                 Text(title(state, stale: isStale))
-                    .font(.islandSans(15, .semibold))
-                    .foregroundStyle(IslandInk.ink)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.75)
                 Spacer(minLength: 6)
                 if state.finished == nil {
                     Text(state.startedAt, style: .timer)
-                        .font(.islandMono(11))
-                        .foregroundStyle(IslandInk.ink3)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(Color.white.opacity(0.65))
                         .frame(maxWidth: 50, alignment: .trailing)
                 }
             }
-            .frame(height: 22)
+            .frame(height: 20)
             JoeBroRunList(state: state, rows: 3, rowHeight: 24)
         }
         .padding(.horizontal, 16)
@@ -187,9 +110,9 @@ struct JoeBroRunList: View {
             }
             if hidden > 0 {
                 Text("+\(hidden) more")
-                    .font(.islandMono(10.5))
-                    .foregroundStyle(IslandInk.ink3)
-                    .padding(.leading, 28)
+                    .font(.caption2)
+                    .foregroundStyle(Color.white.opacity(0.65))
+                    .padding(.leading, 24)
                     .frame(height: 12)
             }
         }
@@ -204,15 +127,18 @@ struct JoeBroRunRow: View {
     var body: some View {
         let waiting = run.waiting == true
         HStack(spacing: 8) {
-            IslandMark(text: runMark(run.kind), tint: waiting ? waitingTint : islandTint, size: 20)
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(waiting ? waitingTint : islandTint)
+                .frame(width: 18, height: 18)
             VStack(alignment: .leading, spacing: 0) {
                 Text(run.title)
-                    .font(.islandSans(13.5, .medium))
-                    .foregroundStyle(IslandInk.ink)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.85)
-                if detailed, !run.detail.isEmpty {
-                    Text(run.detail).font(.islandMono(10.5))
-                        .foregroundStyle(IslandInk.ink2).lineLimit(1)
+                if detailed, !subtitle.isEmpty {
+                    Text(subtitle).font(.caption2)
+                        .foregroundStyle(Color.white.opacity(0.65)).lineLimit(1)
                 }
             }
             Spacer(minLength: 4)
@@ -222,35 +148,48 @@ struct JoeBroRunRow: View {
     }
 
     @ViewBuilder func trailing(waiting: Bool) -> some View {
-        if waiting {
-            if run.kind == "coding" {
-                HStack(spacing: 6) {
-                    Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: false)) {
-                        Text("Deny").font(.islandMono(11, .medium)).foregroundStyle(IslandInk.danger)
-                            .padding(.horizontal, 8).frame(height: 24)
-                            .background(IslandInk.raised, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    }
-                    Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: true)) {
-                        Text("Approve").font(.islandMono(11, .semibold)).foregroundStyle(IslandInk.bg)
-                            .padding(.horizontal, 8).frame(height: 24)
-                            .background(waitingTint, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    }
+        if waiting && run.kind == "coding" {
+            // Answer straight from the island / lock screen; the intent runs in the app.
+            HStack(spacing: 6) {
+                Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: false)) {
+                    Text("Deny").font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10).frame(height: 24)
+                        .background(Color.white.opacity(0.16), in: Capsule())
                 }
-                .buttonStyle(.plain).fixedSize()
-            } else {
-                HStack(spacing: 4) {
-                    Circle().fill(waitingTint).frame(width: 6, height: 6)
-                    Text("needs you").font(.islandMono(10.5, .medium)).foregroundStyle(waitingTint)
-                }.fixedSize()
-            }
+                .buttonStyle(.plain)
+                Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: true)) {
+                    Text("Approve").font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 10).frame(height: 24)
+                        .background(waitingTint, in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }.fixedSize()
+        } else if waiting {
+            HStack(spacing: 3) {
+                Circle().fill(waitingTint).frame(width: 6, height: 6)
+                Text("Approval").font(.system(size: 11, weight: .semibold)).foregroundStyle(waitingTint)
+            }.fixedSize()
         } else if let n = run.subagents, n > 0 {
-            Text("+\(n) sub")
-                .font(.islandMono(10.5)).foregroundStyle(IslandInk.ink3)
+            Text("+\(n) subagent\(n == 1 ? "" : "s")")
+                .font(.system(size: 11)).foregroundStyle(Color.white.opacity(0.65))
                 .lineLimit(1).fixedSize()
         } else if run.queued {
-            Text("queued").font(.islandMono(10.5)).foregroundStyle(IslandInk.ink3).fixedSize()
-        } else {
-            Circle().fill(islandTint).frame(width: 6, height: 6)
+            Text("Queued").font(.system(size: 11)).foregroundStyle(Color.white.opacity(0.65)).fixedSize()
+        }
+    }
+
+    var subtitle: String { run.detail }
+
+    var symbol: String {
+        switch run.kind {
+        case "research": "magnifyingglass"
+        case "chat": "bubble.left.and.bubble.right"
+        case "reply": "ellipsis.bubble"
+        case "task": "clock.arrow.circlepath"
+        case "coding": "chevron.left.forwardslash.chevron.right"
+        default: "sparkles"
         }
     }
 }

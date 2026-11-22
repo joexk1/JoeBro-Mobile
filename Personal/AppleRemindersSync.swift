@@ -456,7 +456,7 @@ struct AppleRemindersRows: View {
                 }
             }
             if !sync.status.isEmpty {
-                Text(sync.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(sync.status).font(.jb(11)).foregroundStyle(JB.ink3)
             }
         }
         .sensoryFeedback(.selection, trigger: sync.enabled)

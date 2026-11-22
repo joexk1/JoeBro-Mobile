@@ -75,7 +75,7 @@ struct NightShiftView: View {
                             JBStatusDot(color: dotColor(task.state), size: 6)
                             Text(task.name).font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(1)
                             Spacer(minLength: 0)
-                            Text(task.state).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                            Text(task.state).font(.jb(11)).foregroundStyle(JB.ink3)
                         }.jbListRow()
                     }
                 } header: { JBListHeader(title: "Earlier") }
@@ -121,7 +121,7 @@ struct NightShiftView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
                 Text([task.repoName, task.agentLabel, task.model, hostName(task)].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+                    .font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1)
             }
             Spacer(minLength: 0)
         }
@@ -165,14 +165,14 @@ struct ReviewCard: View {
                 if let ok = task.result?.tests?.passed { JBChip(text: ok ? "tests ok" : "tests failed", tint: ok ? JB.live : JB.danger) }
             }
             Text([task.repoName, task.agentLabel, task.model, hostName].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                .font(.jbMono(11)).foregroundStyle(JB.ink3)
+                .font(.jb(11)).foregroundStyle(JB.ink3)
             if let d = task.result?.diff {
                 HStack(spacing: 14) {
                     Text("\(d.files ?? 0) files").foregroundStyle(JB.ink2)
                     Text("+\(d.insertions ?? 0)").foregroundStyle(JB.live)
                     Text("-\(d.deletions ?? 0)").foregroundStyle(JB.danger)
                     if let m = task.result?.durationS { Text("\(max(1, Int(m / 60)))m").foregroundStyle(JB.ink3) }
-                }.font(.jbMono(12))
+                }.font(.jb(12))
             }
             if let s = task.result?.summary ?? task.error, !s.isEmpty { Text(s).font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(5) }
             if let shot { Image(uiImage: shot).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: JB.rControl)) }
@@ -200,16 +200,16 @@ struct NightDiffView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(task.result?.diff?.fileList ?? [], id: \.path) { f in
-                        HStack { Text(f.path).font(.jbMono(12)).foregroundStyle(JB.ink2); Spacer()
-                            Text("+\(f.added ?? 0)").foregroundStyle(JB.live); Text("-\(f.removed ?? 0)").foregroundStyle(JB.danger) }.font(.jbMono(11))
+                        HStack { Text(f.path).font(.jb(12)).foregroundStyle(JB.ink2); Spacer()
+                            Text("+\(f.added ?? 0)").foregroundStyle(JB.live); Text("-\(f.removed ?? 0)").foregroundStyle(JB.danger) }.font(.jb(11))
                     }
                     if let out = task.result?.tests?.outputTail, !out.isEmpty {
-                        Text(out).font(.jbMono(11)).foregroundStyle(JB.ink2).padding(8).background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rControl))
+                        Text(out).font(.jb(11)).foregroundStyle(JB.ink2).padding(8).background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rControl))
                     }
                     ForEach(task.result?.learned ?? [], id: \.self) { l in
                         HStack(alignment: .top, spacing: 6) { JBIcon(.memory, size: 13).foregroundStyle(JB.accent); Text(l).font(.jb(13)).foregroundStyle(JB.ink2) }
                     }
-                    Text(diff).font(.jbMono(11)).foregroundStyle(JB.ink).textSelection(.enabled)
+                    Text(diff).font(.jb(11)).foregroundStyle(JB.ink).textSelection(.enabled)
                 }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
             }
             .jbWallpaper().navigationTitle(task.name).navigationBarTitleDisplayMode(.inline)
@@ -241,7 +241,7 @@ struct NightComposer: View {
                 Section {
                     TextField("What should the agent do?", text: $prompt, axis: .vertical).lineLimit(3...8)
                     TextField("Title", text: $title)
-                    TextField("Folder", text: $repo).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Folder", text: $repo).font(.jb(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
                 }.jbFormRow()
                 Section {
                     Picker("Agent", selection: $agent) {
@@ -256,9 +256,9 @@ struct NightComposer: View {
                             ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
                         }
                     }
-                    TextField("Test command", text: $tests).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Test command", text: $tests).font(.jb(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
                 }.jbFormRow()
-                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)).jbFormRow() }
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jb(12)).jbFormRow() }
             }
             .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Queue a task").navigationBarTitleDisplayMode(.inline)

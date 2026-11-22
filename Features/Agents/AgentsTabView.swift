@@ -333,7 +333,7 @@ struct AgentsTabView: View {
                         JBStatusDot(color: mainJoeBro.busy ? JB.live : (mainJoeBro.mainConnectionIssue == nil ? JB.ink3 : JB.danger),
                                     live: mainJoeBro.busy, size: 6)
                         Text(mainJoeBro.busy ? "working" : mainJoeBro.mainConnectionIssue == nil ? "idle" : "offline")
-                            .font(.jbMono(11)).foregroundStyle(JB.ink2)
+                            .font(.jb(11)).foregroundStyle(JB.ink2)
                     }
                 }
                 Spacer(minLength: 4)
@@ -395,7 +395,7 @@ struct AgentsTabView: View {
                 Spacer()
                 if store.filter != nil {
                     Button("Clear") { withAnimation(reduceMotion ? nil : JB.snap) { store.filter = nil } }
-                        .font(.jbMono(11, .medium)).foregroundStyle(JB.ink2)
+                        .font(.jb(11, .medium)).foregroundStyle(JB.ink2)
                 }
             }
             ScrollView(.horizontal, showsIndicators: false) {
@@ -412,8 +412,8 @@ struct AgentsTabView: View {
     private func scopeChip(_ label: String, count: Int, on: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Text(label).font(.jbMono(12, .medium))
-                Text("\(count)").font(.jbMono(12)).foregroundStyle(on ? JB.accent : JB.ink3).contentTransition(.numericText())
+                Text(label).font(.jb(12, .medium))
+                Text("\(count)").font(.jb(12)).foregroundStyle(on ? JB.accent : JB.ink3).contentTransition(.numericText())
             }
             .foregroundStyle(on ? JB.ink : JB.ink2)
             .padding(.horizontal, 11).padding(.vertical, 7)
@@ -430,8 +430,8 @@ struct AgentsTabView: View {
         } label: {
             HStack(spacing: 7) {
                 kind.glyph(14)
-                Text(kind.label).font(.jbMono(12, .medium))
-                Text("\(store.count(for: kind))").font(.jbMono(12)).foregroundStyle(JB.ink3)
+                Text(kind.label).font(.jb(12, .medium))
+                Text("\(store.count(for: kind))").font(.jb(12)).foregroundStyle(JB.ink3)
                     .contentTransition(.numericText())
             }
             .foregroundStyle(selected ? JB.ink : JB.ink2)
@@ -457,14 +457,14 @@ struct AgentsTabView: View {
                         .lineLimit(2).multilineTextAlignment(.leading)
                     if agent.kind == .subagent, agent.parentID != nil {
                         Text("from \(store.parentName(of: agent) ?? "agent")")
-                            .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+                            .font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1)
                     }
                     HStack(spacing: 7) {
                         JBStatusDot(color: statusColor(agent), live: agent.isLive && agent.status != "waiting" && agent.status != "queued", size: 6)
                         Text(statusLabel(agent).lowercased())
                         if agent.kind == .research, let count = agent.sourceCount, count > 0 { Text("· \(count) sources") }
                     }
-                    .font(.jbMono(11)).foregroundStyle(agent.status == "waiting" ? JB.warn : JB.ink2)
+                    .font(.jb(11)).foregroundStyle(agent.status == "waiting" ? JB.warn : JB.ink2)
                 }
                 Spacer(minLength: 5)
                 if agent.isLive { JBSpinner() }
@@ -477,7 +477,7 @@ struct AgentsTabView: View {
                     .lineLimit(2).multilineTextAlignment(.leading)
             }
             if let date = [agent.finishedAt, agent.startedAt, agent.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
-                Text(agentRelativeDate(date)).font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+                Text(agentRelativeDate(date)).font(.jb(10.5)).foregroundStyle(JB.ink3)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -613,11 +613,11 @@ struct AgentDetailView: View {
                     HStack { Spacer(); JBSpinner(size: 14); Spacer() }.padding(.vertical, 30)
                 }
                 if let error = current.error, !error.isEmpty {
-                    Text(error).font(.jbMono(12)).foregroundStyle(JB.danger)
+                    Text(error).font(.jb(12)).foregroundStyle(JB.danger)
                         .frame(maxWidth: .infinity, alignment: .leading).jbCard()
                 }
                 if let cancelNote {
-                    Text(cancelNote).font(.jbMono(11)).foregroundStyle(JB.ink2)
+                    Text(cancelNote).font(.jb(11)).foregroundStyle(JB.ink2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let result = displayedReport, !result.isEmpty {
@@ -627,7 +627,7 @@ struct AgentDetailView: View {
                         .jbCard(padding: 16)
                 } else if !loading && !current.isLive {
                     Text(current.isSessionOnly ? "No replies in this chat yet" : "No result")
-                        .font(.jbMono(11)).foregroundStyle(JB.ink3)
+                        .font(.jb(11)).foregroundStyle(JB.ink3)
                 } else if current.isLive {
                     HStack(spacing: 6) { JBSpinner(); JBStreamCursor() }
                 }
@@ -659,16 +659,16 @@ struct AgentDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 (current.kind ?? .unknown).glyph(15)
-                Text((current.kind ?? .unknown).label).font(.jbMono(11, .medium))
+                Text((current.kind ?? .unknown).label).font(.jb(11, .medium))
                 JBStatusDot(color: statusColor(current), live: current.isLive && current.status != "waiting" && current.status != "queued", size: 6)
-                Text(statusLabel(current).lowercased()).font(.jbMono(11))
+                Text(statusLabel(current).lowercased()).font(.jb(11))
             }
             .foregroundStyle(current.status == "waiting" ? JB.warn : JB.ink2)
             if let model = current.model, !model.isEmpty {
-                Text(model.components(separatedBy: "/").last ?? model).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(model.components(separatedBy: "/").last ?? model).font(.jb(11)).foregroundStyle(JB.ink3)
             }
             if let started = [current.startedAt, current.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
-                Text(agentRelativeDate(started)).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(agentRelativeDate(started)).font(.jb(11)).foregroundStyle(JB.ink3)
             }
             if current.isLive, let progress = current.progress, !progress.isEmpty, current.kind != .coding {
                 Text(progress).font(.jbSubheadline).foregroundStyle(JB.ink2)

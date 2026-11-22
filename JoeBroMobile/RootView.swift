@@ -33,7 +33,11 @@ struct RootView: View {
     #else
     @State private var selectedTab: MainTab = .joeBro
     #endif
+    #if DEBUG
+    @State private var showSettings = DemoMode.option("-JoeBroSettings") != nil
+    #else
     @State private var showSettings = false
+    #endif
     @State private var showPushInbox = false
     @State private var push = MobilePushNotifications.shared
     @State private var unlocked = false
@@ -50,23 +54,23 @@ struct RootView: View {
             if !faceIDGate || unlocked {
                 TabView(selection: $selectedTab) {
                     JoeBroAgentView(store: runtime.joeBro, onOpenSettings: { showSettings = true })
-                        .tabItem { Label { Text("JoeBro") } icon: { JBTabIcon.image(.agent) } }
+                        .tabItem { Label("JoeBro", systemImage: "face.smiling") }
                         .tag(MainTab.joeBro)
 
                     ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft)
-                        .tabItem { Label("Chats", systemImage: "bubble.left") }
+                        .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
                         .tag(MainTab.chats)
 
                     AgentsTabView(api: runtime.api, chatStore: runtime.chat,
                                   mainJoeBro: runtime.joeBro,
                                   onOpenSettings: { showSettings = true },
                                   onOpenJoeBro: { selectedTab = .joeBro })
-                        .tabItem { Label { Text("Agents") } icon: { JBTabIcon.image(.coding) } }
+                        .tabItem { Label("Agents", systemImage: "circle.hexagongrid.fill") }
                         .tag(MainTab.agents)
 
                     WorkspaceHubView(api: runtime.api,
                                      onOpenSettings: { showSettings = true })
-                        .tabItem { Label("Workspace", systemImage: "square.grid.2x2") }
+                        .tabItem { Label("Workspace", systemImage: "square.grid.2x2.fill") }
                         .tag(MainTab.workspace)
                 }
                 .toolbarBackground(.hidden, for: .tabBar)
@@ -74,9 +78,9 @@ struct RootView: View {
                 .environment(theme)
             } else {
                 VStack(spacing: 22) {
-                    JBWordmark(dot: 3.2)
-                    Text("Locked").font(.jbMono(12)).foregroundStyle(JB.ink3)
-                    Button("Unlock") { Task { await authenticate() } }.buttonStyle(.jbPrimary)
+                    Image("JoeBroLogo").resizable().scaledToFit().frame(width: 92, height: 92)
+                    Text("JoeBro is locked").font(.title2.bold())
+                    Button("Unlock") { Task { await authenticate() } }.buttonStyle(.borderedProminent)
                 }
             }
         }

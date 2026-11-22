@@ -105,7 +105,7 @@ struct ResearchView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(run.query).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
                             Text(phases[run.id] ?? "working")
-                                .font(.jbMono(10.5)).foregroundStyle(JB.live).lineLimit(1)
+                                .font(.jb(10.5)).foregroundStyle(JB.live).lineLimit(1)
                         }
                     }
                     .frame(minHeight: 48)
@@ -193,7 +193,7 @@ private struct ReportRow: View {
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
                 Text(report.query).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
-                Text(subtitle).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
+                Text(subtitle).font(.jb(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
             }
         }
         .frame(minHeight: 48)
@@ -279,7 +279,7 @@ private struct ResearchReportView: View {
             HStack(spacing: 6) {
                 JBStatusDot(color: report.status == "completed" ? JB.live : report.status == "failed" ? JB.danger : JB.warn,
                             live: report.status == "running", size: 6)
-                Text(report.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(report.status).font(.jb(11)).foregroundStyle(JB.ink3)
             }
             if report.status == "completed" {
                 let body = reportBodyWithoutSources
@@ -299,7 +299,7 @@ private struct ResearchReportView: View {
             } else {
                 HStack(spacing: 10) {
                     JBSpinner(tint: JB.live)
-                    Text(phase ?? "working").font(.jbMono(12)).foregroundStyle(JB.ink2)
+                    Text(phase ?? "working").font(.jb(12)).foregroundStyle(JB.ink2)
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -348,7 +348,7 @@ struct ResearchSourcesView: View {
                     Link(destination: url) {
                         HStack(alignment: .top, spacing: 12) {
                             Text("\(index + 1)")
-                                .font(.jbMono(11))
+                                .font(.jb(11))
                                 .foregroundStyle(JB.ink3)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 4) {
@@ -356,7 +356,7 @@ struct ResearchSourcesView: View {
                                     .font(.jb(14, .medium))
                                     .foregroundStyle(JB.ink)
                             Text(url.host() ?? source.url)
-                                .font(.jbMono(10.5))
+                                .font(.jb(10.5))
                                 .foregroundStyle(JB.ink3)
                             }
                             Spacer(minLength: 4)

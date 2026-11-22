@@ -57,7 +57,7 @@ struct JBSegments<T: Hashable>: View {
                 ForEach(options.indices, id: \.self) { i in
                     let on = options[i].0 == selection
                     Button { withAnimation(JB.snap) { selection = options[i].0 } } label: {
-                        Text(options[i].1).font(.jbMono(12, on ? .medium : .regular))
+                        Text(options[i].1).font(.jb(12, on ? .medium : .regular))
                             .foregroundStyle(on ? JB.ink : JB.ink3)
                             .padding(.horizontal, 10).padding(.vertical, 5)
                             .background(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).fill(on ? JB.pressed : .clear))

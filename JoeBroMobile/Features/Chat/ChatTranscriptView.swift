@@ -199,10 +199,10 @@ struct ChatTranscriptView<Composer: View>: View {
 struct ChatEmptyState: View {
     var isMainJoeBro = false
     var body: some View {
-        VStack(spacing: 18) {
-            JBWordmark(dot: 3.4)
+        VStack(spacing: 14) {
             if !isMainJoeBro {
-                Text("What can I help with?").font(.jb(15)).foregroundStyle(JB.ink2)
+                Image("JoeBroLogo").resizable().scaledToFit().frame(width: 64, height: 64)
+                Text("What can I help with?").font(.jb(20, .semibold)).tracking(-0.3).foregroundStyle(JB.ink)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 320)

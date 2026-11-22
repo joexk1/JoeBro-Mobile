@@ -84,13 +84,13 @@ struct EmailView: View {
     private var messagesSection: some View {
         Section {
             if loading && list == nil {
-                HStack(spacing: 8) { JBSpinner(); Text("Connecting").font(.jbMono(11)).foregroundStyle(JB.ink3) }
+                HStack(spacing: 8) { JBSpinner(); Text("Connecting").font(.jb(11)).foregroundStyle(JB.ink3) }
                     .frame(minHeight: 44)
                     .listRowBackground(Color.clear)
             }
             if let message = list?.error ?? error, !message.isEmpty {
                 Text(message)
-                    .font(.jbMono(12)).foregroundStyle(JB.warn)
+                    .font(.jb(12)).foregroundStyle(JB.warn)
                     .listRowBackground(JB.panelFill)
             }
             if let list, list.emails.isEmpty, !loading, (list.error ?? "").isEmpty {
@@ -217,7 +217,7 @@ private struct EmailRow: View {
                 Text(message.subject.isEmpty ? "(no subject)" : message.subject)
                     .font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(2)
                 if let date = message.date, !date.isEmpty {
-                    Text(date).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
+                    Text(date).font(.jb(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
                 }
             }
         }
@@ -265,7 +265,7 @@ private struct EmailMessageView: View {
                     JBSpinner(size: 16).frame(maxWidth: .infinity).padding(.vertical, 50)
                 }
                 if !canReply {
-                    Text("Replies send from the first account").font(.jbMono(11)).foregroundStyle(JB.ink3)
+                    Text("Replies send from the first account").font(.jb(11)).foregroundStyle(JB.ink3)
                 }
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -322,7 +322,7 @@ private struct EmailMessageView: View {
                 if let to = detail.to, !to.isEmpty { Text("To: \(to)") }
                 if let date = detail.date, !date.isEmpty { Text(date) }
             }
-            .font(.jbMono(11)).foregroundStyle(JB.ink3)
+            .font(.jb(11)).foregroundStyle(JB.ink3)
         }
     }
 
@@ -333,7 +333,7 @@ private struct EmailMessageView: View {
             JBSectionHeader("Attachments", count: detail.attachments.count)
             ForEach(detail.attachments) { file in
                 Label(file.filename ?? "Attachment", systemImage: "paperclip")
-                    .font(.jbMono(12)).foregroundStyle(JB.ink2)
+                    .font(.jb(12)).foregroundStyle(JB.ink2)
             }
         }
     }
@@ -388,7 +388,7 @@ private struct EmailComposeView: View {
         NavigationStack {
             Form {
                 Section {
-                    if !from.isEmpty { LabeledContent("From") { Text(from).font(.jbMono(12)) } }
+                    if !from.isEmpty { LabeledContent("From") { Text(from).font(.jb(12)) } }
                     TextField("To", text: $to)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
@@ -409,7 +409,7 @@ private struct EmailComposeView: View {
                 if let reply {
                     JBSection("Original message") {
                         Text(reply.detail.body ?? "")
-                            .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(8)
+                            .font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(8)
                     }
                     .listRowBackground(JB.panelFill)
                 }

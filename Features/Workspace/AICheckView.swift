@@ -18,7 +18,7 @@ struct AICheckView: View {
                 checkButton
                 if let error {
                     Text(error)
-                        .font(.jbMono(12)).foregroundStyle(JB.warn)
+                        .font(.jb(12)).foregroundStyle(JB.warn)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let result { ScoreCard(result: result) }
@@ -50,7 +50,7 @@ struct AICheckView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 Text("\(wordCount) words")
-                    .font(.jbMono(11))
+                    .font(.jb(11))
                     .foregroundStyle(wordCount < 20 ? JB.warn : JB.ink3)
                     .padding(12)
                     .allowsHitTesting(false)
@@ -89,13 +89,13 @@ private struct ScoreCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("\(Int(result.aiPercent.rounded()))%")
-                .font(.jbMono(34, .medium))
+                .font(.jb(34, .medium))
                 .foregroundStyle(tint)
             ProgressView(value: min(1, max(0, result.aiPercent / 100)))
                 .tint(tint)
             Text("\(result.aiWords) of \(result.totalWords) words"
                  + (result.provider.map { " · \($0)" } ?? ""))
-                .font(.jbMono(11)).foregroundStyle(JB.ink3)
+                .font(.jb(11)).foregroundStyle(JB.ink3)
             if !result.flaggedSentences.isEmpty {
                 Divider().overlay(JB.line)
                 JBSectionHeader("Flagged", count: result.flaggedSentences.count)

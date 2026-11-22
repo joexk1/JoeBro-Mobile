@@ -13,6 +13,9 @@ private struct HeaderZoneKey: PreferenceKey {
 /// project chat never changes the main agent's transcript or draft.
 struct JoeBroAgentView: View {
     @Environment(JoeBroTheme.self) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("backgroundAnimation") private var animationRaw = "off"
+    private var hasBanner: Bool { theme.wallpaperName != "photo" && (BackgroundAnimation(rawValue: animationRaw) ?? .off) != .off }
 
     let store: ChatStore
     let onOpenSettings: () -> Void
@@ -46,25 +49,27 @@ struct JoeBroAgentView: View {
                 JoeBroPresence(isWorking: store.busy,
                                isAvailable: store.mainConnectionIssue == nil,
                                isListening: voice.isRecording,
-                               needsAttention: store.permission != nil || store.error != nil,
                                isUsingTools: store.busy && (store.lines.last?.toolCalls.contains(where: { !$0.finished }) ?? false),
-                               isStreaming: store.busy && store.lines.last?.role == "assistant"
+                               isSpeaking: store.busy && store.lines.last?.role == "assistant"
                                    && !(store.lines.last?.text.isEmpty ?? true),
                                onCompact: { conversationAction = .compact },
                                onClear: { conversationAction = .clear })
-                    .padding(.horizontal, 12)
-                    .padding(.top, 6)
-                    .padding(.bottom, 10)
+                    .padding(.top, 7)
+                    .padding(.bottom, 8)
                     .background(
                         GeometryReader { g in
                             Color.clear.preference(key: HeaderZoneKey.self,
                                                    value: g.frame(in: .global).maxY)
                         }
                     )
-                Rectangle().fill(JB.line).frame(height: 1)
+                Rectangle().fill(.joeInk.opacity(0.12)).frame(height: 1)
+                    .padding(.horizontal, 16)
                 if let issue = store.mainConnectionIssue, store.selectedSessionID == nil {
-                    VStack(spacing: 8) {
-                        JBEmptyState(art: .plug, text: issue)
+                    VStack(spacing: 16) {
+                        Image(systemName: "wifi.exclamationmark")
+                            .font(.jbTitle2).foregroundStyle(.joeInk.opacity(0.65))
+                        Text(issue).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.8))
+                            .multilineTextAlignment(.center)
                         Button("Try again") { Task { await store.load() } }
                             .buttonStyle(.jbSecondary)
                     }
@@ -140,29 +145,46 @@ struct JoeBroAgentView: View {
         .frame(height: 44)
     }
 
-    private var headerTitle: some View {
+    private var titleLabel: some View {
         Text("JoeBro")
-            .font(.jb(15, .semibold))
-            .tracking(-0.2)
-            .foregroundStyle(JB.ink)
-            .padding(.horizontal, 16)
-            .frame(height: 32)
-            .jbSurface(.chrome, radius: 16)
+            .font(.jbHeadline)
+            .foregroundStyle(hasBanner ? Color.white : Color.joeInk)
+            .padding(.horizontal, 17)
+            .padding(.vertical, 9)
             .accessibilityAddTraits(.isHeader)
     }
 
-    private var settingsControl: some View {
-        Button(action: onOpenSettings) {
-            Image(systemName: "gearshape")
-                .font(.jb(16, .regular))
-                .foregroundStyle(JB.ink)
-                .frame(width: 32, height: 32)
-                .jbSurface(.chrome, radius: 16)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
+    @ViewBuilder private var headerTitle: some View {
+        if #available(iOS 26.0, *) {
+            titleLabel.glassEffect(.regular, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+        } else {
+            titleLabel.background(JB.panelFill, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
         }
-        .buttonStyle(JBPressStyle())
-        .accessibilityLabel("Settings")
+    }
+
+    private var settingsLabel: some View {
+        Image(systemName: "gearshape")
+            .font(.jb(22, .regular))
+            .foregroundStyle(hasBanner ? Color.white : Color.accentTint)
+            .frame(width: 44, height: 44)
+    }
+
+    @ViewBuilder private var settingsControl: some View {
+        if #available(iOS 26.0, *) {
+            Button(action: onOpenSettings) { settingsLabel }
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+                .accessibilityLabel("Settings")
+        } else {
+            Button(action: onOpenSettings) { settingsLabel }
+                .buttonStyle(.plain)
+                .background(JB.panelFill, in: Capsule())
+                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
+                .accessibilityLabel("Settings")
+        }
     }
 
     private func documentSource(_ document: ChatDocumentRef) -> DocumentEditorStore.Source {
@@ -202,84 +224,212 @@ struct JoeBroAgentView: View {
     }
 }
 
-/// JoeBro's face, driven by what the agent is actually doing.
 private struct JoeBroPresence: View {
+    @Environment(JoeBroTheme.self) private var theme
+    @AppStorage("backgroundAnimation") private var animationRaw = "off"
+    private var hasBanner: Bool { theme.wallpaperName != "photo" && (BackgroundAnimation(rawValue: animationRaw) ?? .off) != .off }
     let isWorking: Bool
     let isAvailable: Bool
     let isListening: Bool
-    let needsAttention: Bool
     let isUsingTools: Bool
-    let isStreaming: Bool
+    let isSpeaking: Bool
     let onCompact: () -> Void
     let onClear: () -> Void
-    @State private var justFinished = false
-    @State private var drowsy = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var breathing = false
+    @State private var blinking = false
+    @State private var glance: CGFloat = 0
+    @State private var activityStep = 0
+    @State private var speakingBeat = false
 
-    private var night: Bool { (0..<6).contains(Calendar.current.component(.hour, from: Date())) }
-
-    private var mood: JBFace.Mood {
-        if !isAvailable || needsAttention || isListening { return .alert }
-        if isStreaming { return .talking }
-        if isWorking { return .thinking }
-        if justFinished { return .happy }
-        return (drowsy || night) ? .sleeping : .idle
+    private var expression: JoeBroExpression {
+        if !isAvailable { return .offline }
+        if isListening { return .listening }
+        if isUsingTools { return .usingTools }
+        if isSpeaking { return .speaking }
+        return isWorking ? .thinking : .idle
     }
 
-    private var label: String {
-        if !isAvailable { return "offline" }
-        if needsAttention { return "needs you" }
-        if isListening { return "listening" }
-        if isUsingTools { return "working" }
-        if isStreaming { return "replying" }
-        if isWorking { return "thinking" }
-        return mood == .sleeping ? "asleep" : "ready"
-    }
-
-    private var dot: Color {
-        if !isAvailable { return JB.ink3 }
-        if needsAttention || isListening { return JB.warn }
-        return isWorking ? JB.live : JB.ink3
+    private var eyeDirection: CGFloat {
+        if expression == .usingTools || expression == .thinking {
+            return [-2.5, 0, 2.5][activityStep % 3]
+        }
+        return glance
     }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 15) {
             Menu {
-                Button("Compact conversation", systemImage: "arrow.down.right.and.arrow.up.left") { onCompact() }
+                Button("Compact conversation", systemImage: "square.compress") { onCompact() }
                     .disabled(isWorking)
                 Button("Clear conversation", systemImage: "trash", role: .destructive) { onClear() }
                     .disabled(isWorking)
             } label: {
-                JBFace(mood: mood, size: 13, tint: isAvailable ? JB.ink : JB.ink3)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .jbSurface(.raised, radius: JB.rCard)
-                    .animation(JB.snap, value: mood)
+              ZStack {
+                // On a banner JoeBro sits in a smaller smoked tile so the scene
+                // reads all around him; without one he keeps the full tile.
+                let side: CGFloat = hasBanner ? 66 : 94
+                RoundedRectangle(cornerRadius: side * 0.32, style: .continuous)
+                    .fill(hasBanner ? Color.black.opacity(0.42) : Color.joeInk.opacity(0.09))
+                    .frame(width: side, height: side)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: side * 0.32, style: .continuous)
+                            .strokeBorder(hasBanner ? Color.white.opacity(0.14) : Color.joeInk.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
+                    }
+                JoeBroFigure(expression: expression, eyesClosed: blinking,
+                             color: theme.joeBroColor,
+                             glance: eyeDirection, mouthOpen: speakingBeat && !reduceMotion)
+                    // The figure is drawn on a 72pt grid: scale the whole face, never squeeze its frame.
+                    .frame(width: 72, height: 72)
+                    .scaleEffect((side / 94) * (breathing && !reduceMotion ? 1.035 : 1))
+                    .frame(width: side * 0.76, height: side * 0.76)
+                    .offset(y: breathing && !reduceMotion ? -1.5 : 0.5)
+                    .shadow(color: .black.opacity(hasBanner ? 0.35 : 0), radius: 6, y: 2)
+              }
             }
-            .buttonStyle(JBPressStyle())
+            .buttonStyle(.plain)
             .accessibilityLabel("JoeBro conversation actions")
-            HStack(spacing: 7) {
-                JBStatusDot(color: dot, live: isWorking, size: 6)
-                Text(label).font(.jbMono(12)).foregroundStyle(JB.ink3)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 7) {
+                    Circle().fill(!isAvailable ? Color.gray : isListening ? Color.red : isWorking ? JB.accent : JB.live)
+                        .frame(width: 6, height: 6)
+                    Text(!isAvailable ? "Offline" : isListening ? "Listening" : isUsingTools ? "Working on it" : isWorking ? "On it" : "Standing by")
+                        .font(.jbSubheadline).foregroundStyle(hasBanner ? Color.white : Color.joeInk.opacity(0.69))
+                }
+                .padding(.horizontal, hasBanner ? 10 : 0)
+                .padding(.vertical, hasBanner ? 7 : 0)
+                .background(hasBanner ? Color.black.opacity(0.62) : .clear, in: Capsule())
             }
             Spacer(minLength: 0)
         }
-        .padding(10)
-        .jbSurface(.panel, radius: JB.rPanel)
-        .onChange(of: isWorking) { was, now in
-            guard was, !now else { drowsy = false; return }
-            justFinished = true
-            drowsy = false
+        .padding(.horizontal, 18)
+        .task(id: reduceMotion) {
+            guard !reduceMotion else { breathing = false; blinking = false; glance = 0; activityStep = 0; speakingBeat = false; return }
+            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+                breathing = true
+            }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(3.6))
+                guard !Task.isCancelled else { break }
+                withAnimation(.easeInOut(duration: 0.16)) { glance = [-1.5, 0, 1.5].randomElement() ?? 0 }
+                withAnimation(.easeInOut(duration: 0.09)) { blinking = true }
+                try? await Task.sleep(for: .milliseconds(145))
+                guard !Task.isCancelled else { break }
+                withAnimation(.easeOut(duration: 0.13)) { blinking = false }
+            }
         }
-        .task(id: justFinished) {
-            guard justFinished else { return }
-            try? await Task.sleep(for: .seconds(2.5))
-            justFinished = false
+        .task(id: expression) {
+            guard !reduceMotion else { return }
+            activityStep = 0
+            speakingBeat = false
+            while !Task.isCancelled {
+                let interval: Duration
+                switch expression {
+                case .speaking: interval = .milliseconds(420)
+                case .thinking, .usingTools: interval = .milliseconds(900)
+                default: return
+                }
+                try? await Task.sleep(for: interval)
+                guard !Task.isCancelled else { break }
+                withAnimation(.easeInOut(duration: 0.24)) {
+                    activityStep += 1
+                    speakingBeat.toggle()
+                }
+            }
         }
-        .task(id: isWorking || justFinished || isListening) {
-            // Doze off after ten idle minutes.
-            guard !isWorking, !justFinished, !isListening else { return }
-            try? await Task.sleep(for: .seconds(600))
-            if !Task.isCancelled { drowsy = true }
+    }
+}
+
+private enum JoeBroExpression {
+    case idle, thinking, usingTools, speaking, listening, offline
+}
+
+private struct JoeBroFigure: View {
+    let expression: JoeBroExpression
+    let eyesClosed: Bool
+    let color: Color
+    let glance: CGFloat
+    let mouthOpen: Bool
+
+    private var ink: Color {
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return .black }
+        return red * 0.299 + green * 0.587 + blue * 0.114 < 0.5 ? .white : .black
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(color)
+                .shadow(color: color.opacity(0.25), radius: expression == .thinking || expression == .usingTools ? 17 : 9)
+            HStack(spacing: 13) {
+                brow(left: true)
+                brow(left: false)
+            }
+            .offset(y: -14)
+            HStack(spacing: 16) {
+                eye(left: true)
+                eye(left: false)
+            }
+            .offset(x: glance, y: -5)
+            mouth
+        }
+        .animation(.easeInOut(duration: 0.25), value: expression)
+        .animation(.easeInOut(duration: 0.25), value: color)
+        .accessibilityHidden(true)
+    }
+
+    private func brow(left: Bool) -> some View {
+        Capsule()
+            .fill(ink.opacity(expression == .offline ? 0.35 : 0.74))
+            .frame(width: 8, height: 1.7)
+            .rotationEffect(.degrees(expression == .thinking ? (left ? -14 : 7)
+                                    : expression == .usingTools ? (left ? -7 : 12)
+                                    : expression == .listening ? (left ? -8 : 8) : 0))
+            .offset(y: expression == .listening || expression == .usingTools ? -2 : 0)
+    }
+
+    private func eye(left: Bool) -> some View {
+        Capsule()
+            .fill(ink.opacity(expression == .offline ? 0.4 : 0.83))
+            .frame(width: expression == .listening ? 5.5 : 4.5,
+                   height: eyesClosed ? 1.5 : expression == .listening ? 10
+                     : expression == .thinking && !left ? 6 : 8)
+    }
+
+    private var mouth: some View {
+        ZStack {
+            Path { path in
+                path.move(to: CGPoint(x: 28, y: 43))
+                path.addQuadCurve(to: CGPoint(x: 44, y: 43),
+                                  control: CGPoint(x: 36, y: expression == .listening ? 47 : 49))
+            }
+            .stroke(ink.opacity(0.77), style: StrokeStyle(lineWidth: 2.1, lineCap: .round))
+            .opacity(expression == .idle || expression == .listening ? 1 : 0)
+
+            Capsule()
+                .fill(ink.opacity(0.75))
+                .frame(width: expression == .thinking ? 9 : 11, height: 2)
+                .offset(x: expression == .thinking ? 2 : 0, y: 10)
+                .opacity(expression == .thinking || expression == .offline ? 1 : 0)
+
+            Path { path in
+                path.move(to: CGPoint(x: 31, y: 44))
+                path.addQuadCurve(to: CGPoint(x: 43, y: 43),
+                                  control: CGPoint(x: 37, y: 48))
+            }
+            .stroke(ink.opacity(0.77), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+            .opacity(expression == .usingTools ? 1 : 0)
+
+            Ellipse()
+                .fill(ink.opacity(0.8))
+                .frame(width: mouthOpen ? 9 : 11, height: mouthOpen ? 8 : 3)
+                .offset(y: 10)
+                .opacity(expression == .speaking ? 1 : 0)
         }
     }
 }

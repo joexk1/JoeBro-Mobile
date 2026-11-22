@@ -56,12 +56,12 @@ struct MobileSettingsView: View {
 
     private var connectionSection: some View {
         group("Connection") {
-            LabeledContent("Name") { Text(DemoMode.active ? "Demo" : ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name).font(.jbMono(13)) }
-            LabeledContent("URL") { Text(DemoMode.active ? "Sample data" : ServerConfig.urlString).font(.jbMono(13)).lineLimit(1) }
+            LabeledContent("Name") { Text(DemoMode.active ? "Demo" : ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name).font(.jb(13)) }
+            LabeledContent("URL") { Text(DemoMode.active ? "Sample data" : ServerConfig.urlString).font(.jb(13)).lineLimit(1) }
             LabeledContent("Status") {
                 HStack(spacing: 6) {
                     JBStatusDot(color: statusColor, live: connectionStatus == "Connected", size: 6)
-                    Text(connectionStatus).font(.jbMono(13))
+                    Text(connectionStatus).font(.jb(13))
                 }
             }
             Button("Test connection") { Task { await testConnection() } }
@@ -112,38 +112,51 @@ struct MobileSettingsView: View {
     }
 
     private var appearanceSection: some View {
-        group("Appearance") {
-            paletteSwatches
-            ColorPicker("JoeBro colour", selection: Binding(get: { theme.joeBroColor },
-                                                            set: { theme.setJoeBroColor($0) }),
-                        supportsOpacity: false)
-            Picker("Backdrop", selection: Binding(get: { backdropChoice }, set: setBackdrop)) {
-                Text("Palette").tag(JBBackdropKind.palette)
-                Text("Photo").tag(JBBackdropKind.photo)
-                Text("Animated").tag(JBBackdropKind.scene)
-            }
-            .pickerStyle(.segmented)
-            if backdropChoice == .photo {
+        Group {
+            group("Background") {
+                paletteSwatches
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    Text(theme.wallpaper == nil ? "Choose photo" : "Change photo")
+                    HStack {
+                        Text(theme.wallpaperName == "photo" ? "Change photo" : "Use a photo")
+                        Spacer()
+                        if theme.wallpaperName == "photo" { Image(systemName: "checkmark").foregroundStyle(JB.accent) }
+                    }
                 }
                 .onChange(of: selectedPhoto) { _, item in
-                    Task { if let data = try? await item?.loadTransferable(type: Data.self) { theme.setWallpaper(data: data) } }
+                    Task {
+                        if let data = try? await item?.loadTransferable(type: Data.self) {
+                            theme.setWallpaper(data: data)
+                            appearance.backdrop = .photo
+                            appearance.palette = .auto
+                        }
+                    }
+                }
+                if theme.wallpaperName == "photo" {
+                    Button("Remove photo", role: .destructive) {
+                        appearance.backdrop = .palette
+                        theme.select(appearance.palette.rawValue)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("Panel opacity")
+                        Spacer()
+                        Text("\(Int(appearance.solidity * 100))%").font(.jb(13)).foregroundStyle(JB.ink2)
+                    }
+                    Slider(value: Binding(get: { appearance.solidity }, set: { appearance.solidity = $0 }), in: 0.35...1)
                 }
             }
-            if backdropChoice == .scene {
-                Picker("Scene", selection: $backgroundAnimation) {
+            group("Banner") {
+                Picker("Animation", selection: $backgroundAnimation) {
+                    Text("Off").tag(BackgroundAnimation.off.rawValue)
                     ForEach(BackgroundAnimation.allCases.filter { $0 != .off }) { Text($0.label).tag($0.rawValue) }
                 }
                 .pickerStyle(.menu)
             }
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Panel opacity")
-                    Spacer()
-                    Text("\(Int(appearance.solidity * 100))%").font(.jbMono(12)).foregroundStyle(JB.ink2)
-                }
-                Slider(value: Binding(get: { appearance.solidity }, set: { appearance.solidity = $0 }), in: 0.35...1)
+            group("JoeBro") {
+                ColorPicker("Colour", selection: Binding(get: { theme.joeBroColor },
+                                                         set: { theme.setJoeBroColor($0) }),
+                            supportsOpacity: false)
             }
         }
         .sensoryFeedback(.selection, trigger: appearance.palette)
@@ -172,7 +185,11 @@ struct MobileSettingsView: View {
             HStack(spacing: 12) {
                 ForEach(JBPalette.allCases) { p in
                     let on = appearance.palette == p
-                    Button { appearance.palette = p } label: {
+                    Button {
+                        appearance.palette = p
+                        appearance.backdrop = .palette
+                        if theme.wallpaperName == "photo" { theme.select(p.rawValue) }
+                    } label: {
                         ZStack {
                             if p == .mono {
                                 HStack(spacing: 0) { Color.black; Color.white }
@@ -199,7 +216,7 @@ struct MobileSettingsView: View {
 
     private var notificationsSection: some View {
         group("Notifications") {
-            LabeledContent("Push") { Text(push.status).font(.jbMono(12)).foregroundStyle(JB.ink2).multilineTextAlignment(.trailing) }
+            LabeledContent("Push") { Text(push.status).font(.jb(12)).foregroundStyle(JB.ink2).multilineTextAlignment(.trailing) }
             if push.enabled {
                 Button("Refresh registration") { Task { await push.refresh() } }
                 Button("Disable push", role: .destructive) { Task { await push.disable() } }
@@ -232,7 +249,7 @@ struct MobileSettingsView: View {
                 HStack(spacing: 8) { JBIcon(.agent, size: 15); Text("Soul") }
             }
             if let note = modelsNote ?? subagentNote {
-                Text(note).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(note).font(.jb(11)).foregroundStyle(JB.ink3)
             }
         }
         .sensoryFeedback(.selection, trigger: subagentAuto)
@@ -381,7 +398,7 @@ private struct JoeBroSoulView: View {
                             .scrollContentBackground(.hidden)
                     }
                     Text("\(soul.count) / 4,000")
-                        .font(.jbMono(11))
+                        .font(.jb(11))
                         .foregroundStyle(soul.count > 4000 ? JB.danger : JB.ink3)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }

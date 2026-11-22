@@ -159,7 +159,7 @@ private struct TaskRow: View {
                 .foregroundStyle(task.isPaused ? JB.ink3 : JB.accent).frame(width: 20)
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
-                Text(subtitle).font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+                Text(subtitle).font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1)
             }
             Spacer(minLength: 0)
             if running { JBSpinner() }
@@ -237,7 +237,7 @@ struct TaskEditor: View {
                         }
                         .tint(JB.accent)
                     }
-                    TextField("Time (HH:MM)", text: $time).font(.jbMono(15)).keyboardType(.numbersAndPunctuation)
+                    TextField("Time (HH:MM)", text: $time).font(.jb(15)).keyboardType(.numbersAndPunctuation)
                     if !coding { WSPermissionPicker(title: "Agent access", mode: $permissionMode) }
                 }.jbFormRow()
                 if coding {
@@ -254,7 +254,7 @@ struct TaskEditor: View {
                                 ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
                             }
                         }
-                        TextField("Folder", text: $repo).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Folder", text: $repo).font(.jb(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
                     }.jbFormRow()
                     .transition(.opacity)
                 }

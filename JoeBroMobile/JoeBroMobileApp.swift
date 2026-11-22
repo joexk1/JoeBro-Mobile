@@ -449,10 +449,12 @@ struct MobileNotificationInbox: View {
                         Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                     }
                     Text(item.body).textSelection(.enabled)
-                    if item.kind == "coding_approval", let agent = item.source, !agent.isEmpty {
+                    if item.kind == "coding_approval", let agent = item.source, !agent.isEmpty, item.read == 0,
+                       let d = jbParseISO(item.created_at), Date().timeIntervalSince(d) < 15 * 60 {
                         AgentApprovalButtons(api: api, agentID: agent) { markRead(item.id) }
                     }
-                    Text(item.created_at).font(.jbCaption).foregroundStyle(JB.ink2)
+                    Text(jbParseISO(item.created_at).map { $0.formatted(.relative(presentation: .named)) } ?? item.created_at)
+                        .font(.jbCaption).foregroundStyle(JB.ink3)
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
@@ -521,7 +523,8 @@ struct MobileNotificationInbox: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                         Text(item.body).textSelection(.enabled)
-                        Text(item.created_at).font(.jbCaption).foregroundStyle(JB.ink2)
+                        Text(jbParseISO(item.created_at).map { $0.formatted(.relative(presentation: .named)) } ?? item.created_at)
+                        .font(.jbCaption).foregroundStyle(JB.ink3)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
@@ -588,4 +591,19 @@ struct MobileNotificationInbox: View {
         var kind: String? = nil
         var source: String? = nil
     }
+}
+
+
+/// Parses the backend's ISO timestamps (with or without fractional seconds / Z).
+func jbParseISO(_ s: String) -> Date? {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let d = f.date(from: s) { return d }
+    f.formatOptions = [.withInternetDateTime]
+    if let d = f.date(from: s) { return d }
+    let g = DateFormatter(); g.locale = Locale(identifier: "en_US_POSIX"); g.timeZone = TimeZone(identifier: "UTC")
+    for fmt in ["yyyy-MM-dd'T'HH:mm:ss.SSSSSS", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss"] {
+        g.dateFormat = fmt; if let d = g.date(from: s) { return d }
+    }
+    return nil
 }

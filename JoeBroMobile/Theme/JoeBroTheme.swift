@@ -129,6 +129,7 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? data.write(to: url, options: .atomic)
         wallpaper = image
+        if let cg = image.cgImage { JBAppearance.shared.adoptAccent(from: cg) }
         wallpaperName = "photo"
         UserDefaults.standard.set(wallpaperName, forKey: "wallpaperName")
     }
@@ -153,8 +154,8 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
         let tab = UITabBarAppearance()
         tab.configureWithTransparentBackground()
         for item in [tab.stackedLayoutAppearance, tab.inlineLayoutAppearance, tab.compactInlineLayoutAppearance] {
-            item.normal.titleTextAttributes = [.font: JBFonts.uiFont(9.5, .medium, mono: true)]
-            item.selected.titleTextAttributes = [.font: JBFonts.uiFont(9.5, .semibold, mono: true)]
+            item.normal.titleTextAttributes = [.font: JBFonts.uiFont(10, .medium)]
+            item.selected.titleTextAttributes = [.font: JBFonts.uiFont(10, .semibold)]
         }
         tab.shadowColor = UIColor(JB.line)
         UITabBar.appearance().standardAppearance = tab
@@ -224,20 +225,6 @@ struct AsciiTopBarAnimation: View {
                 paper ? Color.white : Color.black
                 AsciiSceneWebView(name: mode.rawValue, paper: paper,
                                   paused: reduceMotion || scenePhase != .active || !visible)
-            }
-            // ASCII lives at the edges: the scene thins toward the centre and
-            // dissolves into the page along the bottom.
-            .mask {
-                LinearGradient(stops: [.init(color: .black, location: 0),
-                                       .init(color: .black.opacity(0.12), location: 0.3),
-                                       .init(color: .black.opacity(0.12), location: 0.7),
-                                       .init(color: .black, location: 1)],
-                               startPoint: .leading, endPoint: .trailing)
-            }
-            .mask {
-                LinearGradient(stops: [.init(color: .black, location: 0.55),
-                                       .init(color: .clear, location: 1)],
-                               startPoint: .top, endPoint: .bottom)
             }
             .onAppear { visible = true }
             .onDisappear { visible = false }
@@ -313,6 +300,12 @@ private struct AsciiSceneWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             ready = true
             apply(to: webView)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak webView] in
+                guard JBAppearance.shared.palette == .auto, UserDefaults.standard.string(forKey: "wallpaperName") != "photo" else { return }
+                webView?.takeSnapshot(with: nil) { image, _ in
+                    if let cg = image?.cgImage { JBAppearance.shared.adoptAccent(from: cg) }
+                }
+            }
         }
 
         private func apply(to view: WKWebView) {

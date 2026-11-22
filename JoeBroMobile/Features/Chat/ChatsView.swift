@@ -768,6 +768,16 @@ struct ChatsView: View {
             }
         }
         .task { await store.load() }
+        #if DEBUG
+        // `-JoeBroOpenChat <n>` opens the nth chat (1-based); `-JoeBroDraft <text>` pre-fills the composer (screenshots).
+        .task {
+            guard let n = DemoMode.option("-JoeBroOpenChat").flatMap(Int.init), n > 0 else { return }
+            for _ in 0..<20 where store.sessions.isEmpty { try? await Task.sleep(for: .milliseconds(150)) }
+            guard store.sessions.indices.contains(n - 1) else { return }
+            openSession = store.sessions[n - 1]
+            if let draft = DemoMode.option("-JoeBroDraft") { try? await Task.sleep(for: .milliseconds(600)); store.draft = draft }
+        }
+        #endif
         .task { showSharedDraftIfNeeded() }
         .onChange(of: openSharedDraft) { _, _ in showSharedDraftIfNeeded() }
         .onChange(of: store.sessions.map(\.id)) { _, ids in

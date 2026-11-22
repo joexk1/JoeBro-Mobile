@@ -15,50 +15,59 @@ struct JoeBroIslandWidget: Widget {
         ActivityConfiguration(for: JoeBroActivityAttributes.self) { context in
             JoeBroLockScreenActivity(state: context.state, isStale: context.isStale)
                 .background { activityBackdrop(scene: context.attributes.sceneName) }
-                .activityBackgroundTint(IslandInk.bg)
+                .activityBackgroundTint(context.attributes.sceneName.map { $0 != "off" } == true
+                                        ? Color.black
+                                        : Color(red: 0.12, green: 0.08, blue: 0.22).opacity(0.85))
                 .activitySystemActionForegroundColor(islandTint)
                 .widgetURL(URL(string: context.attributes.destination))
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    IslandMark(text: islandMark(context.state), tint: statusColor(context.state), size: 24)
+                    Image(systemName: glyph(context.state))
+                        .font(.system(size: 18))
+                        .foregroundStyle(islandTint)
+                        .frame(width: 24, height: 24)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.finished == nil {
                         Text(context.state.startedAt, style: .timer)
-                            .font(.islandMono(11))
-                            .foregroundStyle(IslandInk.ink3)
+                            .font(.system(.caption, design: .rounded).monospacedDigit())
+                            .foregroundStyle(Color.white.opacity(0.65))
                             .frame(maxWidth: 48, alignment: .trailing)
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(title(context.state, stale: context.isStale))
-                        .font(.islandSans(15, .semibold))
-                        .foregroundStyle(IslandInk.ink)
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.75)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     JoeBroExpandedIslandContent(state: context.state)
                 }
             } compactLeading: {
-                Text(islandMark(context.state)).font(.islandMono(11, .semibold)).foregroundStyle(statusColor(context.state))
+                Image(systemName: glyph(context.state)).foregroundStyle(islandTint)
             } compactTrailing: {
                 if context.state.finished != nil {
-                    Circle().fill(statusColor(context.state)).frame(width: 7, height: 7)
+                    Image(systemName: glyph(context.state)).foregroundStyle(statusColor(context.state))
                 } else {
-                    HStack(spacing: 4) {
-                        IslandDots(value: context.state.count, dot: 1.8, tint: IslandInk.ink)
-                        Circle().fill(statusColor(context.state)).frame(width: 6, height: 6)
+                    HStack(spacing: 3) {
+                        Text("\(context.state.count)")
+                            .font(.system(.subheadline, design: .rounded).weight(.bold).monospacedDigit())
+                            .foregroundStyle(.white)
+                        Circle().fill(statusColor(context.state)).frame(width: 7, height: 7)
                     }
                 }
             } minimal: {
                 if context.state.finished != nil {
-                    Circle().fill(statusColor(context.state)).frame(width: 8, height: 8)
+                    Image(systemName: glyph(context.state)).foregroundStyle(statusColor(context.state))
                 } else {
                     ZStack(alignment: .topTrailing) {
-                        IslandDots(value: context.state.count, dot: 1.8, tint: IslandInk.ink)
+                        Text("\(context.state.count)")
+                            .font(.system(size: 14, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        Circle().fill(statusColor(context.state)).frame(width: 5, height: 5)
+                        Circle().fill(statusColor(context.state)).frame(width: 6, height: 6)
                     }
                 }
             }
@@ -67,3 +76,4 @@ struct JoeBroIslandWidget: Widget {
         }
     }
 }
+

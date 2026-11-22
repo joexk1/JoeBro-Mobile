@@ -42,8 +42,8 @@ struct ChatToolActivity: View {
             Button { withAnimation(JB.snap) { expanded.toggle() } } label: {
                 HStack(spacing: 8) {
                     JBStatusDot(color: failed ? JB.danger : running ? JB.live : JB.ink3, live: running, size: 6)
-                    Text(summary).font(.jbMono(12)).foregroundStyle(JB.ink2).lineLimit(1)
-                    Text("\(count)").font(.jbMono(12)).foregroundStyle(JB.ink3)
+                    Text(summary).font(.jb(12)).foregroundStyle(JB.ink2).lineLimit(1)
+                    Text("\(count)").font(.jb(12)).foregroundStyle(JB.ink3)
                     Image(systemName: "chevron.right").font(.jb(9, .medium)).foregroundStyle(JB.ink3)
                         .rotationEffect(.degrees(expanded ? 90 : 0))
                     Spacer(minLength: 0)
@@ -60,7 +60,7 @@ struct ChatToolActivity: View {
                     if calls.isEmpty {
                         ForEach(legacyNames.indices, id: \.self) { index in
                             Text(ChatToolFormat.prettyName(legacyNames[index]))
-                                .font(.jbMono(12)).foregroundStyle(JB.ink3).frame(minHeight: 28)
+                                .font(.jb(12)).foregroundStyle(JB.ink3).frame(minHeight: 28)
                         }
                     }
                 }
@@ -83,9 +83,9 @@ private struct ChatToolStep: View {
                 HStack(spacing: 8) {
                     JBStatusDot(color: failed ? JB.danger : running ? JB.live : JB.ink3, live: running, size: 5)
                     Text(ChatToolFormat.prettyName(calls[0].name) + (calls.count > 1 ? " ×\(calls.count)" : ""))
-                        .font(.jbMono(12)).foregroundStyle(failed ? JB.danger : JB.ink2).lineLimit(1)
+                        .font(.jb(12)).foregroundStyle(failed ? JB.danger : JB.ink2).lineLimit(1)
                     if !expanded, calls.count == 1, !calls[0].command.isEmpty {
-                        Text(calls[0].command).font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+                        Text(calls[0].command).font(.jb(11)).foregroundStyle(JB.ink3).lineLimit(1)
                     }
                     Spacer(minLength: 0)
                 }
@@ -110,7 +110,7 @@ private struct ChatToolStep: View {
 
     private func pane(_ text: String, tint: Color = JB.ink) -> some View {
         Text(text)
-            .font(.jbMono(11.5)).foregroundStyle(tint)
+            .font(.jb(11.5)).foregroundStyle(tint)
             .textSelection(.enabled)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(9)

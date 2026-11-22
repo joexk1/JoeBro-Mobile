@@ -70,7 +70,7 @@ struct OnboardingView: View {
     private func infoPage(_ title: String, _ text: String, _ glyph: JBGlyph) -> some View {
         VStack(spacing: 20) {
             Spacer()
-            if glyph == .agent { JBWordmark(dot: 3.4) } else { JBIcon(glyph, size: 56, lineWidth: 1.2).foregroundStyle(JB.accent) }
+            if glyph == .agent { Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72) } else { JBIcon(glyph, size: 56, lineWidth: 1.2).foregroundStyle(JB.accent) }
             Text(title).font(.jbTitle).tracking(-0.3).multilineTextAlignment(.center).foregroundStyle(JB.ink)
             Text(text).font(.jbBody).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
             Button("Next") { withAnimation { page += 1 } }.buttonStyle(.jbPrimary).controlSize(.large)
@@ -83,10 +83,10 @@ struct OnboardingView: View {
     private var pairPage: some View {
         ScrollView {
             VStack(spacing: 18) {
-                JBWordmark(dot: 3).padding(.top, 40)
+                Image("JoeBroLogo").resizable().scaledToFit().frame(width: 56, height: 56).padding(.top, 40)
                 Text("Pair this phone").font(.jbTitle).tracking(-0.3).foregroundStyle(JB.ink)
                 if let paired {
-                    Label(paired, systemImage: "checkmark").font(.jbMono(12)).foregroundStyle(JB.live)
+                    Label(paired, systemImage: "checkmark").font(.jb(12)).foregroundStyle(JB.live)
                 }
                 Button { requestCamera() } label: {
                     Label("Scan QR code", systemImage: "qrcode.viewfinder").frame(maxWidth: .infinity)
@@ -114,7 +114,7 @@ struct OnboardingView: View {
                 }
                 demoButton
                 if busy { JBSpinner() }
-                if let message { Text(message).font(.jbMono(12)).foregroundStyle(JB.danger).multilineTextAlignment(.center) }
+                if let message { Text(message).font(.jb(12)).foregroundStyle(JB.danger).multilineTextAlignment(.center) }
             }
             .padding(.horizontal, 32).padding(.bottom, 60)
         }

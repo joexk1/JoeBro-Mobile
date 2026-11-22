@@ -201,7 +201,7 @@ private struct SkillEditor: View {
                 }
                 JBSection("Procedure (markdown)") {
                     TextEditor(text: $content)
-                        .font(.jbMono(13))
+                        .font(.jb(13))
                         .frame(minHeight: 220)
                         .scrollContentBackground(.hidden)
                 }

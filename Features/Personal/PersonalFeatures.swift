@@ -60,7 +60,7 @@ struct ProactiveRows: View {
             .disabled(!loaded)
             .accessibilityLabel("Proactive agent permissions")
             if let error {
-                Text(error).font(.jbMono(11)).foregroundStyle(JB.danger)
+                Text(error).font(.jb(11)).foregroundStyle(JB.danger)
             } else if let d = descriptions[mode] {
                 Text(d).font(.jbCaption).foregroundStyle(JB.ink3)
             }
@@ -114,7 +114,7 @@ struct ShoppingListView: View {
                 .listRowBackground(JB.panelFill)
             }
             if let error {
-                Text(error).font(.jbMono(11)).foregroundStyle(JB.danger).listRowBackground(Color.clear)
+                Text(error).font(.jb(11)).foregroundStyle(JB.danger).listRowBackground(Color.clear)
             }
             if !loading && items.isEmpty {
                 empty("cart", "Nothing to buy")
@@ -130,7 +130,7 @@ struct ShoppingListView: View {
                         JBSectionHeader("Ticked off", count: done.count)
                         Spacer()
                         Button("Clear") { mutate(["action": "clear_checked"]) }
-                            .font(.jbMono(11, .medium))
+                            .font(.jb(11, .medium))
                             .foregroundStyle(JB.ink2)
                     }
                 }
@@ -158,12 +158,12 @@ struct ShoppingListView: View {
                         .strikethrough(item.checked)
                         .font(.jb(15)).foregroundStyle(item.checked ? JB.ink3 : JB.ink)
                     if item.addedBy == "joebro" {
-                        Text("joebro").font(.jbMono(10)).foregroundStyle(JB.ink3)
+                        Text("joebro").font(.jb(10)).foregroundStyle(JB.ink3)
                     }
                 }
                 Spacer()
                 if !item.quantity.isEmpty {
-                    Text(item.quantity).font(.jbMono(12)).foregroundStyle(JB.ink2)
+                    Text(item.quantity).font(.jb(12)).foregroundStyle(JB.ink2)
                 }
             }
             .frame(minHeight: 40)
@@ -362,7 +362,7 @@ struct HealthRows: View {
                         Spacer()
                         if health.busy { JBSpinner() }
                         else if let last = health.lastSync {
-                            Text(last.formatted(.relative(presentation: .numeric))).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                            Text(last.formatted(.relative(presentation: .numeric))).font(.jb(11)).foregroundStyle(JB.ink3)
                         }
                     }
                 }
@@ -375,7 +375,7 @@ struct HealthRows: View {
                 .disabled(!health.available)
             }
             if !health.status.isEmpty {
-                Text(health.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(health.status).font(.jb(11)).foregroundStyle(JB.ink3)
             }
         }
         .sensoryFeedback(.selection, trigger: health.enabled)

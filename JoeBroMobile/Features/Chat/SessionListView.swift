@@ -32,9 +32,14 @@ struct SessionListView: View {
         List {
             folderSections
             if !ungrouped.isEmpty {
-                Section(store.folderNames.isEmpty ? "" : "Chats") {
+                Section {
                     ForEach(ungrouped) { session in
                         row(session)
+                    }
+                } header: {
+                    if !store.folderNames.isEmpty {
+                        Text("Chats").font(.jb(13, .semibold)).foregroundStyle(JB.ink2)
+                            .textCase(nil).padding(.leading, 4)
                     }
                 }
             }
@@ -84,7 +89,7 @@ struct SessionListView: View {
                 folderHeaderRow(folder)
                 if isExpanded(folder) {
                     ForEach(store.sessions(inFolder: folder, search: search)) { session in
-                        row(session)
+                        row(session, nested: true)
                     }
                 }
             }
@@ -97,24 +102,29 @@ struct SessionListView: View {
         return Button {
             withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { store.toggleCollapsed(folder) }
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "chevron.right")
-                    .font(.jb(10, .medium))
-                    .foregroundStyle(JB.ink3)
-                    .rotationEffect(.degrees(collapsed ? 0 : 90))
-                    .frame(width: 12)
-                Text(folder).font(.jbMono(11, .medium)).textCase(.uppercase).tracking(0.9)
-                    .foregroundStyle(JB.ink3).lineLimit(1)
+            HStack(spacing: 10) {
+                Image(systemName: collapsed ? "folder" : "folder.fill")
+                    .font(.jb(16, .regular))
+                    .foregroundStyle(collapsed ? JB.ink2 : JB.accent)
+                    .frame(width: 22)
+                Text(folder).font(.jb(16, .semibold))
+                    .foregroundStyle(JB.ink).lineLimit(1)
                 if store.pinnedFolders.contains(folder) {
-                    Image(systemName: "pin").font(.jb(10)).foregroundStyle(JB.ink3)
+                    Image(systemName: "pin").font(.jb(11)).foregroundStyle(JB.ink3)
                 }
                 Spacer(minLength: 6)
-                Text("\(count)").font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text("\(count)").font(.jb(13, .medium)).foregroundStyle(JB.ink3).monospacedDigit()
+                Image(systemName: "chevron.right")
+                    .font(.jb(11, .semibold))
+                    .foregroundStyle(JB.ink3)
+                    .rotationEffect(.degrees(collapsed ? 0 : 90))
             }
-            .frame(minHeight: 44)
+            .padding(.horizontal, 4)
+            .frame(minHeight: 46)
             .contentShape(Rectangle())
         }
         .buttonStyle(JBPressStyle())
+        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 2, trailing: 16))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .accessibilityLabel("Folder \(folder), \(count) chats")
@@ -157,21 +167,35 @@ struct SessionListView: View {
         Button("Delete folder", systemImage: "trash", role: .destructive) { folderDeleteTarget = folder }
     }
 
-    private func row(_ session: JBSession) -> some View {
+    private func row(_ session: JBSession, nested: Bool = false) -> some View {
+        // Chats inside a folder sit indented under it, joined by a guide line.
+        let lead: CGFloat = nested ? 44 : 16
         Button { onOpen(session) } label: {
             HStack(spacing: 10) {
-                Text(session.name).font(.jb(16)).foregroundStyle(JB.ink).lineLimit(1)
+                Text(session.name).font(.jb(15, .medium)).foregroundStyle(JB.ink).lineLimit(1)
                 if session.mode == "agent" { JBIcon(.tools, size: 12).foregroundStyle(JB.ink3) }
                 Spacer(minLength: 6)
                 if session.isImportant == true { Image(systemName: "pin").font(.jb(11)).foregroundStyle(JB.accent) }
-                Text(Self.stamp(session.createdAt)).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text(Self.stamp(session.createdAt)).font(.jb(13)).foregroundStyle(JB.ink3)
             }
-            .frame(minHeight: 48)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 50)
             .contentShape(Rectangle())
         }
         .buttonStyle(JBPressStyle())
-        .listRowBackground(Color.clear)
-        .listRowSeparatorTint(JB.line)
+        .listRowInsets(EdgeInsets(top: 3, leading: lead, bottom: 3, trailing: 16))
+        .listRowBackground(
+            ZStack(alignment: .leading) {
+                if nested {
+                    Rectangle().fill(JB.line).frame(width: 1.5).padding(.leading, 27)
+                }
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(JB.raised.opacity(0.92))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(JB.line, lineWidth: 1))
+                    .padding(.vertical, 3).padding(.leading, lead).padding(.trailing, 16)
+            }
+        )
+        .listRowSeparator(.hidden)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive) { deleteTargetID = session.id }
             Button("Archive", systemImage: "archivebox") { Task { await store.archiveSession(session.id) } }

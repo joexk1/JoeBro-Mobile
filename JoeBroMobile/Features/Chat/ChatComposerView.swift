@@ -18,7 +18,8 @@ struct ChatComposerView: View {
 
     private var slashQuery: String? {
         let d = store.draft
-        guard d.hasPrefix("/"), !d.contains(" "), !d.contains("\n") else { return nil }
+        guard d.hasPrefix("/"), !d.contains("\n"), d.filter({ $0 == " " }).count <= 1 else { return nil }
+        if d.contains(" "), SlashCommand.options(for: String(d.dropFirst().prefix(while: { $0 != " " })).lowercased()).isEmpty { return nil }
         return String(d.dropFirst())
     }
     private var suggestions: [SlashCommand] {
@@ -212,6 +213,15 @@ struct ChatComposerView: View {
     private func accept(_ cmd: SlashCommand) {
         switch cmd.kind {
         case .skill: store.draft = cmd.name + " "; return
+        case .menu: store.draft = cmd.name + " "; return
+        case .option:
+            let look = JBAppearance.shared
+            switch cmd.parent {
+            case "banner": UserDefaults.standard.set(cmd.value, forKey: "backgroundAnimation")
+            case "palette": if let p = JBPalette(rawValue: cmd.value) { look.palette = p }
+            case "panels": look.solidity = max(0.35, (Double(cmd.value) ?? 100) / 100)
+            default: break
+            }
         case .compact: Task { await store.compactJoeBro() }
         case .clear: Task { await store.clearJoeBro() }
         case .agent: store.setAgentMode(true)
@@ -248,14 +258,14 @@ struct ChatComposerView: View {
         if store.uploadingAttachment {
             HStack(spacing: 7) {
                 JBSpinner(size: 11)
-                Text("Uploading").font(.jbMono(11)).foregroundStyle(JB.ink3)
+                Text("Uploading").font(.jb(11)).foregroundStyle(JB.ink3)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         ForEach(store.pendingAttachments) { attachment in
             HStack(spacing: 6) {
                 Label(attachment.name, systemImage: "paperclip")
-                    .font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(1)
+                    .font(.jb(11)).foregroundStyle(JB.ink2).lineLimit(1)
                 Spacer(minLength: 4)
                 Button {
                     store.pendingAttachments.removeAll { $0.id == attachment.id }
@@ -276,7 +286,7 @@ struct ChatComposerView: View {
                 JBStatusDot(color: JB.danger, live: true)
                 Text("Listening")
             }
-            .font(.jbMono(11)).foregroundStyle(JB.ink2)
+            .font(.jb(11)).foregroundStyle(JB.ink2)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -332,7 +342,7 @@ struct ChatModelPicker: View {
                     .lineLimit(1)
                 Image(systemName: "chevron.up.chevron.down").font(.jb(8, .medium))
             }
-            .font(.jbMono(11, .medium))
+            .font(.jb(11, .medium))
             .foregroundStyle(JB.ink2)
             .padding(.horizontal, 11)
             .frame(height: 36)

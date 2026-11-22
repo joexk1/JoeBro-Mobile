@@ -109,7 +109,7 @@ func alertBinding<T>(_ source: Binding<T?>) -> Binding<Bool> {
 @ViewBuilder
 func empty(_ symbol: String, _ title: String, _ detail: String = "") -> some View {
     VStack(spacing: 12) {
-        Text(JBEmptyState.drawing(.inbox)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+        Text(JBEmptyState.drawing(.inbox)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
         Text(title).font(.jb(13)).foregroundStyle(JB.ink2)
     }
     .frame(maxWidth: .infinity).padding(.vertical, 40)

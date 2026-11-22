@@ -113,7 +113,7 @@ struct ChatMessageRow: View {
     private var attachmentChips: some View {
         ForEach(line.attachments, id: \.self) { name in
             Label(name, systemImage: "paperclip")
-                .font(.jbMono(11))
+                .font(.jb(11))
                 .foregroundStyle(JB.ink3)
                 .lineLimit(1)
         }
@@ -146,7 +146,7 @@ private struct ThinkingBlock: View {
             Button { withAnimation(JB.snap) { open.toggle() } } label: {
                 HStack(spacing: 6) {
                     if live { JBScrambleText(text: "thinking", active: true) }
-                    else { Text("thought").font(.jbMono(12)).foregroundStyle(JB.ink3) }
+                    else { Text("thought").font(.jb(12)).foregroundStyle(JB.ink3) }
                     Image(systemName: "chevron.right").font(.jb(9, .medium)).foregroundStyle(JB.ink3)
                         .rotationEffect(.degrees(open ? 90 : 0))
                 }
@@ -262,7 +262,7 @@ private struct ChatVisualizationView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(visual.title).font(.jb(15, .semibold)).foregroundStyle(JB.ink)
                     if !visual.subtitle.isEmpty {
-                        Text(visual.subtitle).font(.jbMono(11)).foregroundStyle(JB.ink3).fixedSize(horizontal: false, vertical: true)
+                        Text(visual.subtitle).font(.jb(11)).foregroundStyle(JB.ink3).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Spacer(minLength: 0)
@@ -277,7 +277,7 @@ private struct ChatVisualizationView: View {
             }
             if visual.rows.count > 5 {
                 Button(showAll ? "Show less" : "Show all \(visual.rows.count)") { showAll.toggle() }
-                    .font(.jbMono(11, .medium)).foregroundStyle(JB.ink2)
+                    .font(.jb(11, .medium)).foregroundStyle(JB.ink2)
             }
         }
         .padding(14)
@@ -299,8 +299,8 @@ private struct ChatVisualizationView: View {
 
     private func metricView(_ metric: ChatVisualization.Metric) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(metric.value).font(.jbMono(22, .medium)).foregroundStyle(JB.ink)
-            Text(metric.label).font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+            Text(metric.value).font(.jb(22, .medium)).foregroundStyle(JB.ink)
+            Text(metric.label).font(.jb(10.5)).foregroundStyle(JB.ink3)
         }
     }
 
@@ -324,7 +324,7 @@ private struct ChatVisualizationView: View {
                 Spacer()
                 Text(visual.series.last?.label ?? "")
             }
-            .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+            .font(.jb(10.5)).foregroundStyle(JB.ink3)
         }
         .accessibilityLabel(visual.title + " trend: " + visual.series.map { "\($0.label), \($0.value.formatted())" }.joined(separator: "; "))
     }
