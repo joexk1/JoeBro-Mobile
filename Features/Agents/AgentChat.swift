@@ -8,8 +8,8 @@ extension JoeBroAPI {
     private struct ScreenResult: Decodable { let screen: String?; let lines: [String]? }
 
     /// Type an instruction into a coding agent. Returns "terminal" (typed now) or "queued".
-    func codingSend(id: String, text: String) async throws -> String {
-        let r = try await send(SendResult.self, "api/coding-agents/\(segment(id))/send", json: ["text": text, "sender": "phone"])
+    func codingSend(id: String, text: String, mode: String = "auto") async throws -> String {
+        let r = try await send(SendResult.self, "api/coding-agents/\(segment(id))/send", json: ["text": text, "sender": "phone", "mode": mode])
         return r.delivered ?? "queued"
     }
 
@@ -73,6 +73,8 @@ struct AgentChatThread: View {
     @State private var showScreen = false
     @State private var screen = ""
     @State private var sentTick = 0
+    @State private var voice = VoiceCapture()
+    @State private var draftBeforeVoice = ""
     @FocusState private var focused: Bool
 
     private var messages: [JBAgentMessage] { agent.messages ?? [] }
@@ -190,16 +192,54 @@ struct AgentChatThread: View {
                     .focused($focused)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .jbField(focused: focused)
-                Button { submit() } label: { Image(systemName: "arrow.up") }
+                Button {
+                    if voice.isRecording { voice.stop() }
+                    else { draftBeforeVoice = draft; Task { await voice.start() } }
+                } label: {
+                    Image(systemName: voice.isRecording ? "mic.fill" : "mic")
+                        .foregroundStyle(voice.isRecording ? JB.danger : JB.ink2)
+                        .symbolEffect(.pulse, isActive: voice.isRecording)
+                }
+                .buttonStyle(JBIconButtonStyle(size: 40))
+                .accessibilityLabel(voice.isRecording ? "Stop dictation" : "Dictate")
+                Button { voice.stop(); submit() } label: { Image(systemName: "arrow.up") }
                     .buttonStyle(JBIconButtonStyle(size: 40, active: !draft.isEmpty))
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
                     .accessibilityLabel("Send")
             }
-            if let error { Text(error).font(.jb(11)).foregroundStyle(JB.danger) }
+            if (agent.title ?? "").hasPrefix("Claude") { modelMenu }
+            if let error = error ?? voice.error { Text(error).font(.jb(11)).foregroundStyle(JB.danger) }
         }
+        .onChange(of: voice.transcript) { _, t in
+            guard voice.isRecording, !t.isEmpty else { return }
+            draft = draftBeforeVoice.isEmpty ? t : draftBeforeVoice + " " + t
+        }
+        .onDisappear { voice.stop() }
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(JB.surface)
         .overlay(alignment: .top) { Rectangle().fill(JB.line).frame(height: 1) }
+    }
+
+    /// Claude Code's /model, typed into its terminal (same as the Mac).
+    private var modelMenu: some View {
+        Menu {
+            ForEach([("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("default", "Default")], id: \.0) { m in
+                Button {
+                    Task {
+                        do { _ = try await api.codingSend(id: agent.id, text: "/model " + m.0, mode: "terminal"); error = nil; await onChanged() }
+                        catch { self.error = "Model change needs the agent idle in a Kitty/tmux terminal: " + error.localizedDescription }
+                    }
+                } label: {
+                    if (agent.model ?? "").lowercased().contains(m.0) { Label(m.1, systemImage: "checkmark") } else { Text(m.1) }
+                }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Text((agent.model ?? "").isEmpty ? "Model" : agent.model!).font(.jb(11.5)).foregroundStyle(JB.ink2).lineLimit(1)
+                Image(systemName: "chevron.down").font(.jb(8, .semibold)).foregroundStyle(JB.ink3)
+            }
+            .padding(.horizontal, 6).padding(.vertical, 2)
+        }
     }
 
     private func submit() {

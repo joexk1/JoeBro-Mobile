@@ -34,14 +34,22 @@ struct SharedMemoryView: View {
                 JBSegments(options: Scope.allCases.map { ($0, $0.rawValue) }, selection: $scope)
                 HStack(spacing: 8) {
                     if (scope == .projects || scope == .all) && projects.count > 2 {
-                        Picker("", selection: $project) {
-                            Text("Every project").tag("__all")
-                            ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
-                        }.labelsHidden().tint(JB.ink2)
+                        let list = projects.filter { $0.key != "global" && $0.key != "user" }
+                        Menu {
+                            Picker("", selection: $project) {
+                                Text("Every project").tag("__all")
+                                ForEach(list) { Text($0.label).tag($0.key) }
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text(project == "__all" ? "Every project" : list.first { $0.key == project }?.label ?? project)
+                                    .font(.jb(13, .medium)).foregroundStyle(JB.ink).lineLimit(1).fixedSize()
+                                Image(systemName: "chevron.up.chevron.down").font(.jb(9, .semibold)).foregroundStyle(JB.ink3)
+                            }
+                        }
                     }
                     Spacer()
                     Button { showArchived.toggle() } label: { JBChip(text: "archived", tint: showArchived ? JB.accent : nil) }.buttonStyle(.plain)
-                    NavigationLink { MuseView(ws: ws) } label: { JBChip(text: "files") }.buttonStyle(.plain)
                 }
             }
             .listRowBackground(Color.clear).listRowSeparator(.hidden).listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 4, trailing: 14))

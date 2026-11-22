@@ -153,9 +153,13 @@ struct MobileSettingsView: View {
                 .pickerStyle(.menu)
             }
             group("JoeBro") {
-                ColorPicker("Colour", selection: Binding(get: { theme.joeBroColor },
+                ColorPicker("Colour", selection: Binding(get: { theme.joeBroTint },
                                                          set: { theme.setJoeBroColor($0) }),
                             supportsOpacity: false)
+                if theme.joeBroCustom {
+                    Button("Match the accent") { theme.resetJoeBroColor() }
+                        .font(.jb(14)).foregroundStyle(JB.accent)
+                }
             }
         }
         .sensoryFeedback(.selection, trigger: appearance.palette)

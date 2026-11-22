@@ -12,19 +12,14 @@ import SwiftUI
 
     func load() async {
         guard let all = try? await api.agentRegistry() else { return }
-        let cutoff = Date().addingTimeInterval(-24 * 3600)
-        let kept = all.filter { $0.kind == .coding && ($0.isLive || Self.recent($0, after: cutoff)) }
+        // Same rule as the Mac sidebar and both Agents pages: top-level coding agents still open in their terminal.
+        let kept = all.filter { $0.kind == .coding && ($0.parentID ?? "").isEmpty && ($0.open == true || $0.isLive || $0.status == "waiting") }
         agents = kept.sorted { rank($0) != rank($1) ? rank($0) < rank($1) : ($0.createdAt ?? "") > ($1.createdAt ?? "") }
     }
 
     private func rank(_ a: JBAgentRecord) -> Int { a.status == "waiting" ? 0 : a.isLive ? 1 : 2 }
 
     /// Only idle rows (not failed/stopped) count, by their latest timestamp.
-    private static func recent(_ a: JBAgentRecord, after cutoff: Date) -> Bool {
-        guard ["idle", "done", "completed"].contains(a.status ?? "") else { return false }
-        guard let stamp = a.finishedAt ?? a.startedAt ?? a.createdAt, let date = parse(stamp) else { return false }
-        return date >= cutoff
-    }
 
     private static func parse(_ s: String) -> Date? {
         let f = ISO8601DateFormatter()

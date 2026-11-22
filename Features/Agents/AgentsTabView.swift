@@ -69,7 +69,7 @@ import SwiftUI
         }
     }
 
-    var scoped: [JBAgentRecord] { activeOnly ? uniqueAgents.filter(\.isLive) : uniqueAgents }
+    var scoped: [JBAgentRecord] { activeOnly ? uniqueAgents.filter(\.isActive) : uniqueAgents }
 
     var visible: [JBAgentRecord] {
         let byKind = filter.map { kind in scoped.filter { ($0.kind ?? .unknown) == kind } } ?? scoped
@@ -87,7 +87,7 @@ import SwiftUI
         return ordered.filter { !nested.contains($0.id) }.flatMap { [$0] + (children[$0.id] ?? []) }
     }
 
-    var liveCount: Int { uniqueAgents.filter(\.isLive).count + (mainJoeBro.busy ? 1 : 0) }
+    var liveCount: Int { uniqueAgents.filter(\.isActive).count + (mainJoeBro.busy ? 1 : 0) }
     var allCount: Int { uniqueAgents.count + 1 }
     func count(for kind: JBAgentKind?) -> Int {
         guard let kind else { return scoped.count + ((!activeOnly || mainJoeBro.busy) ? 1 : 0) }
@@ -536,6 +536,7 @@ struct AgentDetailView: View {
         Group {
             if current.kind == .coding {
                 AgentChatThread(api: api, agent: current, header: AnyView(header)) { await reloadDetail() }
+                    .jbHidesTabBar()
             } else {
                 reportBody
             }

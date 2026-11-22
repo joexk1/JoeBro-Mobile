@@ -17,7 +17,7 @@ struct JoeBroIslandWidget: Widget {
                 .background { activityBackdrop(scene: context.attributes.sceneName) }
                 .activityBackgroundTint(context.attributes.sceneName.map { $0 != "off" } == true
                                         ? Color.black
-                                        : Color(red: 0.12, green: 0.08, blue: 0.22).opacity(0.85))
+                                        : Color.black.opacity(0.82))
                 .activitySystemActionForegroundColor(islandTint)
                 .widgetURL(URL(string: context.attributes.destination))
         } dynamicIsland: { context in

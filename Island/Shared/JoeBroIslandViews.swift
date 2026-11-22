@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// JoeBro's own colours on the always-dark island: phosphor for running, amber for "needs you".
-let islandTint = Color(red: 0x5F / 255, green: 0xD1 / 255, blue: 0xB0 / 255)
+/// The island stays monochrome: white on black. Glyphs and words carry the state, not colour.
+let islandTint = Color.white
 
 func title(_ s: JoeBroActivityAttributes.ContentState, stale: Bool) -> String {
     // The glyph carries the status; a check or warning mark in the text would double it.
@@ -54,12 +54,11 @@ func prioritised(_ runs: [JoeBroActivityAttributes.Run]) -> [JoeBroActivityAttri
     return runs.enumerated().sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
 }
 
-let waitingTint = Color(red: 0xF5 / 255, green: 0xB8 / 255, blue: 0x3D / 255)
+let waitingTint = Color.white
 
 /// Dot for the whole activity: orange while anything waits for approval, green when finished.
 func statusColor(_ s: JoeBroActivityAttributes.ContentState) -> Color {
-    if s.finished == "failed" { return .red }
-    if s.finished != nil { return .green }
+    if s.finished != nil { return .white }
     return (s.waiting ?? 0) > 0 || s.runs.contains { $0.waiting == true } ? waitingTint : islandTint
 }
 

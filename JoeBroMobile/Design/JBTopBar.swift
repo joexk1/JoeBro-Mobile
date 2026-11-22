@@ -130,8 +130,25 @@ struct JBTabBar: View {
             }
         }
         .padding(.horizontal, 8).padding(.top, 6)
-        .background(JB.panelFill.ignoresSafeArea(edges: .bottom))
+        .background(JB.surface.ignoresSafeArea(edges: .bottom))   // solid: nothing reads through the bar
         .overlay(alignment: .top) { Rectangle().fill(JB.line).frame(height: 1) }
         .sensoryFeedback(.selection, trigger: selection)
+    }
+}
+
+
+/// Pushed conversations (a chat, a coding agent) take the whole screen, like Messages:
+/// the tab bar steps aside while any of them is on screen.
+@MainActor @Observable
+final class JBTabBarVisibility {
+    static let shared = JBTabBarVisibility()
+    var hiders = 0
+    var hidden: Bool { hiders > 0 }
+}
+
+extension View {
+    func jbHidesTabBar() -> some View {
+        onAppear { withAnimation(JB.snap) { JBTabBarVisibility.shared.hiders += 1 } }
+            .onDisappear { withAnimation(JB.snap) { JBTabBarVisibility.shared.hiders = max(0, JBTabBarVisibility.shared.hiders - 1) } }
     }
 }

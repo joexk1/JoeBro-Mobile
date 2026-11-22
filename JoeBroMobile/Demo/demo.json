@@ -175,14 +175,14 @@
     "history": [
       {
         "role": "user",
-        "content": "Demo conversation. Plan my week: two lectures, a gym session and the report due Friday.",
+        "content": "Plan my week: two lectures, a gym session and the report due Friday.",
         "metadata": {
           "_db_id": 1
         }
       },
       {
         "role": "assistant",
-        "content": "Here is a sample plan. This is demo data, not a real reply.\n\n**Monday**: lecture 10:00, start the report outline\n**Wednesday**: lecture 14:00, gym at 18:00\n**Thursday**: write the report body\n**Friday**: proofread, then submit before 17:00\n\nI also checked your tasks and saved a reminder for Thursday morning.",
+        "content": "Here's a week that keeps Friday clear.\n\n**Monday**: lecture 10:00, start the report outline\n**Wednesday**: lecture 14:00, gym at 18:00\n**Thursday**: write the report body\n**Friday**: proofread, then submit before 17:00\n\nI also checked your tasks and saved a reminder for Thursday morning.",
         "metadata": {
           "tool_events": [
             {
@@ -210,7 +210,7 @@
       },
       {
         "role": "assistant",
-        "content": "Done in this demo: Friday afternoon stays empty. In the real app this goes to the JoeBro running on your own Mac.",
+        "content": "Done: Friday afternoon is blocked out, and the gym sessions are on your calendar.",
         "metadata": {
           "_db_id": 4
         }

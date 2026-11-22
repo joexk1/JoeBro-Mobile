@@ -47,6 +47,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public let title: String?
     public let status: String?
     public let live: Bool?
+    public let open: Bool?      // coding: still a conversation in its terminal (the backend's one rule)
     public let model: String?
     public let progress: String?
     public let result: String?
@@ -69,7 +70,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         id = "session:" + session.id
         kind = sessionKind
         title = session.name
-        status = "idle"; live = nil
+        status = "idle"; live = nil; open = nil
         model = session.model
         progress = nil
         result = nil
@@ -92,7 +93,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         id = original.id
         kind = original.kind
         title = original.title
-        status = localStatus; live = nil
+        status = localStatus; live = nil; open = original.open
         model = original.model
         progress = localStatus == "running" ? "Working in Chats" : original.progress
         result = original.result
@@ -111,7 +112,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, kind, title, status, live, model, progress, result, error, messages
+        case id, kind, title, status, live, open, model, progress, result, error, messages
         case parentID = "parent_id", sessionID = "session_id", createdAt = "created_at", startedAt = "started_at", finishedAt = "finished_at"
         case resultChars = "result_chars", resultTruncated = "result_truncated", cancelRequested = "cancel_requested"
         case sourceCount = "source_count", sources
@@ -125,6 +126,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         title = try? box.decode(String.self, forKey: .title)
         status = try? box.decode(String.self, forKey: .status)
         live = try? box.decode(Bool.self, forKey: .live)
+        open = try? box.decode(Bool.self, forKey: .open)
         model = try? box.decode(String.self, forKey: .model)
         progress = try? box.decode(String.self, forKey: .progress)
         result = try? box.decode(String.self, forKey: .result)
@@ -143,6 +145,10 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         cancelRequested = try? box.decode(Bool.self, forKey: .cancelRequested)
         messages = try? box.decode([JBAgentMessage].self, forKey: .messages)
     }
+
+    /// "Active" on the Agents page: running, or a coding agent still open in its terminal,
+    /// so its Coding count always matches the coding agents in Chats (and on the Mac).
+    public var isActive: Bool { isLive || (kind == .coding && parentID == nil && (open == true || status == "waiting")) }
 
     /// A run of the phone agent itself: its own chat, or one of its scheduled tasks.
     public var isMainAgent: Bool { sessionID == Flavor.mainSessionID || sessionID?.hasPrefix("task_session_ptask_") == true }

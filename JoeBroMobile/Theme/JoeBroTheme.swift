@@ -85,6 +85,9 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
 @Observable final class JoeBroTheme {
     var wallpaper: UIImage?
     var joeBroColor: Color = .white
+    /// JoeBro wears the palette accent until you pick him a colour of his own.
+    var joeBroCustom = UserDefaults.standard.string(forKey: "joeBroColor") != nil
+    var joeBroTint: Color { joeBroCustom ? joeBroColor : JB.accent }
     /// A `BackgroundPreset` raw value, or "photo" when a photo is chosen.
     var wallpaperName: String = UserDefaults.standard.string(forKey: "wallpaperName") ?? BackgroundPreset.purple.rawValue
 
@@ -99,8 +102,14 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
 
     var accent: Color { Color(red: 0.78, green: 0.82, blue: 1) }
 
+    func resetJoeBroColor() {
+        joeBroCustom = false
+        UserDefaults.standard.removeObject(forKey: "joeBroColor")
+    }
+
     func setJoeBroColor(_ color: Color) {
         joeBroColor = color
+        joeBroCustom = true
         var red: CGFloat = 0
         var green: CGFloat = 0
         var blue: CGFloat = 0

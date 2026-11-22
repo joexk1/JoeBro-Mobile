@@ -146,6 +146,21 @@ struct ChatLine: Identifiable, Codable {
         UserDefaults.standard.set(mode, forKey: "chatPermissionMode")
     }
 
+    /// Background loads (launch, polling, coming back to the app) keep the last good
+    /// state on a network blip instead of popping an alert; the next poll catches up.
+    /// Anything else, and every failure of something you tapped, still shows.
+    private func surface(_ error: Error, _ prefix: String = "") {
+        guard !Self.isTransient(error) else { return }
+        self.error = prefix + error.localizedDescription
+    }
+
+    nonisolated static func isTransient(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        guard let url = error as? URLError else { return false }
+        return [.timedOut, .cancelled, .networkConnectionLost, .notConnectedToInternet,
+                .cannotConnectToHost, .cannotFindHost, .dnsLookupFailed].contains(url.code)
+    }
+
     func load() async {
         if isMainJoeBro { await loadMainJoeBro(); return }
         do {
@@ -168,7 +183,7 @@ struct ChatLine: Identifiable, Codable {
             }
             if let id = selectedSessionID { await select(id) }
             saveSnapshot()
-        } catch { self.error = error.localizedDescription }
+        } catch { surface(error) }
     }
 
     private func loadMainJoeBro() async {
@@ -193,7 +208,7 @@ struct ChatLine: Identifiable, Codable {
                 mainConnectionIssue = "Update the backend to enable JoeBro."
             } else {
                 mainConnectionIssue = selectedSessionID == nil ? "Couldn’t connect. Pull to retry." : nil
-                self.error = "Connection interrupted. Please retry."
+                if !Self.isTransient(error) { self.error = "Connection interrupted. Please retry." }
             }
         }
     }
@@ -205,7 +220,7 @@ struct ChatLine: Identifiable, Codable {
             if selectedModel == nil {
                 selectedModelID = serverDefaultModelID ?? models.first(where: { $0.category == "local" })?.id ?? models.first?.id
             }
-        } catch { self.error = "Models: " + error.localizedDescription }
+        } catch { surface(error, "Models: ") }
     }
 
     private func updateServerDefault(from prefs: [String: String]) {
@@ -272,7 +287,7 @@ struct ChatLine: Identifiable, Codable {
                 }
             }
             saveSnapshot()
-        } catch { self.error = error.localizedDescription }
+        } catch { surface(error) }
     }
 
     func refreshMainIfChanged() async {
@@ -853,6 +868,7 @@ struct ChatsView: View {
                                  onOpenWorkdir: { showFiles = true })
             })
             .jbWallpaper()
+            .jbHidesTabBar()
             .navigationTitle(store.selectedSession?.name ?? "JoeBro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

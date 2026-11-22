@@ -12,7 +12,7 @@
 <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
 <key>JoeBroAppGroup</key><string>group.$(JOEBRO_BUNDLE_ID)</string>
 <key>LSRequiresIPhoneOS</key><true/>
-<key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBlack</string><key>UIImageName</key><string>JoeBroLaunchLogo</string></dict>
+<key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBlack</string></dict>
 <key>UIRequiresFullScreen</key><false/>
 <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
 <key>UISupportedInterfaceOrientations~ipad</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>

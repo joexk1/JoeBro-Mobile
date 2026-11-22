@@ -416,8 +416,20 @@ final class MobilePushNotifications {
     func decide(agent: String, approve: Bool) async {
         guard let api = client() else { return }
         let id = agent.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))) ?? agent
-        _ = try? await api.send(JoeBroAPI.OK.self, "/api/coding-agents/\(id)/decide",
-                                json: ["decision": approve ? "approve" : "deny"])
+        // The island button runs while the app may be suspended: retry a blip, then redraw the
+        // island straight away so "Approve" doesn't linger until the next foreground poll.
+        for attempt in 0..<3 {
+            do {
+                _ = try await api.send(JoeBroAPI.OK.self, "/api/coding-agents/\(id)/decide",
+                                       json: ["decision": approve ? "approve" : "deny"])
+                break
+            } catch {
+                if attempt < 2 { try? await Task.sleep(for: .milliseconds(600)) }
+            }
+        }
+        if let snap = try? await api.agentSnapshot() {
+            await JoeBroActivityController().reconcileAgents(snap.agents, activeTurns: snap.activeTurns)
+        }
     }
 }
 

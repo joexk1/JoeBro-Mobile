@@ -47,6 +47,7 @@ struct RootView: View {
     @State private var activityUpdate: Task<Void, Never>?
     @State private var openSharedDraft = false
     @State private var keyboardUp = false
+    @State private var tabBar = JBTabBarVisibility.shared
     @Environment(\.scenePhase) private var scenePhase
 
     private var activityPollKey: String { "\(serverURL)|\(scenePhase)" }
@@ -58,12 +59,12 @@ struct RootView: View {
                 TabView(selection: $selectedTab) {
                     JoeBroAgentView(store: runtime.joeBro, onOpenSettings: { showSettings = true })
                         .toolbar(.hidden, for: .tabBar)
-                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
+                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp || tabBar.hidden ? 0 : JBTabBar.height) }
                         .tag(MainTab.joeBro)
 
                     ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft, onOpenSettings: { showSettings = true })
                         .toolbar(.hidden, for: .tabBar)
-                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
+                        .contentMargins(.bottom, keyboardUp || tabBar.hidden ? 0 : JBTabBar.height + 12)   // reaches the lists inside each NavigationStack (a safeAreaInset out here doesn't)
                         .tag(MainTab.chats)
 
                     AgentsTabView(api: runtime.api, chatStore: runtime.chat,
@@ -71,20 +72,20 @@ struct RootView: View {
                                   onOpenSettings: { showSettings = true },
                                   onOpenJoeBro: { selectedTab = .joeBro })
                         .toolbar(.hidden, for: .tabBar)
-                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
+                        .contentMargins(.bottom, keyboardUp || tabBar.hidden ? 0 : JBTabBar.height + 12)   // reaches the lists inside each NavigationStack (a safeAreaInset out here doesn't)
                         .tag(MainTab.agents)
 
                     WorkspaceHubView(api: runtime.api,
                                      onOpenSettings: { showSettings = true })
                         .toolbar(.hidden, for: .tabBar)
-                        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: keyboardUp ? 0 : JBTabBar.height) }
+                        .contentMargins(.bottom, keyboardUp || tabBar.hidden ? 0 : JBTabBar.height + 12)   // reaches the lists inside each NavigationStack (a safeAreaInset out here doesn't)
                         .tag(MainTab.workspace)
                 }
                 .tint(Color.accentTint)
                 .environment(theme)
                 // JoeBro's own tab bar (the system one is Liquid Glass with stock symbols).
                 .overlay(alignment: .bottom) {
-                    if !keyboardUp {
+                    if !keyboardUp && !tabBar.hidden {
                         JBTabBar(selection: Binding(get: { selectedTab.index }, set: { selectedTab = MainTab.all[$0] }),
                                  items: [.init(title: "JoeBro", glyph: .agent), .init(title: "Chats", symbol: "bubble.left"),
                                          .init(title: "Agents", glyph: .coding), .init(title: "Workspace", symbol: "square.grid.2x2")])

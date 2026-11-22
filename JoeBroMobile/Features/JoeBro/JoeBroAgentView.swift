@@ -241,7 +241,7 @@ private struct JoeBroPresence: View {
                             .strokeBorder(hasBanner ? Color.white.opacity(0.16) : Color.joeInk.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
                     }
                 JoeBroFigure(expression: expression, eyesClosed: blinking,
-                             color: JB.accent,   // JoeBro wears the palette accent
+                             color: theme.joeBroTint,   // your colour for him, else the palette accent
                              glance: eyeDirection, mouthOpen: speakingBeat && !reduceMotion)
                     // The figure is drawn on a 72pt grid: scale the whole face, never squeeze its frame.
                     .frame(width: 72, height: 72)
