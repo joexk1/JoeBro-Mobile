@@ -120,7 +120,7 @@ struct AgentChatThread: View {
 
     @ViewBuilder private func bubble(_ m: JBAgentMessage, last: Bool) -> some View {
         switch m.role {
-        case "user": userCard(m.content, tag: nil)
+        case "user": userCard(handoverStripped(m.content), tag: nil)
         case "assistant":
             MarkdownText(text: m.content).textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,7 +159,7 @@ struct AgentChatThread: View {
                     .focused($focused)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .jbField(focused: focused)
-                Button { Task { await send() } } label: { Image(systemName: "arrow.up") }
+                Button { submit() } label: { Image(systemName: "arrow.up") }
                     .buttonStyle(JBIconButtonStyle(size: 40, active: !draft.isEmpty))
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
                     .accessibilityLabel("Send")
@@ -171,11 +171,16 @@ struct AgentChatThread: View {
         .overlay(alignment: .top) { Rectangle().fill(JB.line).frame(height: 1) }
     }
 
-    private func send() async {
+    private func submit() {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !sending else { return }
+        draft = ""
+        Task { await send(text) }
+    }
+
+    private func send(_ text: String) async {
+        guard !sending else { return }
         sending = true
-        draft = ""          // clear at once: no selected-text flash, no double send
         // Shown immediately, labelled the same way the terminal shows it: queued while the agent works.
         echoes.append((text, working ? "queued" : "sending"))
         let idx = echoes.count - 1
@@ -190,4 +195,12 @@ struct AgentChatThread: View {
             draft = text; self.error = error.localizedDescription
         }
     }
+}
+
+
+/// "Message from app via JoeBro: hi" / "[from app] hi" -> "hi" (how a delivered message is logged).
+func handoverStripped(_ s: String) -> String {
+    var t = s.replacingOccurrences(of: "[from app] ", with: "")
+    if let r = t.range(of: #"^Message from [^:\n]{1,40}: "#, options: .regularExpression) { t.removeSubrange(r) }
+    return t
 }
