@@ -938,7 +938,7 @@ struct ChatsView: View {
                                 Button("Done") { showFiles = false }
                             } }
                     } else {
-                        Text("Open a chat first.").foregroundStyle(.secondary)
+                        Text("Open a chat first.").foregroundStyle(JB.ink2)
                     }
                 }
             }

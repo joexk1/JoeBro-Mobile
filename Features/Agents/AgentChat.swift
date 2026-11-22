@@ -158,7 +158,7 @@ struct AgentChatThread: View {
                     .focused($focused)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .jbField(focused: focused)
-                Button { showScreen.toggle() } label: { Image(systemName: "terminal") }
+                Button { showScreen.toggle() } label: { JBIcon(.coding, size: 16) }
                     .buttonStyle(JBIconButtonStyle(size: 40, active: showScreen))
                     .accessibilityLabel("Terminal")
                 Button { Task { await send() } } label: { Image(systemName: "arrow.up") }

@@ -213,17 +213,19 @@ struct SessionListView: View {
     }
 
     /// "14:03" for today, otherwise "Nov 20".
+    /// Compact local-time label: now, 5m, 3h, 2d, then a short date. Backend stamps are UTC.
     private static func stamp(_ raw: String?) -> String {
-        guard let raw, raw.count >= 10 else { return "" }
-        let day = String(raw.prefix(10))
-        let parts = day.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3 else { return "" }
-        let cal = Calendar.current
-        var c = DateComponents(); c.year = parts[0]; c.month = parts[1]; c.day = parts[2]
-        guard let date = cal.date(from: c) else { return "" }
-        if cal.isDateInToday(date), raw.count >= 16 {
-            return String(raw.dropFirst(11).prefix(5))
-        }
+        guard let raw, !raw.isEmpty else { return "" }
+        let frac = ISO8601DateFormatter(); frac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        let naive = DateFormatter(); naive.locale = Locale(identifier: "en_US_POSIX"); naive.timeZone = TimeZone(identifier: "UTC")
+        naive.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        guard let date = frac.date(from: raw) ?? plain.date(from: raw) ?? naive.date(from: String(raw.prefix(19))) else { return "" }
+        let secs = Date().timeIntervalSince(date)
+        if secs < 60 { return "now" }
+        if secs < 3600 { return "\(Int(secs / 60))m" }
+        if secs < 86400 { return "\(Int(secs / 3600))h" }
+        if secs < 86400 * 7 { return "\(Int(secs / 86400))d" }
         return date.formatted(.dateTime.month(.abbreviated).day())
     }
 

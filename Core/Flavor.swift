@@ -16,6 +16,5 @@ enum Flavor {
     /// What the phone agent is called on its card, in the island and in task lists.
     static let mainAgentName = isPersonal ? "Personal Agent" : "JoeBro"
     static let mainAgentTasksHeader = isPersonal ? "JoeBro Personal Agent" : "JoeBro phone agent"
-    static let brainTitle = isPersonal ? "Workspace Brain" : "Brain"
     static let memoryTitle = isPersonal ? "Personal Memory" : "Memory"
 }

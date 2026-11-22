@@ -440,8 +440,8 @@ struct MobileNotificationInbox: View {
 
     var body: some View {
         List(selection: $selected) {
-            if let note { Text(note).foregroundStyle(.secondary) }
-            else if items.isEmpty { Text("No notifications yet").foregroundStyle(.secondary) }
+            if let note { Text(note).foregroundStyle(JB.ink2) }
+            else if items.isEmpty { Text("No notifications yet").foregroundStyle(JB.ink2) }
             ForEach(items) { item in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -452,7 +452,7 @@ struct MobileNotificationInbox: View {
                     if item.kind == "coding_approval", let agent = item.source, !agent.isEmpty {
                         AgentApprovalButtons(api: api, agentID: agent) { markRead(item.id) }
                     }
-                    Text(item.created_at).font(.jbCaption).foregroundStyle(.secondary)
+                    Text(item.created_at).font(.jbCaption).foregroundStyle(JB.ink2)
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
@@ -521,7 +521,7 @@ struct MobileNotificationInbox: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                         Text(item.body).textSelection(.enabled)
-                        Text(item.created_at).font(.jbCaption).foregroundStyle(.secondary)
+                        Text(item.created_at).font(.jbCaption).foregroundStyle(JB.ink2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
