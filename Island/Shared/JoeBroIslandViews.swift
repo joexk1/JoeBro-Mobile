@@ -155,7 +155,15 @@ struct JoeBroRunRow: View {
     }
 
     @ViewBuilder func trailing(waiting: Bool) -> some View {
-        if waiting && run.kind == "coding" {
+        if waiting && run.kind == "coding" && run.detail.contains("Question:") {
+            // A question needs its options: open the app on it rather than guessing "yes".
+            Link(destination: URL(string: "joebro://agents")!) {
+                Text("Answer").font(.geist(12, .semibold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 10).frame(height: 24)
+                    .background(Color.white, in: Capsule())
+            }.fixedSize()
+        } else if waiting && run.kind == "coding" {
             // Answer straight from the island / lock screen; the intent runs in the app.
             HStack(spacing: 6) {
                 Button(intent: JoeBroApprovalIntent(agentID: run.id, approve: false)) {

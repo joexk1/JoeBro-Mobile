@@ -36,7 +36,14 @@ import Observation
         task = recognizer.recognitionTask(with: request) { [weak self] result, failure in
             Task { @MainActor in
                 if let result { self?.transcript = result.bestTranscription.formattedString }
-                if let failure { self?.error = failure.localizedDescription; self?.stop() }
+                // Stopping cancels the recognition task, which reports "No speech detected" (or a
+                // cancellation) even when words came through. Only a failure mid-recording with
+                // nothing heard is worth showing.
+                if failure != nil, let self {
+                    let heard = !self.transcript.trimmingCharacters(in: .whitespaces).isEmpty
+                    if self.isRecording && !heard { self.error = "Didn't catch that. Try again." }
+                    self.stop()
+                }
             }
         }
         do { engine.prepare(); try engine.start(); isRecording = true }

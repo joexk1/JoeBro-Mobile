@@ -41,6 +41,35 @@ public enum JBAgentKind: String, Decodable, Sendable, CaseIterable {
     }
 }
 
+/// A question or menu a coding agent is showing (AskUserQuestion, a permission or trust prompt…),
+/// read off its terminal by the backend and answered with POST …/answer.
+public struct JBAgentPrompt: Decodable, Sendable, Hashable {
+    public struct Option: Decodable, Sendable, Hashable {
+        public let key: String
+        public let label: String
+        public let description: String
+        public let freeform: Bool
+        enum CodingKeys: String, CodingKey { case key, label, description, freeform }
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            key = (try? c.decode(String.self, forKey: .key)) ?? ""
+            label = (try? c.decode(String.self, forKey: .label)) ?? ""
+            description = (try? c.decode(String.self, forKey: .description)) ?? ""
+            freeform = (try? c.decode(Bool.self, forKey: .freeform)) ?? false
+        }
+    }
+    public let question: String
+    public let header: String
+    public let options: [Option]
+    enum CodingKeys: String, CodingKey { case question, header, options }
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        question = (try? c.decode(String.self, forKey: .question)) ?? ""
+        header = (try? c.decode(String.self, forKey: .header)) ?? ""
+        options = (try? c.decode([Option].self, forKey: .options)) ?? []
+    }
+}
+
 public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public let id: String
     public let kind: JBAgentKind?
@@ -63,6 +92,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public let sources: [JBResearchSource]?
     public let cancelRequested: Bool?
     public let messages: [JBAgentMessage]?
+    public var prompt: JBAgentPrompt?    // coding: the question / menu on its screen while it waits on you
 
     /// Agent-mode chats do not create a registry row unless they are a spawned
     /// background run. Surface those sessions in All without inventing a run.
@@ -109,10 +139,11 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         sources = original.sources
         cancelRequested = original.cancelRequested
         messages = original.messages
+        prompt = original.prompt
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, kind, title, status, live, open, model, progress, result, error, messages
+        case id, kind, title, status, live, open, model, progress, result, error, messages, prompt
         case parentID = "parent_id", sessionID = "session_id", createdAt = "created_at", startedAt = "started_at", finishedAt = "finished_at"
         case resultChars = "result_chars", resultTruncated = "result_truncated", cancelRequested = "cancel_requested"
         case sourceCount = "source_count", sources
@@ -144,6 +175,7 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         sources = try? box.decode([JBResearchSource].self, forKey: .sources)
         cancelRequested = try? box.decode(Bool.self, forKey: .cancelRequested)
         messages = try? box.decode([JBAgentMessage].self, forKey: .messages)
+        prompt = try? box.decode(JBAgentPrompt.self, forKey: .prompt)
     }
 
     /// "Active" on the Agents page: running, or a coding agent still open in its terminal,

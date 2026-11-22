@@ -20,10 +20,96 @@ extension JoeBroAPI {
         return r.applied == true ? (approve ? "approved" : "denied") : (r.detail ?? "pending")
     }
 
+    private struct AnswerResult: Decodable { let prompt: JBAgentPrompt? }
+
+    /// Pick an option of the agent's on-screen question/menu (or type free text). Returns the next one, if any.
+    func codingAnswer(id: String, key: String?, text: String?) async throws -> JBAgentPrompt? {
+        var body: [String: String] = [:]
+        if let key { body["key"] = key }
+        if let text { body["text"] = text }
+        return try await send(AnswerResult.self, "api/coding-agents/\(segment(id))/answer", json: body).prompt
+    }
+
     func codingScreen(id: String, lines: Int = 40) async throws -> String {
         let r = try await fetch(ScreenResult.self, "api/coding-agents/\(segment(id))/screen",
                                 query: [URLQueryItem(name: "lines", value: "\(lines)")])
         return r.screen ?? r.lines?.joined(separator: "\n") ?? ""
+    }
+}
+
+/// The question a coding agent is asking, as tappable options, plus a text field when it
+/// takes a typed answer. Multi-question forms step through in place.
+struct AgentPromptCard: View {
+    let api: JoeBroAPI
+    let agentID: String
+    let prompt: JBAgentPrompt
+    var onDone: () async -> Void = {}
+    @State private var shown: JBAgentPrompt?
+    @State private var typed = ""
+    @State private var busy = false
+    @State private var note: String?
+    @State private var tick = 0
+    @FocusState private var typing: Bool
+
+    private var p: JBAgentPrompt { shown ?? prompt }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if !p.header.isEmpty { Text(p.header).jbEyebrow() }
+            if !p.question.isEmpty { Text(p.question).font(.jb(14, .medium)).foregroundStyle(JB.ink) }
+            ForEach(p.options.filter { !$0.freeform }, id: \.self) { o in
+                Button { Task { await answer(key: o.key.isEmpty ? o.label : o.key, text: nil) } } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(o.label).font(.jb(14)).foregroundStyle(JB.ink)
+                        if !o.description.isEmpty && o.description != o.label {
+                            Text(o.description).font(.jb(12)).foregroundStyle(JB.ink3)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                    .background(JB.hover, in: RoundedRectangle(cornerRadius: JB.rControl, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            if p.options.contains(where: \.freeform) {
+                HStack(spacing: 8) {
+                    TextField("Type your own answer", text: $typed)
+                        .font(.jb(14)).focused($typing).submitLabel(.send)
+                        .onSubmit { send() }
+                        .padding(.horizontal, 12).padding(.vertical, 9)
+                        .jbField(focused: typing)
+                    Button { send() } label: { Image(systemName: "arrow.up") }
+                        .buttonStyle(JBIconButtonStyle(size: 36, active: !typed.isEmpty))
+                        .disabled(typed.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            if busy || note != nil {
+                HStack(spacing: 6) {
+                    if busy { JBSpinner() }
+                    if let note { Text(note).font(.jb(11)).foregroundStyle(JB.ink3) }
+                }
+            }
+        }
+        .disabled(busy)
+        .sensoryFeedback(.selection, trigger: tick)
+        .onChange(of: prompt) { _, _ in shown = nil }
+    }
+
+    private func send() {
+        let t = typed.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return }
+        Task { await answer(key: nil, text: t) }
+    }
+
+    private func answer(key: String?, text: String?) async {
+        busy = true; note = nil
+        defer { busy = false }
+        do {
+            let next = try await api.codingAnswer(id: agentID, key: key, text: text)
+            typed = ""; tick += 1
+            if let next { shown = next } else { note = "Answered"; await onDone() }
+        } catch { note = error.localizedDescription }
     }
 }
 
@@ -177,8 +263,12 @@ struct AgentChatThread: View {
     private func approvalCard(_ text: String, active: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) { JBStatusDot(color: JB.warn, live: active, size: 6); Text("Needs you").jbEyebrow() }
-            Text(text).font(.jb(12)).foregroundStyle(JB.ink)
-            if active { AgentApprovalButtons(api: api, agentID: agent.id, onDone: onChanged) }
+            if active, let prompt = agent.prompt, !prompt.options.isEmpty {
+                AgentPromptCard(api: api, agentID: agent.id, prompt: prompt, onDone: onChanged)
+            } else {
+                Text(text.replacingOccurrences(of: "Question: ", with: "")).font(.jb(12)).foregroundStyle(JB.ink)
+                if active { AgentApprovalButtons(api: api, agentID: agent.id, onDone: onChanged) }
+            }
         }
         .jbCard(padding: 12)
         .overlay(RoundedRectangle(cornerRadius: JB.rCard, style: .continuous).strokeBorder(JB.warn.opacity(active ? 0.5 : 0), lineWidth: 1))
