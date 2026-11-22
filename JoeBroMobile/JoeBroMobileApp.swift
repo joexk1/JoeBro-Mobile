@@ -22,6 +22,7 @@ struct JoeBroMobileApp: App {
         PersonalSetup.seedPairingIfNeeded()
         #endif
         _paired = State(initialValue: ServerConfig.isPaired || DemoMode.active)
+        JoeBroApprovalBridge.handler = { id, approve in await MobilePushNotifications.shared.decide(agent: id, approve: approve) }
     }
 
     var body: some Scene {
@@ -178,6 +179,10 @@ final class JoeBroPushDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
                 // Typed on the lock screen: send without opening the app.
                 let background = UIApplication.shared.beginBackgroundTask(withName: "Reply to JoeBro", expirationHandler: nil)
                 await MobilePushNotifications.shared.queueReply(replyText, messageID: messageID)
+                if background != .invalid { UIApplication.shared.endBackgroundTask(background) }
+            } else if let agent, action == MobilePushNotifications.codingMessageAction, let replyText {
+                let background = UIApplication.shared.beginBackgroundTask(withName: "Message coding agent", expirationHandler: nil)
+                await MobilePushNotifications.shared.sendToCodingAgent(agent, text: replyText)
                 if background != .invalid { UIApplication.shared.endBackgroundTask(background) }
             } else if fromMainAgent {
                 MobilePushNotifications.shared.openMainAgent = true
@@ -364,6 +369,7 @@ final class MobilePushNotifications {
     static let approvalCategory = "CODING_APPROVAL"
     static let approveAction = "CODING_APPROVE"
     static let denyAction = "CODING_DENY"
+    static let codingMessageAction = "CODING_MESSAGE"
     static let nightCategory = "NIGHT_REVIEW"
     static let nightApproveAction = "NIGHT_APPROVE"
     static let nightRejectAction = "NIGHT_REJECT"
@@ -386,7 +392,11 @@ final class MobilePushNotifications {
         let reply = UNTextInputNotificationAction(identifier: replyAction, title: "Reply",
                                                   options: [.authenticationRequired],
                                                   textInputButtonTitle: "Send", textInputPlaceholder: "Reply to JoeBro")
-        return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny], intentIdentifiers: [], options: []),
+        let tell = UNTextInputNotificationAction(identifier: codingMessageAction, title: "Message agent",
+                                                 options: [.authenticationRequired],
+                                                 icon: UNNotificationActionIcon(systemImageName: "text.bubble"),
+                                                 textInputButtonTitle: "Send", textInputPlaceholder: "Tell the agent what to do")
+        return [UNNotificationCategory(identifier: approvalCategory, actions: [approve, deny, tell], intentIdentifiers: [], options: []),
                 UNNotificationCategory(identifier: messageCategory, actions: [reply], intentIdentifiers: [], options: []), night]
     }
 
@@ -396,6 +406,11 @@ final class MobilePushNotifications {
         var body: [String: Any] = ["decision": decision]
         if let text { body["text"] = text }
         _ = try? await api.send(JoeBroAPI.OK.self, "/api/night-shift/\(id)/decide", json: body)
+    }
+
+    func sendToCodingAgent(_ agent: String, text: String) async {
+        guard let api = client() else { return }
+        _ = try? await api.send(JoeBroAPI.OK.self, "/api/coding-agents/\(api.segment(agent))/send", json: ["text": text, "sender": "phone"])
     }
 
     func decide(agent: String, approve: Bool) async {
@@ -434,6 +449,9 @@ struct MobileNotificationInbox: View {
                         Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                     }
                     Text(item.body).textSelection(.enabled)
+                    if item.kind == "coding_approval", let agent = item.source, !agent.isEmpty {
+                        AgentApprovalButtons(api: api, agentID: agent) { markRead(item.id) }
+                    }
                     Text(item.created_at).font(.jbCaption).foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
@@ -567,5 +585,7 @@ struct MobileNotificationInbox: View {
         let body: String
         let created_at: String
         var read: Int
+        var kind: String? = nil
+        var source: String? = nil
     }
 }

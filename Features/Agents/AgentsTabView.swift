@@ -191,6 +191,18 @@ import SwiftUI
 }
 
 /// JoeBro's research runs, working chats, and background tasks.
+private extension JBAgentKind {
+    @ViewBuilder func glyph(_ size: CGFloat = 15) -> some View {
+        switch self {
+        case .coding: JBIcon(.coding, size: size)
+        case .research: JBIcon(.research, size: size)
+        case .task: JBIcon(.tasks, size: size)
+        case .chat, .unknown, .briefing: JBIcon(.agent, size: size)
+        case .subagent: Image(systemName: "arrow.triangle.branch").font(.jb(size - 2))
+        }
+    }
+}
+
 struct AgentsTabView: View {
     let api: JoeBroAPI
     let chatStore: ChatStore
@@ -198,7 +210,6 @@ struct AgentsTabView: View {
     @State private var store: AgentsStore
     @State private var open: JBAgentRecord?
     @State private var stopTarget: JBAgentRecord?
-    @State private var symbolsReady = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onOpenSettings: () -> Void = {}
     var onOpenJoeBro: () -> Void = {}
@@ -221,7 +232,7 @@ struct AgentsTabView: View {
                 content
                 if DemoMode.option("-JoeBroAgentsEnd") != nil { Color.clear.frame(height: 1).id("agents-end") }
             }
-            .listRowInsets(EdgeInsets(top: 7, leading: 16, bottom: 7, trailing: 16))
+            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         }
@@ -251,7 +262,7 @@ struct AgentsTabView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { onOpenSettings() } label: {
                         Image(systemName: "gearshape")
-                            .foregroundStyle(Color.accentTint)
+                            .foregroundStyle(JB.ink2)
                             .frame(width: 44, height: 44)
                     }
                         .accessibilityLabel("Settings")
@@ -264,7 +275,6 @@ struct AgentsTabView: View {
                 store.startPolling()
                 if mainJoeBro.selectedSessionID == nil { await mainJoeBro.load() }
             }
-            .onAppear { symbolsReady = true }
             .onDisappear { store.stopPolling() }
             .alert("Agents", isPresented: alertBinding(Bindable(store).error)) {
                 Button("OK") { store.error = nil }
@@ -288,9 +298,7 @@ struct AgentsTabView: View {
     @ViewBuilder
     private var content: some View {
         if store.loading {
-            ProgressView("Loading agents…")
-                .tint(.joeInk)
-                .frame(maxWidth: .infinity, minHeight: 180)
+            HStack { Spacer(); JBSpinner(size: 14); Spacer() }.frame(minHeight: 180)
         } else if store.visible.isEmpty && !showJoeBroCard {
             emptyState
         } else {
@@ -315,238 +323,181 @@ struct AgentsTabView: View {
 
     private var mainAgentCard: some View {
         Button(action: onOpenJoeBro) {
-            HStack(spacing: 15) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(.joeInk)
-                        .frame(width: 49, height: 49)
-                    Image(systemName: "face.smiling")
-                        .font(.jb(29, .light))
-                        .foregroundStyle(Color.accentTint)
-                        .symbolEffect(.pulse, options: .repeating, isActive: mainJoeBro.busy && !reduceMotion)
-                }
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(Flavor.mainAgentName)
-                        .font(.jbHeadline)
-                        .foregroundStyle(.joeInk)
+            HStack(spacing: 12) {
+                JBIcon(.agent, size: 22).foregroundStyle(JB.accent)
+                    .frame(width: 40, height: 40)
+                    .background(JB.accentSoft, in: RoundedRectangle(cornerRadius: JB.rControl, style: .continuous))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(Flavor.mainAgentName).font(.jbHeadline).foregroundStyle(JB.ink)
                     HStack(spacing: 6) {
-                        Circle()
-                            .fill(mainJoeBro.busy ? Color.yellow :
-                                  mainJoeBro.mainConnectionIssue == nil ? Color.green : Color.gray)
-                            .frame(width: 7, height: 7)
-                        Text(mainJoeBro.busy ? "Working now" :
-                             mainJoeBro.mainConnectionIssue == nil ? "Standing by" : "Offline")
-                            .font(.jbCaption)
-                            .foregroundStyle(.joeInk.opacity(0.72))
+                        JBStatusDot(color: mainJoeBro.busy ? JB.live : (mainJoeBro.mainConnectionIssue == nil ? JB.ink3 : JB.danger),
+                                    live: mainJoeBro.busy, size: 6)
+                        Text(mainJoeBro.busy ? "working" : mainJoeBro.mainConnectionIssue == nil ? "idle" : "offline")
+                            .font(.jbMono(11)).foregroundStyle(JB.ink2)
                     }
                 }
                 Spacer(minLength: 4)
-                Image(systemName: "chevron.right")
-                    .font(.jbCaption2.bold())
-                    .foregroundStyle(.joeInk.opacity(0.55))
+                Image(systemName: "chevron.right").font(.jb(11)).foregroundStyle(JB.ink3)
             }
-            .padding(16)
+            .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.accentTint.opacity(0.22), in: RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.joeInk.opacity(0.2)))
+            .jbSurface(.raised, radius: JB.rCard)
             .contentShape(Rectangle())
         }
-        .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
+        .buttonStyle(JBPressStyle())
         .accessibilityLabel("JoeBro, \(mainJoeBro.busy ? "working now" : mainJoeBro.mainConnectionIssue == nil ? "standing by" : "offline")")
         .accessibilityHint("Opens JoeBro's conversation")
     }
 
     private var sectionHeader: some View {
         HStack {
-            Text(store.activeOnly ? "RUNNING NOW" : "RECENT ACTIVITY")
-                .font(.jbCaption2.weight(.bold)).tracking(1.5)
-                .foregroundStyle(.joeInk.opacity(0.6))
+            Text(store.activeOnly ? "Running" : "Recent").jbEyebrow()
             Spacer()
-            Text("\(store.visible.count + (showJoeBroCard ? 1 : 0))")
-                .font(.jbCaption.monospacedDigit())
-                .foregroundStyle(.joeInk.opacity(0.55))
-                .contentTransition(.numericText())
+            JBDotNumber(value: "\(store.visible.count + (showJoeBroCard ? 1 : 0))", dot: 1.6, tint: JB.ink2)
         }
-        .padding(.horizontal, 3)
+        .padding(.horizontal, 2)
+        .padding(.top, 4)
     }
 
-    @ViewBuilder
     private func agentRow(_ agent: JBAgentRecord) -> some View {
-        agentRowButton(agent)
-            .padding(.leading, agent.kind == .subagent && agent.parentID != nil ? 26 : 0)
+        VStack(alignment: .leading, spacing: 10) {
+            agentRowButton(agent)
+            if agent.kind == .coding, agent.status == "waiting" {
+                AgentApprovalButtons(api: api, agentID: agent.id) { await store.refresh() }
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .jbSurface(.raised, radius: JB.rCard)
+        .overlay(RoundedRectangle(cornerRadius: JB.rCard, style: .continuous)
+            .strokeBorder(JB.warn.opacity(agent.status == "waiting" ? 0.5 : 0), lineWidth: 1))
+        .padding(.leading, agent.kind == .subagent && agent.parentID != nil ? 22 : 0)
     }
 
     @ViewBuilder private func agentRowButton(_ agent: JBAgentRecord) -> some View {
         if agent.isLive && agent.cancelRequested != true {
             Button { open = agent } label: { row(agent) }
-                .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
+                .buttonStyle(JBPressStyle())
                 .contextMenu {
-                    Button("Ask to stop", systemImage: "stop.fill", role: .destructive) {
-                        stopTarget = agent
-                    }
+                    Button("Ask to stop", systemImage: "stop", role: .destructive) { stopTarget = agent }
                 }
         } else {
             Button { open = agent } label: { row(agent) }
-                .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
+                .buttonStyle(JBPressStyle())
         }
     }
 
     private var filters: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Picker("Agent history", selection: Bindable(store).activeOnly) {
-                Text("Active \(store.liveCount)").tag(true)
-                Text("All \(store.allCount)").tag(false)
-            }
-            .pickerStyle(.segmented)
-            HStack {
-                Text("KIND")
-                    .font(.jbCaption2.weight(.bold)).tracking(1.5)
-                    .foregroundStyle(.joeInk.opacity(0.6))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                scopeChip("Active", count: store.liveCount, on: store.activeOnly) { store.activeOnly = true }
+                scopeChip("All", count: store.allCount, on: !store.activeOnly) { store.activeOnly = false }
                 Spacer()
                 if store.filter != nil {
-                    Button("Show all") { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
-                        store.filter = nil
-                    } }
-                        .font(.jbCaption.weight(.semibold))
-                        .foregroundStyle(.joeInk)
+                    Button("Clear") { withAnimation(reduceMotion ? nil : JB.snap) { store.filter = nil } }
+                        .font(.jbMono(11, .medium)).foregroundStyle(JB.ink2)
                 }
             }
-            .padding(.horizontal, 3)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 10)], spacing: 10) {
-                ForEach([JBAgentKind.chat, .coding, .research, .task, .subagent], id: \.self) { kind in
-                    kindCard(kind)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach([JBAgentKind.chat, .coding, .research, .task, .subagent], id: \.self) { kind in
+                        kindChip(kind)
+                    }
                 }
             }
         }
-        .padding(.bottom, 6)
+        .padding(.bottom, 4)
     }
 
-    private func kindCard(_ kind: JBAgentKind) -> some View {
+    private func scopeChip(_ label: String, count: Int, on: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(label).font(.jbMono(12, .medium))
+                Text("\(count)").font(.jbMono(12)).foregroundStyle(on ? JB.accent : JB.ink3).contentTransition(.numericText())
+            }
+            .foregroundStyle(on ? JB.ink : JB.ink2)
+            .padding(.horizontal, 11).padding(.vertical, 7)
+            .background(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous).fill(on ? JB.accentSoft : .clear))
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: on)
+    }
+
+    private func kindChip(_ kind: JBAgentKind) -> some View {
         let selected = store.filter == kind
         return Button {
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
-                store.filter = selected ? nil : kind
-            }
+            withAnimation(reduceMotion ? nil : JB.snap) { store.filter = selected ? nil : kind }
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: kind.symbol)
-                    .font(.jb(17, .medium))
-                    .frame(width: 28)
-                    .foregroundStyle(selected ? .joeInk : .joeInk.opacity(0.72))
-                    .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
-                    .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(kind.label).font(.jbSubheadline.weight(.semibold))
-                    Text(store.activeOnly ? "active" : "total")
-                        .font(.jbCaption2).foregroundStyle(.joeInk.opacity(0.55))
-                }
-                Spacer(minLength: 2)
-                Text("\(store.count(for: kind))")
-                    .font(.jbSubheadline.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(.joeInk.opacity(0.78))
+            HStack(spacing: 7) {
+                kind.glyph(14)
+                Text(kind.label).font(.jbMono(12, .medium))
+                Text("\(store.count(for: kind))").font(.jbMono(12)).foregroundStyle(JB.ink3)
                     .contentTransition(.numericText())
             }
-            .foregroundStyle(.joeInk)
-            .padding(.horizontal, 13)
-            .frame(height: 63)
-            .background(selected ? .joeInk.opacity(0.22) : .joeInk.opacity(0.085), in: RoundedRectangle(cornerRadius: 17))
-            .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(.joeInk.opacity(selected ? 0.32 : 0.1)))
+            .foregroundStyle(selected ? JB.ink : JB.ink2)
+            .padding(.horizontal, 11).frame(height: 34)
+            .jbSurface(selected ? .raised : .panel, radius: JB.rControl)
+            .overlay(RoundedRectangle(cornerRadius: JB.rControl, style: .continuous)
+                .strokeBorder(selected ? JB.accent.opacity(0.6) : .clear, lineWidth: 1))
         }
-        .buttonStyle(AgentCardPressStyle(reduceMotion: reduceMotion))
+        .buttonStyle(.plain)
         .accessibilityLabel("\(kind.label), \(store.count(for: kind)) \(store.activeOnly ? "active" : "total")")
     }
 
-    @ViewBuilder private func spawnedByLabel(_ agent: JBAgentRecord) -> some View {
-        if agent.kind == .subagent, agent.parentID != nil {
-            Label("Spawned by \(store.parentName(of: agent) ?? "another agent")",
-                  systemImage: "arrow.turn.down.right")
-                .font(.jbCaption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-    }
-
     private func row(_ agent: JBAgentRecord) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: (agent.kind ?? .unknown).symbol)
-                    .font(.jb(18, .medium))
-                    .foregroundStyle(.joeInk)
-                    .frame(width: 40, height: 40)
-                    .background(.joeInk.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
-                VStack(alignment: .leading, spacing: 5) {
+                (agent.kind ?? .unknown).glyph(18)
+                    .foregroundStyle(JB.ink)
+                    .frame(width: 36, height: 36)
+                    .background(JB.accentSoft.opacity(agent.isLive ? 1 : 0.5), in: RoundedRectangle(cornerRadius: JB.rControl, style: .continuous))
+                VStack(alignment: .leading, spacing: 4) {
                     Text(agent.displayTitle)
-                        .font(.jbSubheadline.weight(.semibold))
-                        .foregroundStyle(.joeInk)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                    spawnedByLabel(agent)
-                    HStack(spacing: 7) {
-                        Circle().fill(statusColor(agent)).frame(width: 7, height: 7)
-                        Text(statusLabel(agent))
-                        Text("·")
-                        Text((agent.kind ?? .unknown).label)
-                        if agent.kind == .research, let count = agent.sourceCount, count > 0 {
-                            Text("·")
-                            Text("\(count) sources")
-                        }
+                        .font(.jb(15, .semibold)).foregroundStyle(JB.ink)
+                        .lineLimit(2).multilineTextAlignment(.leading)
+                    if agent.kind == .subagent, agent.parentID != nil {
+                        Text("from \(store.parentName(of: agent) ?? "agent")")
+                            .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
                     }
-                    .font(.jbCaption)
-                    .foregroundStyle(.joeInk.opacity(0.66))
+                    HStack(spacing: 7) {
+                        JBStatusDot(color: statusColor(agent), live: agent.isLive && agent.status != "waiting" && agent.status != "queued", size: 6)
+                        Text(statusLabel(agent).lowercased())
+                        if agent.kind == .research, let count = agent.sourceCount, count > 0 { Text("· \(count) sources") }
+                    }
+                    .font(.jbMono(11)).foregroundStyle(agent.status == "waiting" ? JB.warn : JB.ink2)
                 }
                 Spacer(minLength: 5)
-                if agent.isLive { ProgressView().controlSize(.small).tint(.joeInk) }
-                else { Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.4)) }
+                if agent.isLive { JBSpinner() }
+                else { Image(systemName: "chevron.right").font(.jb(11)).foregroundStyle(JB.ink3) }
             }
             if let preview = agent.isLive ? agent.progress : (agent.failed ? agent.error : agent.result),
                !preview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(preview.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(.jbCaption)
-                    .foregroundStyle(.joeInk.opacity(0.7))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    .font(.jbCaption).foregroundStyle(JB.ink2)
+                    .lineLimit(2).multilineTextAlignment(.leading)
             }
             if let date = [agent.finishedAt, agent.startedAt, agent.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
-                Text(agentRelativeDate(date))
-                    .font(.jbCaption2)
-                    .foregroundStyle(.joeInk.opacity(0.48))
+                Text(agentRelativeDate(date)).font(.jbMono(10.5)).foregroundStyle(JB.ink3)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(15)
-        .background(JB.panelFill, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.joeInk.opacity(0.11)))
         .contentShape(Rectangle())
     }
 
     private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 13) {
-            Image(systemName: store.activeOnly ? "circle.dotted.circle" : "person.3.sequence")
-                .font(.jb(30, .light))
-                .foregroundStyle(.joeInk.opacity(0.8))
-            Text(store.search.isEmpty ? (store.activeOnly ? "Quiet right now" : "No agents yet") : "No matches")
-                .font(.jbTitle3.weight(.semibold))
-                .foregroundStyle(.joeInk)
-            if !store.search.isEmpty || !store.activeOnly {
-                Text(store.search.isEmpty ? "Completed work will collect here." : "Try another search or kind.")
-                    .font(.jbSubheadline)
-                    .foregroundStyle(.joeInk.opacity(0.65))
-            }
+        VStack(spacing: 10) {
+            JBEmptyState(art: store.search.isEmpty ? (store.activeOnly ? .sleep : .inbox) : .search,
+                         text: store.search.isEmpty ? (store.activeOnly ? "Quiet right now" : "No agents yet") : "No matches")
             if store.filter != nil {
-                Button("Show all kinds") { store.filter = nil }
-                    .font(.jbSubheadline.weight(.semibold))
-                    .foregroundStyle(.joeInk)
+                Button("Show all kinds") { store.filter = nil }.buttonStyle(.jbSecondary)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(21)
-        .background(.joeInk.opacity(0.075), in: RoundedRectangle(cornerRadius: 22))
-        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.joeInk.opacity(0.1)))
+        .frame(maxWidth: .infinity).padding(.vertical, 24)
     }
 }
 
 /// One agent's full result, plus a way into the chat transcript behind it.
+/// Coding agents open as a chat: transcript, approvals and a composer.
 struct AgentDetailView: View {
     let api: JoeBroAPI
     let agent: JBAgentRecord
@@ -583,70 +534,20 @@ struct AgentDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                if loading && full == nil {
-                    ProgressView().tint(.joeInk).frame(maxWidth: .infinity).padding(.vertical, 30)
-                }
-                if let error = current.error, !error.isEmpty {
-                    Text(error)
-                        .font(.jbFootnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14).jbGlass(16)
-                }
-                if let cancelNote {
-                    Label(cancelNote, systemImage: "stop.circle")
-                        .font(.jbFootnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                if let result = displayedReport, !result.isEmpty {
-                    MarkdownText(text: result)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16).jbGlass(20)
-                } else if !loading && !current.isLive {
-                    Text(current.isSessionOnly ? "No replies in this chat yet." : "This agent finished without a result.")
-                        .font(.jbFootnote).foregroundStyle(.secondary)
-                }
-                if let sources = current.sources, !sources.isEmpty {
-                    ResearchSourcesView(sources: sources)
-                }
-                if !displayedMessages.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Transcript")
-                            .font(.jbHeadline)
-                            .foregroundStyle(.joeInk)
-                        ForEach(Array(displayedMessages.enumerated()), id: \.offset) { index, message in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(message.role.capitalized)
-                                    .font(.jbCaption.weight(.semibold))
-                                    .foregroundStyle(.joeInk.opacity(0.55))
-                                Text(message.content)
-                                    .font(.jbSubheadline)
-                                    .foregroundStyle(.joeInk.opacity(0.88))
-                                    .textSelection(.enabled)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            if index < displayedMessages.count - 1 { Divider().overlay(.joeInk.opacity(0.1)) }
-                        }
-                    }
-                    .padding(16)
-                    .jbGlass(20)
-                }
+        Group {
+            if current.kind == .coding {
+                AgentChatThread(api: api, agent: current, header: AnyView(header)) { await reloadDetail() }
+            } else {
+                reportBody
             }
-            .padding(16)
         }
-        .scrollIndicators(.hidden)
         .navigationTitle(current.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .jbWallpaper()
         .toolbar {
             if current.isLive {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Stop", systemImage: "stop.fill", role: .destructive) { confirmStop = true }
+                    Button("Stop", systemImage: "stop", role: .destructive) { confirmStop = true }
                 }
             }
         }
@@ -667,13 +568,14 @@ struct AgentDetailView: View {
                 loading = false
                 return
             }
-            // Keep a running detail open until its final result is available.
+            // Keep a running detail open until its final result is available; coding agents stay
+            // open (they take new instructions any time) at a faster pace.
             while !Task.isCancelled {
                 do { full = try await api.agentDetail(id: agent.id); error = nil }
                 catch { self.error = error.localizedDescription }
                 loading = false
-                guard current.isLive else { break }
-                try? await Task.sleep(for: .seconds(5))
+                guard current.isLive || (current.kind == .coding && current.status != "ended") else { break }
+                try? await Task.sleep(for: .seconds(current.kind == .coding ? 2.5 : 5))
             }
         }
         .alert("Agent", isPresented: alertBinding($error)) {
@@ -689,7 +591,7 @@ struct AgentDetailView: View {
                         } else {
                             try await api.cancelAgent(id: agent.id)
                         }
-                        cancelNote = "Stop requested. The agent may take a moment to finish."
+                        cancelNote = "Stop requested"
                         if !agent.isSessionOnly { full = try await api.agentDetail(id: agent.id) }
                     } catch { self.error = error.localizedDescription }
                 }
@@ -699,34 +601,80 @@ struct AgentDetailView: View {
         }
     }
 
+    private func reloadDetail() async {
+        if let d = try? await api.agentDetail(id: agent.id) { full = d }
+    }
+
+    private var reportBody: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                header
+                if loading && full == nil {
+                    HStack { Spacer(); JBSpinner(size: 14); Spacer() }.padding(.vertical, 30)
+                }
+                if let error = current.error, !error.isEmpty {
+                    Text(error).font(.jbMono(12)).foregroundStyle(JB.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading).jbCard()
+                }
+                if let cancelNote {
+                    Text(cancelNote).font(.jbMono(11)).foregroundStyle(JB.ink2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if let result = displayedReport, !result.isEmpty {
+                    MarkdownText(text: result)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .jbCard(padding: 16)
+                } else if !loading && !current.isLive {
+                    Text(current.isSessionOnly ? "No replies in this chat yet" : "No result")
+                        .font(.jbMono(11)).foregroundStyle(JB.ink3)
+                } else if current.isLive {
+                    HStack(spacing: 6) { JBSpinner(); JBStreamCursor() }
+                }
+                if let sources = current.sources, !sources.isEmpty {
+                    ResearchSourcesView(sources: sources)
+                }
+                if !displayedMessages.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Transcript").jbEyebrow()
+                        ForEach(Array(displayedMessages.enumerated()), id: \.offset) { _, message in
+                            if message.role == "user" {
+                                Text(message.content).font(.jbBody).foregroundStyle(JB.ink)
+                                    .textSelection(.enabled).jbCard(padding: 12)
+                            } else {
+                                Text(message.content).font(.jbBody).foregroundStyle(JB.ink)
+                                    .textSelection(.enabled)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .scrollIndicators(.hidden)
+    }
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(current.displayTitle)
-                .font(.jbTitle2.weight(.bold))
-                .foregroundStyle(.joeInk)
             HStack(spacing: 8) {
-                Image(systemName: (current.kind ?? .unknown).symbol)
-                Text((current.kind ?? .unknown).label)
-                Text("·")
-                Circle().fill(statusColor(current)).frame(width: 7, height: 7)
-                Text(statusLabel(current))
+                (current.kind ?? .unknown).glyph(15)
+                Text((current.kind ?? .unknown).label).font(.jbMono(11, .medium))
+                JBStatusDot(color: statusColor(current), live: current.isLive && current.status != "waiting" && current.status != "queued", size: 6)
+                Text(statusLabel(current).lowercased()).font(.jbMono(11))
             }
-            .font(.jbSubheadline.weight(.medium)).foregroundStyle(.secondary)
+            .foregroundStyle(current.status == "waiting" ? JB.warn : JB.ink2)
             if let model = current.model, !model.isEmpty {
-                Text(model.components(separatedBy: "/").last ?? model)
-                    .font(.jbCaption).foregroundStyle(.secondary)
+                Text(model.components(separatedBy: "/").last ?? model).font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
             if let started = [current.startedAt, current.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
-                Text("Started \(agentRelativeDate(started))")
-                    .font(.jbCaption).foregroundStyle(.secondary)
+                Text(agentRelativeDate(started)).font(.jbMono(11)).foregroundStyle(JB.ink3)
             }
-            if current.isLive, let progress = current.progress, !progress.isEmpty {
-                Text(progress).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.8))
+            if current.isLive, let progress = current.progress, !progress.isEmpty, current.kind != .coding {
+                Text(progress).font(.jbSubheadline).foregroundStyle(JB.ink2)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .jbGlass(20)
     }
 }
 
@@ -745,10 +693,9 @@ private func statusLabel(_ agent: JBAgentRecord) -> String {
 }
 
 private func statusColor(_ agent: JBAgentRecord) -> Color {
-    if agent.failed { return .red }
-    if agent.isLive { return agent.status == "queued" || agent.status == "waiting" ? .orange : .yellow }
-    if agent.status == "cancelled" { return .gray }
-    return .green
+    if agent.failed { return JB.danger }
+    if agent.isLive { return agent.status == "queued" ? JB.ink3 : agent.status == "waiting" ? JB.warn : JB.live }
+    return JB.ink3
 }
 
 private func agentRelativeDate(_ value: String) -> String {
@@ -768,15 +715,4 @@ private func agentRelativeDate(_ value: String) -> String {
     }
     guard let date else { return String(value.prefix(16)).replacingOccurrences(of: "T", with: " ") }
     return date.formatted(.relative(presentation: .named))
-}
-
-private struct AgentCardPressStyle: ButtonStyle {
-    let reduceMotion: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
-            .opacity(configuration.isPressed ? 0.88 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.16), value: configuration.isPressed)
-    }
 }
