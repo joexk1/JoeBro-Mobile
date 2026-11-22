@@ -31,14 +31,13 @@ struct ResearchView: View {
             librarySection
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle("Research")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await refresh() }
         .task { await refresh() }
         .task { models = (try? await api.models()) ?? [] }
-        .overlay { if loading && reports.isEmpty && active.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && reports.isEmpty && active.isEmpty { JBSpinner(size: 16) } }
         .alert("Cancel this research run?",
                isPresented: alertBinding($cancelTarget)) {
             Button("Stop the run", role: .destructive) {
@@ -47,7 +46,7 @@ struct ResearchView: View {
             }
             Button("Keep running", role: .cancel) { cancelTarget = nil }
         } message: {
-            Text("JoeBro stops “\(cancelTarget?.query ?? "")” now. Whatever it has written so far stays in the library.")
+            Text("“\(cancelTarget?.query ?? "")” stops now. What is written stays in the library.")
         }
         .alert("Delete this report?",
                isPresented: alertBinding($deleteTarget)) {
@@ -57,7 +56,7 @@ struct ResearchView: View {
             }
             Button("Keep it", role: .cancel) { deleteTarget = nil }
         } message: {
-            Text("“\(deleteTarget?.query ?? "")” is removed from the backend permanently. This can't be undone.")
+            Text("“\(deleteTarget?.query ?? "")” is removed permanently.")
         }
         .alert("Research", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
     }
@@ -65,11 +64,11 @@ struct ResearchView: View {
     // MARK: Sections
 
     private var launcher: some View {
-        Section("New run") {
+        JBSection("New run") {
             TextField("What should JoeBro research?", text: $query, axis: .vertical)
                 .lineLimit(1...4)
-                .foregroundStyle(.joeInk)
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .foregroundStyle(JB.ink)
+                .listRowBackground(JB.panelFill)
             if !models.isEmpty {
                 Picker("Model", selection: $model) {
                     Text("Default").tag(JBModelChoice?.none)
@@ -77,58 +76,55 @@ struct ResearchView: View {
                         Text(choice.display).tag(JBModelChoice?.some(choice))
                     }
                 }
-                .tint(Color.accentTint)
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
             }
             Button {
                 Task { await start() }
             } label: {
-                HStack {
-                    if starting { ProgressView().controlSize(.small).tint(Color.accentTint) }
-                    Text(starting ? "Starting…" : "Start research")
-                    Spacer()
-                    Image(systemName: "sparkle.magnifyingglass")
+                HStack(spacing: 8) {
+                    if starting { JBSpinner(tint: JB.onAccent) } else { JBIcon(.research, size: 15) }
+                    Text(starting ? "Starting" : "Start research")
                 }
-                .foregroundStyle(Color.accentTint)
-                .frame(minHeight: 44)
+                .frame(maxWidth: .infinity, minHeight: 32)
             }
+            .buttonStyle(.jbPrimary)
+            .sensoryFeedback(.success, trigger: active.count)
             .disabled(starting || query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .listRowBackground(Color.joeInk.opacity(0.06))
+            .listRowBackground(JB.panelFill)
         }
     }
 
     private var activeSection: some View {
-        Section("In progress") {
+        JBSection("In progress") {
             ForEach(active) { run in
                 NavigationLink {
                     ResearchReportView(api: api, ws: ws, id: run.id, title: run.query)
                 } label: {
                     HStack(spacing: 13) {
-                        ProgressView().controlSize(.small).tint(Color.accentTint)
+                        JBSpinner(tint: JB.live)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(run.query).foregroundStyle(.joeInk).lineLimit(2)
-                            Text(phases[run.id] ?? "Working…")
-                                .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                            Text(run.query).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
+                            Text(phases[run.id] ?? "working")
+                                .font(.jbMono(10.5)).foregroundStyle(JB.live).lineLimit(1)
                         }
                     }
                     .frame(minHeight: 48)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
                 .contextMenu {
                     Button("Stop run", systemImage: "stop.circle", role: .destructive) { cancelTarget = run }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button("Stop", systemImage: "stop.circle") { cancelTarget = run }.tint(.orange)
+                    Button("Stop", systemImage: "stop.circle") { cancelTarget = run }.tint(JB.warn)
                 }
             }
         }
     }
 
     private var librarySection: some View {
-        Section("Library") {
+        JBSection("Library") {
             if reports.isEmpty && !loading {
-                empty("doc.text.magnifyingglass", "No reports yet",
-                      "Start a run above, or kick one off from a chat.")
+                empty("doc.text", "No reports yet")
             }
             ForEach(reports) { report in
                 NavigationLink {
@@ -136,12 +132,12 @@ struct ResearchView: View {
                 } label: {
                     ReportRow(report: report)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
                 .contextMenu {
                     Button("Delete report", systemImage: "trash", role: .destructive) { deleteTarget = report }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button("Delete", systemImage: "trash") { deleteTarget = report }.tint(.red)
+                    Button("Delete", systemImage: "trash") { deleteTarget = report }.tint(JB.danger)
                 }
             }
         }
@@ -192,37 +188,28 @@ private struct ReportRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: symbol)
-                .font(.jbBody)
-                .foregroundStyle(tint)
+            JBStatusDot(color: tint, size: 7)
+                .padding(.top, 7)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
-                Text(report.query).foregroundStyle(.joeInk).lineLimit(2)
-                Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                Text(report.query).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
+                Text(subtitle).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
             }
         }
         .frame(minHeight: 48)
     }
 
-    private var symbol: String {
-        switch report.status {
-        case "completed": "doc.text.fill"
-        case "cancelled": "xmark.circle"
-        case "failed": "exclamationmark.triangle"
-        default: "hourglass"
-        }
-    }
     private var tint: Color {
         switch report.status {
-        case "completed": Color.accentTint
-        case "failed": .orange
-        case "cancelled": .secondary
-        default: .yellow
+        case "completed": JB.live
+        case "failed": JB.danger
+        case "cancelled": JB.ink3
+        default: JB.warn
         }
     }
     private var subtitle: String {
         let date = (report.updatedAt ?? report.createdAt ?? "").prefix(16).replacingOccurrences(of: "T", with: " ")
-        return date.isEmpty ? report.status.capitalized : "\(report.status.capitalized) · \(date)"
+        return date.isEmpty ? report.status : "\(report.status) · \(date)"
     }
 }
 
@@ -243,7 +230,7 @@ private struct ResearchReportView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(report?.query ?? title).font(.jbTitle2.bold()).foregroundStyle(.joeInk)
+                Text(report?.query ?? title).font(.jb(22, .semibold)).tracking(-0.3).foregroundStyle(JB.ink)
                 content
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -262,7 +249,7 @@ private struct ResearchReportView: View {
                     }
                     Button("Delete report", systemImage: "trash", role: .destructive) { confirmDelete = true }
                 } label: {
-                    Image(systemName: "ellipsis.circle").foregroundStyle(Color.accentTint)
+                    Image(systemName: "ellipsis.circle").foregroundStyle(JB.ink)
                 }
                 .accessibilityLabel("Report actions")
             }
@@ -271,7 +258,7 @@ private struct ResearchReportView: View {
             Button("Delete report", role: .destructive) { Task { await deleteReport() } }
             Button("Keep it", role: .cancel) {}
         } message: {
-            Text("“\(report?.query ?? title)” is removed from the backend permanently. This can't be undone.")
+            Text("“\(report?.query ?? title)” is removed permanently.")
         }
         .refreshable { await load() }
         .task(id: id) {
@@ -289,13 +276,15 @@ private struct ResearchReportView: View {
     @ViewBuilder
     private var content: some View {
         if let report {
-            Label(report.status.capitalized,
-                  systemImage: report.status == "completed" ? "checkmark.circle" : "circle.dotted")
-                .font(.jbSubheadline).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                JBStatusDot(color: report.status == "completed" ? JB.live : report.status == "failed" ? JB.danger : JB.warn,
+                            live: report.status == "running", size: 6)
+                Text(report.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+            }
             if report.status == "completed" {
                 let body = reportBodyWithoutSources
                 if body.isEmpty {
-                    empty("doc.text", "Report is empty", "The run finished without writing anything.")
+                    empty("doc.text", "Report is empty")
                 } else {
                     MarkdownText(text: body)
                         .textSelection(.enabled)
@@ -309,17 +298,17 @@ private struct ResearchReportView: View {
                     .textSelection(.enabled)
             } else {
                 HStack(spacing: 10) {
-                    ProgressView().controlSize(.small).tint(Color.accentTint)
-                    Text(phase ?? "JoeBro is working on this report.").foregroundStyle(.secondary)
+                    JBSpinner(tint: JB.live)
+                    Text(phase ?? "working").font(.jbMono(12)).foregroundStyle(JB.ink2)
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .jbGlass(16)
+                .jbSurface(.panel, radius: JB.rCard)
             }
         } else if let error {
-            empty("exclamationmark.triangle", "Couldn't load report", error)
+            empty("exclamationmark.triangle", "Couldn't load report")
         } else {
-            ProgressView().controlSize(.large).frame(maxWidth: .infinity).padding(.vertical, 50)
+            JBSpinner(size: 16).frame(maxWidth: .infinity).padding(.vertical, 50)
         }
     }
 
@@ -353,32 +342,30 @@ struct ResearchSourcesView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Sources · \(sources.count)")
-                .font(.jbTitle3.bold())
-                .foregroundStyle(.joeInk)
+            JBSectionHeader("Sources", count: sources.count)
             ForEach(Array(sources.enumerated()), id: \.offset) { index, source in
                 if let url = URL(string: source.url) {
                     Link(destination: url) {
                         HStack(alignment: .top, spacing: 12) {
                             Text("\(index + 1)")
-                                .font(.jbCaption.monospacedDigit().bold())
-                                .foregroundStyle(Color.accentTint)
+                                .font(.jbMono(11))
+                                .foregroundStyle(JB.ink3)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(source.title)
-                                    .font(.jbSubheadline.weight(.semibold))
-                                    .foregroundStyle(.joeInk)
+                                    .font(.jb(14, .medium))
+                                    .foregroundStyle(JB.ink)
                             Text(url.host() ?? source.url)
-                                .font(.jbCaption)
-                                .foregroundStyle(Color.accentTint)
+                                .font(.jbMono(10.5))
+                                .foregroundStyle(JB.ink3)
                             }
                             Spacer(minLength: 4)
                             Image(systemName: "arrow.up.right")
                                 .font(.jbCaption)
-                                .foregroundStyle(Color.accentTint)
+                                .foregroundStyle(JB.ink3)
                         }
                         .padding(12)
-                        .background(.joeInk.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                        .jbSurface(.raised, radius: JB.rCard)
                     }
                 }
             }

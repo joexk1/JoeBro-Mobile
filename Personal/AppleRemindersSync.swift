@@ -436,28 +436,30 @@ final class AppleRemindersSync {
     }
 }
 
-struct AppleRemindersSettingsSection: View {
+struct AppleRemindersRows: View {
     @State private var sync = AppleRemindersSync.shared
     var body: some View {
-        Section {
+        Group {
             Toggle(isOn: Binding(get: { sync.enabled }, set: { value in Task { await sync.setEnabled(value) } })) {
-                Label("Apple Reminders", systemImage: "checklist")
+                HStack(spacing: 8) { JBIcon(.tasks, size: 15); Text("Apple Reminders") }
             }
             .disabled(sync.connecting)
-            LabeledContent("Status", value: sync.status)
             if sync.enabled {
                 Picker("Default list", selection: Binding(get: { sync.defaultListID }, set: { id in Task { await sync.chooseDefaultList(id) } })) {
                     Text("Apple default").tag("")
                     ForEach(sync.lists.filter(\.writable)) { list in Text(list.title).tag(list.id) }
                 }
-                Button("Sync now") { Task { await sync.sync(force: true) } }
+                Button("Sync reminders") { Task { await sync.sync(force: true) } }
             } else if EKEventStore.authorizationStatus(for: .reminder) == .denied {
                 Button("Open iPhone settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 }
             }
-        } header: { Text("Reminders") }
-        .listRowBackground(Color.joeInk.opacity(0.06))
+            if !sync.status.isEmpty {
+                Text(sync.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+            }
+        }
+        .sensoryFeedback(.selection, trigger: sync.enabled)
     }
 }
 #endif

@@ -34,12 +34,12 @@ struct ToolsView: View {
             pluginsSection
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle("Tools")
-        .searchable(text: $search, prompt: "Search tools, MCP servers and plugins")
+        .searchable(text: $search, prompt: "Search")
         .navigationBarTitleDisplayMode(.inline)
-        .overlay { if loading && tools.isEmpty && servers.isEmpty && plugins.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && tools.isEmpty && servers.isEmpty && plugins.isEmpty { JBSpinner(size: 16) } }
+        .animation(JB.smooth, value: tools.count + servers.count + plugins.count)
         .refreshable { await load() }
         .task { await load() }
         .toolbar {
@@ -47,9 +47,9 @@ struct ToolsView: View {
                 Menu {
                     Button("New API tool", systemImage: "link") { creating = .tool }
                     Button("New MCP server", systemImage: "server.rack") { creating = .server }
-                    Button("New plugin", systemImage: "puzzlepiece.extension") { creating = .plugin }
+                    Button("New plugin") { creating = .plugin }
                 } label: {
-                    Image(systemName: "plus").foregroundStyle(Color.accentTint)
+                    Image(systemName: "plus").foregroundStyle(JB.ink)
                 }
                 .accessibilityLabel("Add tool")
             }
@@ -83,9 +83,9 @@ struct ToolsView: View {
     // MARK: API tools
 
     private var toolsSection: some View {
-        Section("API tools") {
+        JBSection("API tools") {
             if tools.isEmpty && !loading {
-                empty("link", "No API tools", "Point JoeBro at an HTTP endpoint it can call.")
+                empty("link", "No API tools")
             }
             ForEach(tools.filter { search.isEmpty || ($0.name + " " + $0.description).localizedCaseInsensitiveContains(search) }) { tool in
                 ToolRow(title: tool.name,
@@ -95,8 +95,7 @@ struct ToolsView: View {
                         toggleLabel: "\(tool.name) enabled") { on in
                     Task { await act { try await ws.setToolEnabled(id: tool.id, on: on) } }
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-                .contentShape(Rectangle())
+                    .contentShape(Rectangle())
                 .onTapGesture { editingTool = tool }
                 .contextMenu {
                     Button("Edit tool", systemImage: "pencil") { editingTool = tool }
@@ -114,8 +113,8 @@ struct ToolsView: View {
                     Button("Delete", systemImage: "trash") {
                         deleting = Deleting(id: tool.id, kind: .tool, name: tool.name,
                                             consequence: "JoeBro loses this API tool permanently. This can't be undone.")
-                    }.tint(.red)
-                    Button("Edit", systemImage: "pencil") { editingTool = tool }.tint(.gray)
+                    }.tint(JB.danger)
+                    Button("Edit", systemImage: "pencil") { editingTool = tool }.tint(JB.ink3)
                 }
             }
         }
@@ -124,16 +123,15 @@ struct ToolsView: View {
     // MARK: MCP servers
 
     private var serversSection: some View {
-        Section("MCP servers") {
+        JBSection("MCP servers") {
             if servers.isEmpty && !loading {
-                empty("server.rack", "No MCP servers", "Add a command and JoeBro discovers its tools.")
+                empty("server.rack", "No MCP servers")
             }
             ForEach(servers.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }) { server in
                 MCPRow(server: server) { on in
                     Task { await act { try await ws.setMCPEnabled(id: server.id, on: on) } }
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-                .contentShape(Rectangle())
+                    .contentShape(Rectangle())
                 .onTapGesture { editingServer = server }
                 .contextMenu {
                     Button("Edit server", systemImage: "pencil") { editingServer = server }
@@ -151,8 +149,8 @@ struct ToolsView: View {
                     Button("Delete", systemImage: "trash") {
                         deleting = Deleting(id: server.id, kind: .server, name: server.name,
                                             consequence: "The server and its discovered tools are removed. This can't be undone.")
-                    }.tint(.red)
-                    Button("Edit", systemImage: "pencil") { editingServer = server }.tint(.gray)
+                    }.tint(JB.danger)
+                    Button("Edit", systemImage: "pencil") { editingServer = server }.tint(JB.ink3)
                 }
             }
         }
@@ -161,9 +159,9 @@ struct ToolsView: View {
     // MARK: Plugins
 
     private var pluginsSection: some View {
-        Section("Plugins") {
+        JBSection("Plugins") {
             if plugins.isEmpty && !loading {
-                empty("puzzlepiece.extension", "No plugins", "Plugins add tools or guardrails to every turn.")
+                empty("puzzlepiece.extension", "No plugins")
             }
             ForEach(plugins.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }) { plugin in
                 ToolRow(title: plugin.name,
@@ -173,8 +171,7 @@ struct ToolsView: View {
                         toggleLabel: "\(plugin.name) enabled") { on in
                     Task { await act { try await ws.setPluginEnabled(id: plugin.id, on: on) } }
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-                .contentShape(Rectangle())
+                    .contentShape(Rectangle())
                 .onTapGesture { editingPlugin = plugin }
                 .contextMenu { pluginMenu(plugin) }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -182,9 +179,9 @@ struct ToolsView: View {
                         Button("Delete", systemImage: "trash") {
                             deleting = Deleting(id: plugin.id, kind: .plugin, name: plugin.name,
                                                 consequence: "The plugin is uninstalled from JoeBro. This can't be undone.")
-                        }.tint(.red)
+                        }.tint(JB.danger)
                     }
-                    Button("Edit", systemImage: "pencil") { editingPlugin = plugin }.tint(.gray)
+                    Button("Edit", systemImage: "pencil") { editingPlugin = plugin }.tint(JB.ink3)
                 }
             }
         }
@@ -258,12 +255,12 @@ private struct ToolRow: View {
         HStack(spacing: 11) {
             WSStatusDot(on: on)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).foregroundStyle(.joeInk).lineLimit(1)
+                Text(title).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
                 if !subtitle.isEmpty {
-                    Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(2)
+                    Text(subtitle).font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(2)
                 }
                 if let detail, !detail.isEmpty {
-                    Text(detail).font(.jbCaption2).foregroundStyle(.secondary.opacity(0.8)).lineLimit(1)
+                    Text(detail).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
                 }
             }
             Spacer(minLength: 8)
@@ -282,23 +279,22 @@ private struct MCPRow: View {
             HStack(spacing: 11) {
                 WSStatusDot(on: server.enabled)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(server.name).foregroundStyle(.joeInk).lineLimit(1)
+                    Text(server.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
                     Text(server.command.isEmpty ? "No command set" : server.command)
-                        .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.jbMono(11)).foregroundStyle(JB.ink2).lineLimit(1)
                 }
                 Spacer(minLength: 8)
                 WSToggle(label: "\(server.name) enabled", isOn: server.enabled, set: setOn)
             }
             if !server.error.isEmpty {
                 Label(server.error, systemImage: "exclamationmark.triangle")
-                    .font(.jbCaption2).foregroundStyle(.orange).lineLimit(3)
+                    .font(.jbCaption2).foregroundStyle(JB.warn).lineLimit(3)
             } else if server.tools.isEmpty {
-                Text(server.enabled ? "No tools discovered yet." : "Disabled.")
-                    .font(.jbCaption2).foregroundStyle(.secondary)
+                if server.enabled { Text("No tools yet").font(.jbMono(10.5)).foregroundStyle(JB.ink3) }
             } else {
                 Text("\(server.tools.count) tools · " + server.tools.prefix(4).joined(separator: ", ")
                      + (server.tools.count > 4 ? "…" : ""))
-                    .font(.jbCaption2).foregroundStyle(.secondary).lineLimit(2)
+                    .font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(2)
             }
         }
         .frame(minHeight: 48)
@@ -333,7 +329,7 @@ private struct APIToolEditor: View {
         EditorShell(title: tool == nil ? "New API tool" : "Edit API tool",
                     saving: saving, canSave: canSave, error: $error,
                     save: { await save() }) {
-            Section("Tool") {
+            JBSection("Tool") {
                 TextField("Name", text: $name)
                 TextField("Base URL", text: $baseURL)
                     .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
@@ -341,23 +337,14 @@ private struct APIToolEditor: View {
                     Text("GET").tag("GET")
                     Text("POST").tag("POST")
                 }
-                .tint(Color.accentTint)
+                .tint(JB.accent)
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
-            Section("Description") {
+            JBSection("Description") {
                 TextField("What this tool does", text: $description, axis: .vertical).lineLimit(2...5)
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
-            Section {
+            JBSection("Authentication") {
                 SecureField(tool?.hasKey == true ? "Replace saved API key" : "API key (optional)", text: $apiKey)
-            } header: {
-                Text("Authentication")
-            } footer: {
-                Text(tool?.hasKey == true
-                     ? "A key is already saved. Leave this blank to keep it."
-                     : "Sent by the backend; never stored on this phone.")
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
         }
     }
 
@@ -399,7 +386,7 @@ private struct MCPServerEditor: View {
         EditorShell(title: server == nil ? "New MCP server" : "Edit MCP server",
                     saving: saving, canSave: canSave, error: $error,
                     save: { await save() }) {
-            Section("Server") {
+            JBSection("Server") {
                 TextField("Name", text: $name)
                 TextField("Command", text: $command)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
@@ -407,21 +394,18 @@ private struct MCPServerEditor: View {
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 WSPermissionPicker(title: "Agent access", mode: $permissionMode)
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
             if let server, !server.tools.isEmpty {
-                Section("Discovered tools") {
+                JBSection("Discovered tools") {
                     ForEach(server.tools, id: \.self) { tool in
-                        Text(tool).font(.jbSubheadline).foregroundStyle(.joeInk)
+                        Text(tool).font(.jbSubheadline).foregroundStyle(JB.ink)
                     }
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-            }
-            if let message = server?.error, !message.isEmpty {
-                Section("Last discovery error") {
-                    Text(message).font(.jbFootnote).foregroundStyle(.orange)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-            }
+            if let message = server?.error, !message.isEmpty {
+                JBSection("Last discovery error") {
+                    Text(message).font(.jbFootnote).foregroundStyle(JB.warn)
+                }
+                }
         }
     }
 
@@ -465,22 +449,20 @@ private struct PluginEditor: View {
         EditorShell(title: plugin == nil ? "New plugin" : "Edit plugin",
                     saving: saving, canSave: canSave, error: $error,
                     save: { await save() }) {
-            Section("Plugin") {
+            JBSection("Plugin") {
                 TextField("Name", text: $name)
                 Picker("Kind", selection: $kind) {
                     Text("Foreground tool").tag("foreground")
                     Text("Background guardrail").tag("background")
                 }
-                .tint(Color.accentTint)
+                .tint(JB.accent)
                 TextField("Repository path", text: $repoPath)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 WSPermissionPicker(title: "Agent access", mode: $permissionMode)
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
-            Section("Description") {
+            JBSection("Description") {
                 TextField("What this plugin does", text: $description, axis: .vertical).lineLimit(2...5)
             }
-            .listRowBackground(Color.joeInk.opacity(0.06))
         }
     }
 
@@ -512,8 +494,7 @@ private struct EditorShell<Content: View>: View {
     var body: some View {
         NavigationStack {
             Form { content }
-                .scrollContentBackground(.hidden)
-                .jbWallpaper()
+                .jbForm()
                 .navigationTitle(title)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -522,7 +503,7 @@ private struct EditorShell<Content: View>: View {
                         Button("Save") { Task { await save() } }.disabled(saving || !canSave)
                     }
                 }
-                .overlay { if saving { ProgressView().controlSize(.large) } }
+                .overlay { if saving { JBSpinner(size: 16) } }
                 .alert("Couldn't save", isPresented: alertBinding($error)) {
                     Button("OK") { error = nil }
                 } message: { Text(error ?? "") }

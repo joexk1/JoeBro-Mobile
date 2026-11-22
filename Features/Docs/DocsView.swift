@@ -22,16 +22,16 @@ struct DocsView: View {
             ForEach(store.library) { doc in
                 Button { openDoc = doc } label: { row(doc) }
                     .buttonStyle(.plain)
-                    .listRowBackground(Color.joeInk.opacity(0.06))
+                    .listRowBackground(JB.panelFill)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button("Archive", systemImage: "archivebox", role: .destructive) { deleteTarget = doc }
                     }
             }
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
-        .searchable(text: Bindable(store).search, prompt: "Search documents")
+        .animation(JB.smooth, value: store.library.map(\.id))
+        .jbForm()
+        .searchable(text: Bindable(store).search, prompt: "Search")
         .onChange(of: store.search) { _, _ in Task { await store.loadLibrary() } }
         .navigationTitle("Documents")
         .refreshable { await store.loadLibrary() }
@@ -41,7 +41,7 @@ struct DocsView: View {
                 Button {
                     Task { if let doc = await store.createDocument() { newDocID = doc.id } }
                 } label: {
-                    Image(systemName: "square.and.pencil").foregroundStyle(Color.accentTint)
+                    Image(systemName: "square.and.pencil").foregroundStyle(JB.ink)
                 }
                 .accessibilityLabel("New document")
                 .disabled(store.loading)
@@ -63,7 +63,7 @@ struct DocsView: View {
             }
             Button("Cancel", role: .cancel) { deleteTarget = nil }
         } message: {
-            Text("It leaves this list and JoeBro stops offering it. The backend keeps the file and its versions — nothing is erased.")
+            Text("The backend keeps the file and its versions.")
         }
         .alert("Documents", isPresented: Binding(
             get: { store.error != nil }, set: { if !$0 { store.error = nil } })) {
@@ -74,16 +74,13 @@ struct DocsView: View {
     private func row(_ doc: JBDocSummary) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon(doc.language))
-                .foregroundStyle(.joeInk.opacity(0.6)).frame(width: 20)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(doc.displayTitle).lineLimit(1).foregroundStyle(.joeInk)
-                if let updated = doc.updatedAt, !updated.isEmpty {
-                    Text(updated.prefix(16).replacingOccurrences(of: "T", with: " "))
-                        .font(.jbCaption2).foregroundStyle(.secondary)
-                }
-            }
+                .font(.jb(15)).foregroundStyle(JB.ink3).frame(width: 20)
+            Text(doc.displayTitle).font(.jb(15)).lineLimit(1).foregroundStyle(JB.ink)
             Spacer(minLength: 6)
-            Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.tertiary)
+            if let updated = doc.updatedAt, !updated.isEmpty {
+                Text(updated.prefix(10))
+                    .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
+            }
         }
         .frame(minHeight: 44)
         .contentShape(Rectangle())
@@ -99,22 +96,12 @@ struct DocsView: View {
     }
 
     private var loadingState: some View {
-        HStack(spacing: 10) {
-            ProgressView().tint(.joeInk)
-            Text("Loading documents…").font(.jbFootnote).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 40)
-        .listRowBackground(Color.clear)
+        JBSpinner()
+            .frame(maxWidth: .infinity).padding(.vertical, 40)
+            .listRowBackground(Color.clear)
     }
 
     private var emptyState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "doc.text").font(.jbLargeTitle).foregroundStyle(.secondary)
-            Text("No documents").font(.jbHeadline)
-            Text("Anything JoeBro writes lands here, or tap the pencil to start one.")
-                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 40)
-        .listRowBackground(Color.clear)
+        empty("doc.text", "No documents")
     }
 }
