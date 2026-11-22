@@ -87,7 +87,9 @@ struct ChatTranscriptView<Composer: View>: View {
             LazyVStack(alignment: .leading, spacing: 18) {
                 if store.lines.isEmpty { ChatEmptyState(isMainJoeBro: store.isMainJoeBro) }
                 ForEach(store.lines) { line in
-                    ChatMessageRow(line: line, onOpenDocument: onOpenDocument).id(line.id)
+                    ChatMessageRow(line: line, fresh: line.id == store.lines.last?.id,
+                                   onOpenDocument: onOpenDocument,
+                                   onRetry: { retry(line) }).id(line.id)
                 }
                 bottomAnchor
             }
@@ -119,6 +121,16 @@ struct ChatTranscriptView<Composer: View>: View {
         .onChange(of: scrolledUp) { _, isUp in
             if !isUp { followingLatest = true }
         }
+    }
+
+    private func retry(_ line: ChatLine) {
+        guard !store.busy else { return }
+        var text = line.text
+        if line.role != "user", let index = store.lines.firstIndex(where: { $0.id == line.id }),
+           let user = store.lines[..<index].last(where: { $0.role == "user" }) { text = user.text }
+        guard !text.isEmpty else { return }
+        store.draft = text
+        store.send()
     }
 
     private var bottomAnchor: some View {

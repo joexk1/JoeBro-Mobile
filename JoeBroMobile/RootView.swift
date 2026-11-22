@@ -50,23 +50,23 @@ struct RootView: View {
             if !faceIDGate || unlocked {
                 TabView(selection: $selectedTab) {
                     JoeBroAgentView(store: runtime.joeBro, onOpenSettings: { showSettings = true })
-                        .tabItem { Label("JoeBro", systemImage: "face.smiling") }
+                        .tabItem { Label { Text("JoeBro") } icon: { JBTabIcon.image(.agent) } }
                         .tag(MainTab.joeBro)
 
                     ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft)
-                        .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
+                        .tabItem { Label("Chats", systemImage: "bubble.left") }
                         .tag(MainTab.chats)
 
                     AgentsTabView(api: runtime.api, chatStore: runtime.chat,
                                   mainJoeBro: runtime.joeBro,
                                   onOpenSettings: { showSettings = true },
                                   onOpenJoeBro: { selectedTab = .joeBro })
-                        .tabItem { Label("Agents", systemImage: "circle.hexagongrid.fill") }
+                        .tabItem { Label { Text("Agents") } icon: { JBTabIcon.image(.coding) } }
                         .tag(MainTab.agents)
 
                     WorkspaceHubView(api: runtime.api,
                                      onOpenSettings: { showSettings = true })
-                        .tabItem { Label("Workspace", systemImage: "square.grid.2x2.fill") }
+                        .tabItem { Label("Workspace", systemImage: "square.grid.2x2") }
                         .tag(MainTab.workspace)
                 }
                 .toolbarBackground(.hidden, for: .tabBar)
@@ -74,8 +74,8 @@ struct RootView: View {
                 .environment(theme)
             } else {
                 VStack(spacing: 22) {
-                    Image("JoeBroLogo").resizable().scaledToFit().frame(width: 92, height: 92)
-                    Text("JoeBro is locked").font(.jbTitle2.bold())
+                    JBWordmark(dot: 3.2)
+                    Text("Locked").font(.jbMono(12)).foregroundStyle(JB.ink3)
                     Button("Unlock") { Task { await authenticate() } }.buttonStyle(.jbPrimary)
                 }
             }

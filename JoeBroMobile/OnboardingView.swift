@@ -41,8 +41,8 @@ struct OnboardingView: View {
                     HStack { Spacer(); Button("Cancel", action: onCancel).padding() }
                 }
                 TabView(selection: $page) {
-                    infoPage("JoeBro on your phone", "JoeBro on your phone talks to the JoeBro backend you run. Nothing goes through anyone else's server.", "iphone.gen3").tag(0)
-                    infoPage("Turn on mobile access", "In JoeBro on your computer, open Settings, then Mobile, and turn on \"Let my phone connect\". On the same Wi-Fi it just works. Away from home, install Tailscale on both devices.", "desktopcomputer").tag(1)
+                    infoPage("Your backend, your phone", "Nothing goes through anyone else's server.", .agent).tag(0)
+                    infoPage("Turn on mobile access", "On your computer: Settings, Mobile, \"Let my phone connect\". Away from home, install Tailscale on both devices.", .plugin).tag(1)
                     pairPage.tag(2)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
@@ -67,12 +67,12 @@ struct OnboardingView: View {
         Task { await pair(payload) }
     }
 
-    private func infoPage(_ title: String, _ text: String, _ symbol: String) -> some View {
+    private func infoPage(_ title: String, _ text: String, _ glyph: JBGlyph) -> some View {
         VStack(spacing: 20) {
             Spacer()
-            Image(systemName: symbol).font(.jb(64)).foregroundStyle(Color.accentTint)
-            Text(title).font(.jbTitle.bold()).multilineTextAlignment(.center)
-            Text(text).font(.jbBody).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            if glyph == .agent { JBWordmark(dot: 3.4) } else { JBIcon(glyph, size: 56, lineWidth: 1.2).foregroundStyle(JB.accent) }
+            Text(title).font(.jbTitle).tracking(-0.3).multilineTextAlignment(.center).foregroundStyle(JB.ink)
+            Text(text).font(.jbBody).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
             Button("Next") { withAnimation { page += 1 } }.buttonStyle(.jbPrimary).controlSize(.large)
             demoButton
             Spacer(); Spacer()
@@ -83,10 +83,10 @@ struct OnboardingView: View {
     private var pairPage: some View {
         ScrollView {
             VStack(spacing: 18) {
-                Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72).padding(.top, 40)
-                Text("Pair this phone").font(.jbTitle.bold())
+                JBWordmark(dot: 3).padding(.top, 40)
+                Text("Pair this phone").font(.jbTitle).tracking(-0.3).foregroundStyle(JB.ink)
                 if let paired {
-                    Label("Paired with \(paired)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                    Label(paired, systemImage: "checkmark").font(.jbMono(12)).foregroundStyle(JB.live)
                 }
                 Button { requestCamera() } label: {
                     Label("Scan QR code", systemImage: "qrcode.viewfinder").frame(maxWidth: .infinity)
@@ -95,26 +95,26 @@ struct OnboardingView: View {
 
                 Button(showManual ? "Hide details" : "Paste link or enter details") {
                     withAnimation { showManual.toggle() }
-                }.font(.jbFootnote)
+                }.font(.jbFootnote).foregroundStyle(JB.ink2)
 
                 if showManual {
                     VStack(spacing: 12) {
                         TextField("Pairing link (joebro://pair?...)", text: $link)
-                            .textFieldStyle(.roundedBorder)
+                            .jbField()
                             .onChange(of: link) { _, v in
                                 if let p = PairingPayload.parse(text: v) { url = p.url; token = p.token }
                             }
                         TextField("Backend URL (http://host:8771)", text: $url)
-                            .keyboardType(.URL).textFieldStyle(.roundedBorder)
-                        SecureField("Token", text: $token).textFieldStyle(.roundedBorder)
+                            .keyboardType(.URL).jbField()
+                        SecureField("Token", text: $token).jbField()
                         Button("Pair") { Task { await pair(PairingPayload(url: url, token: token, name: "")) } }
                             .buttonStyle(.jbSecondary).disabled(url.isEmpty || busy)
                     }
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
                 demoButton
-                if busy { ProgressView() }
-                if let message { Text(message).font(.jbFootnote).foregroundStyle(.red).multilineTextAlignment(.center) }
+                if busy { JBSpinner() }
+                if let message { Text(message).font(.jbMono(12)).foregroundStyle(JB.danger).multilineTextAlignment(.center) }
             }
             .padding(.horizontal, 32).padding(.bottom, 60)
         }
@@ -122,7 +122,7 @@ struct OnboardingView: View {
 
     @ViewBuilder private var demoButton: some View {
         if let onDemo {
-            Button("Try the demo", action: onDemo).font(.jbFootnote).disabled(busy)
+            Button("Try the demo", action: onDemo).font(.jbFootnote).foregroundStyle(JB.ink2).disabled(busy)
         }
     }
 
