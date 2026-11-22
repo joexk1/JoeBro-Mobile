@@ -5,9 +5,8 @@
 <h1 align="center">JoeBro Mobile</h1>
 
 <p align="center">
-  All your agents, in your pocket.<br>
-  Claude Code, Codex and OpenCode, plus your own models.<br>
-  Talks to your own Mac. No cloud in the middle.
+  The iPhone companion to the JoeBro Mac app.<br>
+  It connects straight to your own Mac, with no server in between.
 </p>
 
 <p align="center"><a href="https://joebro.pages.dev/"><b>joebro.pages.dev</b></a></p>
@@ -16,13 +15,25 @@
 
 ---
 
-The phone half of JoeBro. No account to make, and nothing goes through anyone else's server.
+There's no account to make, and nothing goes through anyone else's server.
 
-JoeBro is the free way to bring all your existing agents under one umbrella. Claude Code, Codex and OpenCode, plus your own API keys and local models, all show up here, next to your chats and documents. A phone agent works in the background and pings you when something needs you.
+The app shows what JoeBro on your Mac is doing: your chats, your models, and the Claude Code, Codex and OpenCode sessions running on any of your computers. You can message those agents, answer their questions and approve what they ask for. A phone agent also works in the background and lets you know when something needs you.
+
+![JoeBro on iPhone](README_assets/hero.png)
 
 This is a source release. There is no App Store build. Your bundle ID, your signing team and your push key are yours, so you build it yourself.
 
 ![The phone agent: one chat that follows you, running on your own Mac](README_assets/phone-agent.png)
+
+---
+
+## Coding agents
+
+Claude Code, Codex and OpenCode sessions appear in your chat list while they are open in a terminal on any of your computers. Open one to read what it's doing, send it a message, or switch its model. When an agent asks a question or needs permission, the options appear in the chat as buttons, with a text field if it accepts a typed answer. Approvals also show on the lock screen and in the Dynamic Island. A question shows an **Answer** button there, which opens it in the app.
+
+![Coding agents in the chat list, and a Claude Code session](README_assets/coding-agents.png)
+
+![Answering an agent in the chat](README_assets/approvals.png)
 
 ---
 
@@ -111,7 +122,11 @@ The key is stored on your Mac and used only to talk to Apple's push servers. "Ac
 
 ## Header scenes and themes
 
-Settings > Appearance is where the app's look lives. Two things in it are worth knowing about.
+Settings > Appearance is where the app's look lives: light or dark, nine accent palettes, your own colour for JoeBro, and an optional animated header.
+
+![The same screen in a few palettes](README_assets/themes.png)
+
+Two things in it are worth knowing about.
 
 **Header scenes.** Pick one of 34 animated scenes and it plays behind the JoeBro tab's header. The title and the settings button sit on glass, so they stay readable over any of them. The scenes are drawn in ASCII, in full colour, and run in a sandboxed web view that loads nothing from the network. They pause when the app isn't active, when the header is off screen and when **Reduce Motion** is on. A photo wallpaper turns them off. The Live Activity on the Lock Screen shows a still of the same scene.
 

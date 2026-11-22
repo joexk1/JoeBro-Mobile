@@ -46,8 +46,10 @@ struct NewCodingAgentSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Device", selection: $host) {
-                        ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
+                    if hosts.count > 1 {    // only with more than one linked computer
+                        Picker("Device", selection: $host) {
+                            ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
+                        }
                     }
                     Picker("Agent", selection: $agent) {
                         Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode")
