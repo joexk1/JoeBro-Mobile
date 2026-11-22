@@ -31,12 +31,13 @@ struct NSTask: Decodable, Identifiable, Hashable {
     let status: String?, branch: String?, error: String?
     let windowStart: String?, windowEnd: String?, testCommand: String?, onApprove: String?
     let maxMinutes: Int?, position: Int?
+    let taskRef: String?
     let followups: [NSFollowup]?
     let result: NSResult?
     enum CodingKeys: String, CodingKey {
         case id, title, repo, prompt, agent, model, host, status, branch, error, position, followups, result
         case repoName = "repo_name", windowStart = "window_start", windowEnd = "window_end"
-        case testCommand = "test_command", onApprove = "on_approve", maxMinutes = "max_minutes"
+        case testCommand = "test_command", onApprove = "on_approve", maxMinutes = "max_minutes", taskRef = "task_ref"
     }
     var name: String { (title?.isEmpty == false ? title : nil) ?? String((prompt ?? "Task").prefix(48)) }
     var state: String { status ?? "queued" }
@@ -45,6 +46,13 @@ struct NSTask: Decodable, Identifiable, Hashable {
     var agentLabel: String {
         switch agent ?? "any" { case "claude": "Claude Code"; case "codex": "Codex"; case "opencode": "OpenCode"; default: "Any agent" }
     }
+}
+
+/// A computer a task can run on (the backend, or a linked node). The picker shows only when there is more than one.
+struct NSHost: Decodable, Identifiable, Hashable {
+    let id: String, name: String?
+    let local: Bool?, up: Bool?
+    var label: String { (name?.isEmpty == false ? name : nil) ?? (id.isEmpty ? "This computer" : id) }
 }
 
 struct NSConfig: Decodable, Hashable {
@@ -112,17 +120,18 @@ func nsRelative(_ iso: String?) -> String {
 
 extension WorkspaceAPI {
     private struct Plain: Decodable { let ok: Bool? }
-    private struct TasksEnv: Decodable { let tasks: [NSTask]; let config: NSConfig? }
+    private struct TasksEnv: Decodable { let tasks: [NSTask]; let config: NSConfig?; let hosts: [NSHost]? }
     private struct DiffEnv: Decodable { let diff: String?; let truncated: Bool? }
     private struct FactsEnv: Decodable { let facts: [SMFact] }
     private struct ProjectsEnv: Decodable { let projects: [SMProject] }
     private struct HistoryEnv: Decodable { let fact: SMFact; let history: [SMFact]? }
 
     // MARK: Night Shift
-    func nightShift() async throws -> (tasks: [NSTask], config: NSConfig?) {
+    func nightShift() async throws -> (tasks: [NSTask], config: NSConfig?, hosts: [NSHost]) {
         let r = try await call(TasksEnv.self, "api/night-shift")
-        return (r.tasks, r.config)
+        return (r.tasks, r.config, r.hosts ?? [])
     }
+    func nightHosts() async -> [NSHost] { (try? await nightShift().hosts) ?? [] }
     func nightAdd(_ body: [String: Any]) async throws { _ = try await call(Plain.self, "api/night-shift", method: "POST", json: body) }
     func nightReorder(_ ids: [String]) async throws { _ = try await call(Plain.self, "api/night-shift/reorder", method: "POST", json: ["ids": ids]) }
     func nightCancel(_ id: String) async throws { _ = try await call(Plain.self, "api/night-shift/\(idPath(id))/cancel", method: "POST", json: [:]) }

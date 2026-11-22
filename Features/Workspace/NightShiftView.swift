@@ -5,6 +5,7 @@ struct NightShiftView: View {
     let ws: WorkspaceAPI
     @Environment(JoeBroTheme.self) private var theme
     @State private var tasks: [NSTask] = []
+    @State private var hosts: [NSHost] = []
     @State private var enabled = true
     @State private var composing = false
     @State private var detail: NSTask?
@@ -26,35 +27,36 @@ struct NightShiftView: View {
     var body: some View {
         ScrollViewReader { proxy in
         List {
-            Section {
-                Toggle("Run overnight", isOn: Binding(get: { enabled }, set: { v in
+            HStack {
+                JBIcon(.nightShift, size: 15).foregroundStyle(JB.accent)
+                Text("Overnight").font(.jb(14)).foregroundStyle(JB.ink)
+                Spacer()
+                Toggle("", isOn: Binding(get: { enabled }, set: { v in
                     enabled = v
                     Task { try? await ws.nightConfig(enabled: v) }
-                }))
-            } footer: { Text("Queued tasks run in separate git worktrees. Nothing is pushed; you approve or reject each result.") }
-            .listRowBackground(Color.joeInk.opacity(0.06))
+                })).labelsHidden().toggleStyle(JBSwitchStyle())
+            }.jbListRow()
             if !reviews.isEmpty {
-                Section("Ready for review") {
+                Section {
                     ForEach(reviews) { task in
-                        ReviewCard(ws: ws, task: task, open: { detail = task },
+                        ReviewCard(ws: ws, task: task, hostName: hostName(task), open: { detail = task },
                                    approve: { Task { await decide(task, "approve") } },
                                    reject: { rejecting = task },
                                    followUp: { followUp = task; followUpText = "" })
+                        .jbListRow()
                     }
-                }
+                } header: { JBListHeader(title: "Review", count: reviews.count) }
             }
-            Section("Queue") {
-                if queue.isEmpty && !loading {
-                    empty("moon.stars", "Nothing queued", "Add a task and your agents work on it while you sleep.")
-                }
+            Section {
+                if queue.isEmpty && !loading { JBEmptyRow(art: .sleep, text: "Nothing queued") }
                 ForEach(queue) { task in
-                    queueRow(task)
+                    queueRow(task).jbListRow()
                         .swipeActions(edge: .trailing) {
-                            Button("Cancel", systemImage: "xmark") { Task { await act { try await ws.nightCancel(task.id) } } }.tint(.red)
+                            Button("Cancel", systemImage: "xmark") { Task { await act { try await ws.nightCancel(task.id) } } }.tint(JB.danger)
                         }
                         .swipeActions(edge: .leading) {
                             if task.state == "queued" {
-                                Button("Run now", systemImage: "bolt.fill") { Task { await act { try await ws.nightRun(task.id) } } }.tint(Color.accentTint)
+                                Button("Run now", systemImage: "play") { Task { await act { try await ws.nightRun(task.id) } } }.tint(JB.accent)
                             }
                         }
                 }
@@ -65,22 +67,22 @@ struct NightShiftView: View {
                     ids.move(fromOffsets: f, toOffset: t)
                     Task { await act { try await ws.nightReorder(ids) } }
                 }
-            }
+            } header: { JBListHeader(title: "Queue", count: queue.count) }
             if !done.isEmpty {
-                Section("Earlier") {
+                Section {
                     ForEach(done.prefix(8)) { task in
-                        HStack {
-                            Image(systemName: icon(task.state)).foregroundStyle(.secondary).frame(width: 24)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(task.name).foregroundStyle(.joeInk).lineLimit(1)
-                                Text("\(task.state.capitalized) · \(task.agentLabel)").font(.jbCaption).foregroundStyle(.secondary)
-                            }
-                        }.listRowBackground(Color.joeInk.opacity(0.06))
+                        HStack(spacing: 10) {
+                            JBStatusDot(color: dotColor(task.state), size: 6)
+                            Text(task.name).font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(1)
+                            Spacer(minLength: 0)
+                            Text(task.state).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                        }.jbListRow()
                     }
-                }
+                } header: { JBListHeader(title: "Earlier") }
             }
         }
-        .listStyle(.insetGrouped).scrollContentBackground(.hidden).jbWallpaper()
+        .animation(JB.smooth, value: tasks.map(\.id))
+        .jbPlainList()
         .navigationTitle("Night Shift").navigationBarTitleDisplayMode(.inline)
         .refreshable { await load() }.task { await load() }
         .task(id: tasks.count) {
@@ -91,42 +93,42 @@ struct NightShiftView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) { EditButton() }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { composing = true } label: { Image(systemName: "plus").foregroundStyle(Color.accentTint) }.accessibilityLabel("Queue a task")
-            }
+            ToolbarItem(placement: .topBarTrailing) { JBPlusButton(label: "Queue a task") { composing = true } }
         }
-        .sheet(isPresented: $composing) { NightComposer(ws: ws) { Task { await load() } }.environment(theme) }
+        .sheet(isPresented: $composing) { NightComposer(ws: ws, hosts: hosts) { Task { await load() } }.environment(theme) }
         .sheet(item: $detail) { t in NightDiffView(ws: ws, task: t).environment(theme) }
-        .alert("Ask a follow-up", isPresented: alertBinding($followUp)) {
+        .alert("Follow-up", isPresented: alertBinding($followUp)) {
             TextField("What should change?", text: $followUpText)
             Button("Send") { if let t = followUp { Task { await decide(t, "followup", followUpText) } }; followUp = nil }
             Button("Cancel", role: .cancel) { followUp = nil }
-        } message: { Text("The agent continues on the same branch tonight.") }
+        }
         .alert("Reject this work?", isPresented: alertBinding($rejecting)) {
             Button("Reject", role: .destructive) { if let t = rejecting { Task { await decide(t, "reject") } }; rejecting = nil }
             Button("Keep reviewing", role: .cancel) { rejecting = nil }
-        } message: { Text("The worktree and branch are removed. The commit stays in git until it is garbage collected.") }
+        } message: { Text("The worktree and branch are removed.") }
         .alert("Night Shift", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
         }
     }
 
-    private func queueRow(_ task: NSTask) -> some View {
-        HStack(spacing: 12) {
-            if task.state == "running" { ProgressView().controlSize(.small) }
-            else { Image(systemName: "moon.zzz").foregroundStyle(.secondary).frame(width: 20) }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(task.name).foregroundStyle(.joeInk).lineLimit(2)
-                Text([task.repoName, task.agentLabel, task.model].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
-            }
-            Spacer(minLength: 0)
-            if task.state == "running" { Text("Running").font(.jbCaption2).foregroundStyle(Color.accentTint) }
-        }
-        .frame(minHeight: 48).listRowBackground(Color.joeInk.opacity(0.06))
+    private func hostName(_ t: NSTask) -> String? {
+        guard hosts.count > 1, let h = t.host, !h.isEmpty else { return nil }
+        return hosts.first { $0.id == h }?.label ?? h
     }
 
-    private func icon(_ s: String) -> String {
-        switch s { case "approved": "checkmark.circle"; case "rejected": "xmark.circle"; case "failed": "exclamationmark.triangle"; default: "minus.circle" }
+    private func queueRow(_ task: NSTask) -> some View {
+        HStack(spacing: 12) {
+            if task.state == "running" { JBStatusDot(live: true) } else { JBIcon(.nightShift, size: 14).foregroundStyle(JB.ink3).frame(width: 7) }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(task.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(2)
+                Text([task.repoName, task.agentLabel, task.model, hostName(task)].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
+                    .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func dotColor(_ s: String) -> Color {
+        switch s { case "approved": JB.live; case "failed": JB.danger; default: JB.ink3 }
     }
 
     private func decide(_ t: NSTask, _ d: String, _ text: String? = nil) async {
@@ -134,7 +136,7 @@ struct NightShiftView: View {
     }
     private func load() async {
         loading = true; defer { loading = false }
-        do { let r = try await ws.nightShift(); tasks = r.tasks; enabled = r.config?.enabled ?? true; error = nil }
+        do { let r = try await ws.nightShift(); tasks = r.tasks; hosts = r.hosts; enabled = r.config?.enabled ?? true; error = nil }
         catch where error.isNotFound { tasks = []; self.error = nil }      // nothing there yet: show the empty state
         catch { self.error = error.localizedDescription }
     }
@@ -147,6 +149,7 @@ struct NightShiftView: View {
 struct ReviewCard: View {
     let ws: WorkspaceAPI
     let task: NSTask
+    var hostName: String? = nil
     let open: () -> Void
     let approve: () -> Void
     let reject: () -> Void
@@ -155,36 +158,34 @@ struct ReviewCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(task.name).font(.jbHeadline).foregroundStyle(.joeInk)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                JBStatusDot(color: task.state == "failed" ? JB.warn : JB.accent, size: 7)
+                Text(task.name).font(.jb(16, .semibold)).foregroundStyle(JB.ink)
                 Spacer()
-                if let t = task.result?.tests, let ok = t.passed {
-                    Label(ok ? "Tests passed" : "Tests failed", systemImage: ok ? "checkmark.circle.fill" : "xmark.octagon.fill")
-                        .font(.jbCaption.weight(.semibold)).foregroundStyle(ok ? .green : .red)
-                }
+                if let ok = task.result?.tests?.passed { JBChip(text: ok ? "tests ok" : "tests failed", tint: ok ? JB.live : JB.danger) }
             }
-            Text([task.repoName, task.agentLabel, task.model].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                .font(.jbCaption).foregroundStyle(.secondary)
+            Text([task.repoName, task.agentLabel, task.model, hostName].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
+                .font(.jbMono(11)).foregroundStyle(JB.ink3)
             if let d = task.result?.diff {
                 HStack(spacing: 14) {
-                    Text("\(d.files ?? 0) files").font(.jbSubheadline)
-                    Text("+\(d.insertions ?? 0)").foregroundStyle(.green).font(.jbSubheadline.monospacedDigit())
-                    Text("-\(d.deletions ?? 0)").foregroundStyle(.red).font(.jbSubheadline.monospacedDigit())
-                    if let m = task.result?.durationS { Text("\(Int(m / 60)) min").font(.jbCaption).foregroundStyle(.secondary) }
-                }
+                    Text("\(d.files ?? 0) files").foregroundStyle(JB.ink2)
+                    Text("+\(d.insertions ?? 0)").foregroundStyle(JB.live)
+                    Text("-\(d.deletions ?? 0)").foregroundStyle(JB.danger)
+                    if let m = task.result?.durationS { Text("\(max(1, Int(m / 60)))m").foregroundStyle(JB.ink3) }
+                }.font(.jbMono(12))
             }
-            if let s = task.result?.summary, !s.isEmpty { Text(s).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(5) }
-            if let shot { Image(uiImage: shot).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 10)) }
+            if let s = task.result?.summary ?? task.error, !s.isEmpty { Text(s).font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(5) }
+            if let shot { Image(uiImage: shot).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: JB.rControl)) }
             HStack(spacing: 8) {
-                Button("Approve", action: approve).buttonStyle(.jbPrimary).tint(Color.accentTint)
-                Button("Reject", role: .destructive, action: reject).buttonStyle(.jbSecondary)
-                Button("Follow-up", action: followUp).buttonStyle(.jbSecondary)
+                if task.state == "review" { Button("Approve", action: approve).buttonStyle(JBButtonStyle(kind: .primary, compact: true)) }
+                Button("Follow-up", action: followUp).buttonStyle(JBButtonStyle(kind: .secondary, compact: true))
+                Button("Reject", action: reject).buttonStyle(JBButtonStyle(kind: .danger, compact: true))
                 Spacer(minLength: 0)
-                Button { open() } label: { Image(systemName: "doc.text.magnifyingglass") }.accessibilityLabel("See the diff")
-            }.font(.jbSubheadline)
+                Button { open() } label: { Image(systemName: "doc.text.magnifyingglass") }
+                    .buttonStyle(JBIconButtonStyle(size: 32)).accessibilityLabel("See the diff")
+            }
         }
-        .padding(.vertical, 6)
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .padding(.vertical, 2)
         .task { if task.result?.screenshot == true, let d = try? await ws.nightScreenshot(task.id) { shot = UIImage(data: d) } }
     }
 }
@@ -199,14 +200,16 @@ struct NightDiffView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(task.result?.diff?.fileList ?? [], id: \.path) { f in
-                        HStack { Text(f.path).font(.jbFootnote.monospaced()); Spacer()
-                            Text("+\(f.added ?? 0)").foregroundStyle(.green); Text("-\(f.removed ?? 0)").foregroundStyle(.red) }.font(.jbCaption)
+                        HStack { Text(f.path).font(.jbMono(12)).foregroundStyle(JB.ink2); Spacer()
+                            Text("+\(f.added ?? 0)").foregroundStyle(JB.live); Text("-\(f.removed ?? 0)").foregroundStyle(JB.danger) }.font(.jbMono(11))
                     }
                     if let out = task.result?.tests?.outputTail, !out.isEmpty {
-                        Text(out).font(.jbCaption.monospaced()).padding(8).background(.black.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                        Text(out).font(.jbMono(11)).foregroundStyle(JB.ink2).padding(8).background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rControl))
                     }
-                    ForEach(task.result?.learned ?? [], id: \.self) { Label($0, systemImage: "brain").font(.jbFootnote) }
-                    Text(diff).font(.jbMono(11)).textSelection(.enabled)
+                    ForEach(task.result?.learned ?? [], id: \.self) { l in
+                        HStack(alignment: .top, spacing: 6) { JBIcon(.memory, size: 13).foregroundStyle(JB.accent); Text(l).font(.jb(13)).foregroundStyle(JB.ink2) }
+                    }
+                    Text(diff).font(.jbMono(11)).foregroundStyle(JB.ink).textSelection(.enabled)
                 }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
             }
             .jbWallpaper().navigationTitle(task.name).navigationBarTitleDisplayMode(.inline)
@@ -218,6 +221,7 @@ struct NightDiffView: View {
 
 struct NightComposer: View {
     let ws: WorkspaceAPI
+    var hosts: [NSHost] = []
     let saved: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var repo = ""
@@ -225,6 +229,7 @@ struct NightComposer: View {
     @State private var title = ""
     @State private var agent = "claude"
     @State private var model = ""
+    @State private var host = ""
     @State private var tests = ""
     @State private var error: String?
 
@@ -233,12 +238,12 @@ struct NightComposer: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Task") {
+                Section {
                     TextField("What should the agent do?", text: $prompt, axis: .vertical).lineLimit(3...8)
-                    TextField("Title (optional)", text: $title)
-                    TextField("Repository path on your computer", text: $repo).textInputAutocapitalization(.never).autocorrectionDisabled()
-                }
-                Section("Agent") {
+                    TextField("Title", text: $title)
+                    TextField("Folder", text: $repo).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                }.jbFormRow()
+                Section {
                     Picker("Agent", selection: $agent) {
                         Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode"); Text("Any").tag("any")
                     }
@@ -246,25 +251,32 @@ struct NightComposer: View {
                         Text("Default").tag("")
                         ForEach(Self.models[agent] ?? [], id: \.self) { Text($0).tag($0) }
                     }
-                    TextField("Test command (optional)", text: $tests).textInputAutocapitalization(.never).autocorrectionDisabled()
-                }
-                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
+                    if hosts.count > 1 {
+                        Picker("Runs on", selection: $host) {
+                            ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
+                        }
+                    }
+                    TextField("Test command", text: $tests).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                }.jbFormRow()
+                if let error { Text(error).foregroundStyle(JB.danger).font(.jbMono(12)).jbFormRow() }
             }
+            .scrollContentBackground(.hidden).jbWallpaper()
             .navigationTitle("Queue a task").navigationBarTitleDisplayMode(.inline)
             .onChange(of: agent) { _, _ in model = "" }
+            .onAppear { if host.isEmpty, let l = hosts.first(where: { $0.local == true }) { host = l.id } }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Queue") { Task { await save() } }.disabled(prompt.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button("Queue") { Task { await save() } }.disabled(prompt.trimmingCharacters(in: .whitespaces).isEmpty || repo.isEmpty)
                 }
             }
         }
     }
     private func save() async {
-        var body: [String: Any] = ["prompt": prompt, "agent": agent]
-        if !repo.isEmpty { body["repo"] = repo }
+        var body: [String: Any] = ["prompt": prompt, "agent": agent, "repo": repo]
         if !title.isEmpty { body["title"] = title }
         if !model.isEmpty { body["model"] = model }
+        if !host.isEmpty { body["host"] = host }
         if !tests.isEmpty { body["test_command"] = tests }
         do { try await ws.nightAdd(body); saved(); dismiss() } catch { self.error = error.localizedDescription }
     }

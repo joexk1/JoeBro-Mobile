@@ -13,7 +13,7 @@ struct WorkspaceHubView: View {
         switch DemoMode.option("-JoeBroScreen") ?? "" {
         case "tasks": TasksView(ws: ws)
         case "memory": MuseView(ws: ws)
-        case "brain": BrainView(api: api, ws: ws)
+        case "brain": SharedMemoryView(ws: ws)
         case "night": NightShiftView(ws: ws)
         case "sharedmemory": SharedMemoryView(ws: ws)
         case "models": DemoModelList(api: api)
@@ -46,8 +46,6 @@ struct WorkspaceHubView: View {
                 }
                 Section("Knowledge") {
                     row("brain.head.profile", "Memory", "One memory for you, your projects and every agent") { SharedMemoryView(ws: ws) }
-                    row("brain", Flavor.brainTitle, "What JoeBro remembers") { BrainView(api: api, ws: ws) }
-                    row("person.text.rectangle", Flavor.memoryTitle, "Notes JoeBro keeps about you") { MuseView(ws: ws) }
                     row("sparkles", "Skills", "Learned procedures") { SkillsView(ws: ws) }
                     row("wrench.and.screwdriver", "Tools", "APIs, MCP servers, plugins") { ToolsView(ws: ws) }
                     row("checkmark.shield", "AI Check", "Score text for AI likelihood") { AICheckView(ws: ws) }

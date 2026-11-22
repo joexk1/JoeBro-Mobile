@@ -12,10 +12,13 @@ struct WSTask: Decodable, Identifiable, Hashable {
     let permissionMode: String
     let repeatDay: Int
     let scope: String?
+    let codingAgent: String?, codingRepo: String?, codingHost: String?, codingModel: String?, codingStatus: String?
     enum CodingKeys: String, CodingKey {
         case id, name, prompt, schedule, status, scope
         case scheduledTime = "scheduled_time", permissionMode = "permission_mode", repeatDay = "repeat_day"
+        case codingAgent = "coding_agent", codingRepo = "coding_repo", codingHost = "coding_host", codingModel = "coding_model", codingStatus = "coding_status"
     }
+    var isCoding: Bool { !(codingAgent ?? "").isEmpty }
     var isPaused: Bool { status == "paused" }
     var isPersonal: Bool { scope == "personal" }
 }
@@ -253,9 +256,9 @@ final class WorkspaceAPI: @unchecked Sendable {
     }
 
     func saveTask(id: String?, name: String, prompt: String, schedule: String, time: String,
-                  repeatDay: Int, permissionMode: String, scope: String = "general") async throws {
+                  repeatDay: Int, permissionMode: String, scope: String = "general", coding: [String: Any] = [:]) async throws {
         var body: [String: Any] = ["name": name, "prompt": prompt, "schedule": schedule,
-                                   "scheduled_time": time, "repeat_day": repeatDay, "permission_mode": permissionMode]
+                                   "scheduled_time": time, "repeat_day": repeatDay, "permission_mode": permissionMode].merging(coding) { $1 }
         if id == nil && scope == "personal" { body["scope"] = "personal" }
         let path = id.map { "api/tasks/\(idPath($0))" } ?? "api/tasks"
         _ = try await call(OK.self, path, method: id == nil ? "POST" : "PUT", json: body)

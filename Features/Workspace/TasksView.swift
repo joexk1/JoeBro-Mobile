@@ -8,6 +8,7 @@ struct TasksView: View {
 
     @State private var tasks: [WSTask] = []
     @State private var personalTasks: [WSTask] = []
+    @State private var hosts: [NSHost] = []
     @State private var editing: WSTask?
     @State private var creating = false
     @State private var creatingPersonal = false
@@ -23,51 +24,30 @@ struct TasksView: View {
     var body: some View {
         List {
             Section {
-                if personalTasks.isEmpty && !loading {
-                    Text("No personal tasks yet. They run silently and only notify you when there is news.")
-                        .font(.jbFootnote).foregroundStyle(.secondary)
-                        .listRowBackground(Color.joeInk.opacity(0.06))
-                }
                 ForEach(personalTasks) { task in row(task) }
             } header: {
                 HStack {
-                    Text(Flavor.mainAgentTasksHeader)
-                    Spacer()
-                    Button { creatingPersonal = true } label: {
-                        Image(systemName: "plus.circle").foregroundStyle(Color.accentTint)
-                    }
-                    .accessibilityLabel("New personal task")
+                    JBListHeader(title: Flavor.mainAgentTasksHeader, count: personalTasks.isEmpty ? nil : personalTasks.count)
+                    Button { creatingPersonal = true } label: { Image(systemName: "plus").foregroundStyle(JB.accent) }
+                        .accessibilityLabel("New personal task")
                 }
             }
-            Section("General") {
-                if tasks.isEmpty && !loading {
-                    empty("clock.arrow.circlepath", "No scheduled tasks",
-                          "Add one and JoeBro runs it on a schedule.")
-                }
-                ForEach(tasks) { task in
-                    row(task)
-                }
-            }
+            Section {
+                if tasks.isEmpty && !loading { JBEmptyRow(art: .inbox, text: "No tasks") }
+                ForEach(tasks) { task in row(task) }
+            } header: { JBListHeader(title: "General", count: tasks.isEmpty ? nil : tasks.count) }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .animation(JB.smooth, value: (tasks + personalTasks).map(\.id))
+        .jbPlainList()
         .navigationTitle("Tasks")
         .navigationBarTitleDisplayMode(.inline)
-        .overlay { if loading && tasks.isEmpty && personalTasks.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && tasks.isEmpty && personalTasks.isEmpty { JBSpinner() } }
         .refreshable { await load() }
         .task { await load() }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { creating = true } label: {
-                    Image(systemName: "plus").foregroundStyle(Color.accentTint)
-                }
-                .accessibilityLabel("New task")
-            }
-        }
-        .sheet(isPresented: $creating) { TaskEditor(ws: ws, task: nil) { Task { await load() } }.environment(theme) }
-        .sheet(isPresented: $creatingPersonal) { TaskEditor(ws: ws, task: nil, scope: "personal") { Task { await load() } }.environment(theme) }
-        .sheet(item: $editing) { task in TaskEditor(ws: ws, task: task, scope: task.scope ?? "general") { Task { await load() } }.environment(theme) }
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { JBPlusButton(label: "New task") { creating = true } } }
+        .sheet(isPresented: $creating) { TaskEditor(ws: ws, task: nil, hosts: hosts) { Task { await load() } }.environment(theme) }
+        .sheet(isPresented: $creatingPersonal) { TaskEditor(ws: ws, task: nil, scope: "personal", hosts: hosts) { Task { await load() } }.environment(theme) }
+        .sheet(item: $editing) { task in TaskEditor(ws: ws, task: task, scope: task.scope ?? "general", hosts: hosts) { Task { await load() } }.environment(theme) }
         .sheet(item: $runResult) { result in resultSheet(result.text) }
         .alert("Delete this task?", isPresented: alertBinding($deleteTarget)) {
             Button("Delete task", role: .destructive) {
@@ -76,7 +56,7 @@ struct TasksView: View {
             }
             Button("Keep it", role: .cancel) { deleteTarget = nil }
         } message: {
-            Text("“\(deleteTarget?.name ?? "")” stops running and is removed from the backend. This can't be undone.")
+            Text("“\(deleteTarget?.name ?? "")” stops running and is removed.")
         }
         .alert("Tasks", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
     }
@@ -86,29 +66,29 @@ struct TasksView: View {
     private func row(_ task: WSTask) -> some View {
         Button { editing = task } label: { TaskRow(task: task, running: running == task.id) }
             .buttonStyle(.plain)
-            .listRowBackground(Color.joeInk.opacity(0.06))
+            .jbListRow()
             .contextMenu { menu(task) }
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                Button("Delete", systemImage: "trash") { deleteTarget = task }.tint(.red)
-                Button("Edit", systemImage: "pencil") { editing = task }.tint(.gray)
+                Button("Delete", systemImage: "trash") { deleteTarget = task }.tint(JB.danger)
+                Button("Edit", systemImage: "pencil") { editing = task }.tint(JB.ink3)
             }
             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                 Button(task.isPaused ? "Resume" : "Pause",
-                       systemImage: task.isPaused ? "play.fill" : "pause.fill") {
+                       systemImage: task.isPaused ? "play" : "pause") {
                     Task { await act { try await ws.taskAction(id: task.id, action: task.isPaused ? "resume" : "pause") } }
                 }
-                .tint(.orange)
-                Button("Run now", systemImage: "bolt.fill") { Task { await runNow(task) } }
-                    .tint(Color.accentTint)
+                .tint(JB.warn)
+                Button("Run now", systemImage: "play") { Task { await runNow(task) } }
+                    .tint(JB.accent)
             }
     }
 
     @ViewBuilder
     private func menu(_ task: WSTask) -> some View {
         Button("Edit task", systemImage: "pencil") { editing = task }
-        Button("Run now", systemImage: "bolt.fill") { Task { await runNow(task) } }
+        Button("Run now", systemImage: "play") { Task { await runNow(task) } }
         Button(task.isPaused ? "Resume" : "Pause",
-               systemImage: task.isPaused ? "play.fill" : "pause.fill") {
+               systemImage: task.isPaused ? "play" : "pause") {
             Task { await act { try await ws.taskAction(id: task.id, action: task.isPaused ? "resume" : "pause") } }
         }
         Menu("Agent access", systemImage: "lock.shield") {
@@ -128,7 +108,7 @@ struct TasksView: View {
         NavigationStack {
             ScrollView {
                 Text(text)
-                    .foregroundStyle(.joeInk)
+                    .font(.jb(15)).foregroundStyle(JB.ink)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
@@ -159,6 +139,7 @@ struct TasksView: View {
         do {
             tasks = try await ws.tasks()
             personalTasks = (try? await ws.tasks(scope: "personal")) ?? personalTasks
+            if hosts.isEmpty { hosts = await ws.nightHosts() }
             error = nil
         } catch { self.error = error.localizedDescription }
     }
@@ -174,31 +155,31 @@ private struct TaskRow: View {
 
     var body: some View {
         HStack(spacing: 11) {
-            WSStatusDot(on: !task.isPaused)
+            Group { if task.isCoding { JBIcon(.coding, size: 15) } else { JBIcon(.tasks, size: 15) } }
+                .foregroundStyle(task.isPaused ? JB.ink3 : JB.accent).frame(width: 20)
             VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Text(task.name).foregroundStyle(.joeInk).lineLimit(1)
-                    if task.isPaused {
-                        Text("Paused")
-                            .font(.jbCaption2)
-                            .padding(.horizontal, 7).padding(.vertical, 2)
-                            .background(.joeInk.opacity(0.15), in: Capsule())
-                            .foregroundStyle(.joeInk.opacity(0.8))
-                    }
-                    Spacer(minLength: 0)
-                    if running { ProgressView().controlSize(.mini).tint(Color.accentTint) }
-                }
-                Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                Text(task.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
+                Text(subtitle).font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(1)
             }
+            Spacer(minLength: 0)
+            if running { JBSpinner() }
+            if let c = task.codingStatus, !c.isEmpty {
+                HStack(spacing: 5) {
+                    if c == "running" { JBStatusDot(live: true, size: 6) }
+                    JBChip(text: c, tint: c == "running" ? JB.live : c == "review" ? JB.accent : c == "failed" ? JB.danger : JB.ink2)
+                }
+            }
+            if task.isPaused { JBChip(text: "paused") }
         }
-        .frame(minHeight: 48)
+        .opacity(task.isPaused ? 0.6 : 1)
         .contentShape(Rectangle())
     }
 
     private var subtitle: String {
-        let when = task.schedule.isEmpty ? "Unscheduled" : task.schedule.capitalized
-        let time = task.scheduledTime.isEmpty ? "" : " at \(task.scheduledTime)"
-        return "\(when)\(time) · \(WSPermissionMode.named(task.permissionMode).label)"
+        let when = task.schedule.isEmpty ? "unscheduled" : task.schedule
+        let time = task.scheduledTime.isEmpty ? "" : " " + task.scheduledTime
+        let tail = task.isCoding ? (task.codingAgent == "any" ? "any agent" : task.codingAgent ?? "") : WSPermissionMode.named(task.permissionMode).label.lowercased()
+        return "\(when)\(time) · \(tail)"
     }
 }
 
@@ -208,6 +189,7 @@ struct TaskEditor: View {
     let ws: WorkspaceAPI
     let task: WSTask?
     var scope: String = "general"
+    var hosts: [NSHost] = []
     var onSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -217,59 +199,86 @@ struct TaskEditor: View {
     @State private var time = "08:00"
     @State private var repeatDay = 0
     @State private var permissionMode = "sandbox"
+    @State private var coding = false
+    @State private var agent = "claude"
+    @State private var model = ""
+    @State private var host = ""
+    @State private var repo = ""
     @State private var saving = false
     @State private var error: String?
 
     private static let weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    private static let models = ["claude": ["opus", "sonnet", "haiku"], "codex": ["gpt-5-codex", "gpt-5"],
+                                 "opencode": ["qwen3-coder:30b", "llama3.3:70b", "deepseek-v3.2"], "any": []]
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Task") {
-                    TextField("Name", text: $name)
-                    TextField("Prompt", text: $prompt, axis: .vertical).lineLimit(3...8)
+                if scope != "personal" {
+                    Section { JBSegments(options: [(false, "AI task"), (true, "Coding agent")], selection: $coding) }
+                        .listRowBackground(Color.clear)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-                Section("Schedule") {
+                Section {
+                    TextField("Name", text: $name)
+                    TextField(coding ? "What should the agent do?" : "Prompt", text: $prompt, axis: .vertical).lineLimit(3...8)
+                }.jbFormRow()
+                Section {
                     Picker("Repeats", selection: $schedule) {
                         Text("Daily").tag("daily")
                         Text("Weekly").tag("weekly")
                         Text("Monthly").tag("monthly")
                     }
-                    .tint(Color.accentTint)
+                    .tint(JB.accent)
                     if schedule == "weekly" {
                         Picker("On", selection: $repeatDay) {
                             ForEach(Self.weekdays.indices, id: \.self) { index in
                                 Text(Self.weekdays[index]).tag(index)
                             }
                         }
-                        .tint(Color.accentTint)
-                    } else if schedule == "monthly" {
-                        Text("Runs on the first day of each month")
-                            .font(.jbFootnote).foregroundStyle(.secondary)
+                        .tint(JB.accent)
                     }
-                    TextField("Time (HH:MM)", text: $time).keyboardType(.numbersAndPunctuation)
-                    WSPermissionPicker(title: "Agent access", mode: $permissionMode)
+                    TextField("Time (HH:MM)", text: $time).font(.jbMono(15)).keyboardType(.numbersAndPunctuation)
+                    if !coding { WSPermissionPicker(title: "Agent access", mode: $permissionMode) }
+                }.jbFormRow()
+                if coding {
+                    Section {
+                        Picker("Agent", selection: $agent) {
+                            Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode"); Text("Any").tag("any")
+                        }
+                        Picker("Model", selection: $model) {
+                            Text("Default").tag("")
+                            ForEach(Self.models[agent] ?? [], id: \.self) { Text($0).tag($0) }
+                        }
+                        if hosts.count > 1 {
+                            Picker("Runs on", selection: $host) {
+                                ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
+                            }
+                        }
+                        TextField("Folder", text: $repo).font(.jbMono(14)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }.jbFormRow()
+                    .transition(.opacity)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
             }
+            .animation(JB.snap, value: coding)
             .scrollContentBackground(.hidden)
             .jbWallpaper()
             .navigationTitle((scope == "personal" ? "Personal " : "") + (task == nil ? "new task" : "edit task"))
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: agent) { _, _ in model = "" }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { Button("Cancel") { dismiss() }.disabled(saving) }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") { Task { await save() } }.disabled(!canSave || saving)
                 }
             }
-            .overlay { if saving { ProgressView().controlSize(.large) } }
+            .overlay { if saving { JBSpinner() } }
             .task { fill() }
             .alert("Task", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
         }
     }
 
     private func fill() {
+        if host.isEmpty, let l = hosts.first(where: { $0.local == true }) { host = l.id }
         guard let task else { return }
         name = task.name
         prompt = task.prompt
@@ -277,15 +286,23 @@ struct TaskEditor: View {
         time = task.scheduledTime.isEmpty ? "08:00" : task.scheduledTime
         repeatDay = min(6, max(0, task.repeatDay))
         permissionMode = task.permissionMode
+        coding = task.isCoding
+        if task.isCoding {
+            agent = task.codingAgent ?? "claude"; model = task.codingModel ?? ""; repo = task.codingRepo ?? ""
+            if let h = task.codingHost, !h.isEmpty { host = h }
+        }
     }
 
     private func save() async {
         guard !saving else { return }
         saving = true
         defer { saving = false }
+        let extra: [String: Any] = scope == "personal" ? [:] : coding
+            ? ["coding_agent": agent, "coding_repo": repo, "coding_host": host, "coding_model": model]
+            : ["coding_agent": "", "coding_repo": "", "coding_host": "", "coding_model": ""]
         do {
             try await ws.saveTask(id: task?.id, name: name, prompt: prompt, schedule: schedule,
-                                  time: time, repeatDay: repeatDay, permissionMode: permissionMode, scope: scope)
+                                  time: time, repeatDay: repeatDay, permissionMode: permissionMode, scope: scope, coding: extra)
             onSave()
             dismiss()
         } catch { self.error = error.localizedDescription }
@@ -293,7 +310,7 @@ struct TaskEditor: View {
 
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !prompt.trimmingCharacters(in: .whitespaces).isEmpty && validTime
+        !prompt.trimmingCharacters(in: .whitespaces).isEmpty && validTime && (!coding || !repo.trimmingCharacters(in: .whitespaces).isEmpty)
     }
 
     private var validTime: Bool {
