@@ -104,7 +104,7 @@ struct ShoppingListView: View {
         List {
             Section {
                 HStack(spacing: 10) {
-                    Image(systemName: "plus.circle.fill").foregroundStyle(JB.accent)
+                    Image(systemName: "plus").font(.jb(14, .medium)).foregroundStyle(JB.ink3)
                     TextField("Add item", text: $draft)
                         .focused($adding)
                         .submitLabel(.done)
@@ -114,10 +114,10 @@ struct ShoppingListView: View {
                 .listRowBackground(JB.panelFill)
             }
             if let error {
-                Text(error).font(.jbFootnote).foregroundStyle(JB.danger).listRowBackground(Color.clear)
+                Text(error).font(.jbMono(11)).foregroundStyle(JB.danger).listRowBackground(Color.clear)
             }
             if !loading && items.isEmpty {
-                empty("cart", "Nothing to buy", "Add things here, or just tell JoeBro \"we're out of milk\".")
+                empty("cart", "Nothing to buy")
             }
             if !todo.isEmpty {
                 JBSection("To get") { ForEach(todo) { row($0) }.onDelete { remove(todo, $0) } }
@@ -127,17 +127,18 @@ struct ShoppingListView: View {
                     ForEach(done) { row($0) }.onDelete { remove(done, $0) }
                 } header: {
                     HStack {
-                        Text("Ticked off")
+                        JBSectionHeader("Ticked off", count: done.count)
                         Spacer()
                         Button("Clear") { mutate(["action": "clear_checked"]) }
-                            .font(.jbCaption.weight(.semibold))
-                            .foregroundStyle(JB.accent)
+                            .font(.jbMono(11, .medium))
+                            .foregroundStyle(JB.ink2)
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
         .jbForm()
+        .animation(JB.smooth, value: items.map { "\($0.id)\($0.checked)" })
         .navigationTitle("Shopping")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await load() }
@@ -148,21 +149,21 @@ struct ShoppingListView: View {
     private func row(_ item: JBShoppingItem) -> some View {
         Button { toggle(item) } label: {
             HStack(spacing: 12) {
-                Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
-                    .font(.jb(21))
-                    .foregroundStyle(item.checked ? JB.accent : JB.ink.opacity(0.45))
+                Image(systemName: item.checked ? "checkmark.circle" : "circle")
+                    .font(.jb(20))
+                    .foregroundStyle(item.checked ? JB.live : JB.ink3)
                     .contentTransition(.symbolEffect(.replace))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.text)
                         .strikethrough(item.checked)
-                        .foregroundStyle(item.checked ? .secondary : .primary)
+                        .font(.jb(15)).foregroundStyle(item.checked ? JB.ink3 : JB.ink)
                     if item.addedBy == "joebro" {
-                        Text("Added by JoeBro").font(.jbCaption2).foregroundStyle(JB.ink2)
+                        Text("joebro").font(.jbMono(10)).foregroundStyle(JB.ink3)
                     }
                 }
                 Spacer()
                 if !item.quantity.isEmpty {
-                    Text(item.quantity).font(.jbCallout).foregroundStyle(JB.ink2)
+                    Text(item.quantity).font(.jbMono(12)).foregroundStyle(JB.ink2)
                 }
             }
             .frame(minHeight: 40)

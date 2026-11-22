@@ -26,8 +26,7 @@ struct EmailView: View {
     var body: some View {
         List {
             if status?.configured == false {
-                empty("envelope.badge", "No email account connected",
-                      "Connect an account in JoeBro on your Mac, then pull to refresh.")
+                empty("envelope", "No email account connected")
             } else {
                 controlsSection
                 messagesSection
@@ -40,7 +39,7 @@ struct EmailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showCompose = true } label: {
-                    Image(systemName: "square.and.pencil").foregroundStyle(JB.accent)
+                    Image(systemName: "square.and.pencil").foregroundStyle(JB.ink)
                 }
                 .accessibilityLabel("Compose email")
                 .disabled(status?.configured != true)
@@ -57,7 +56,7 @@ struct EmailView: View {
             }
             Button("Keep it", role: .cancel) { deleteTarget = nil }
         } message: {
-            Text("“\(deleteTarget?.subject ?? "")” is removed from the mailbox on the server. This can't be undone.")
+            Text("“\(deleteTarget?.subject ?? "")” is removed from the mailbox.")
         }
         .alert("Email", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
         .refreshable { await refresh(force: true) }
@@ -73,43 +72,37 @@ struct EmailView: View {
             Picker("Folder", selection: $folder) {
                 ForEach(folders, id: \.self) { name in Text(name).tag(name) }
             }
-            .tint(JB.accent)
             .listRowBackground(JB.panelFill)
 
-            Toggle(isOn: $unreadOnly) {
-                Label("Unread only", systemImage: "envelope.badge").foregroundStyle(JB.ink)
-            }
-            .tint(JB.accent)
-            .listRowBackground(JB.panelFill)
-        } footer: {
-            if let list, list.total > list.emails.count {
-                Text("Showing \(list.emails.count) of \(list.total).")
-            }
+            Toggle("Unread only", isOn: $unreadOnly)
+                .sensoryFeedback(.selection, trigger: unreadOnly)
+                .listRowBackground(JB.panelFill)
         }
     }
 
     @ViewBuilder
     private var messagesSection: some View {
-        Section(folder) {
+        Section {
             if loading && list == nil {
-                Label("Connecting to your mailbox…", systemImage: "network")
-                    .font(.jbSubheadline).foregroundStyle(JB.ink2)
+                HStack(spacing: 8) { JBSpinner(); Text("Connecting").font(.jbMono(11)).foregroundStyle(JB.ink3) }
                     .frame(minHeight: 44)
                     .listRowBackground(Color.clear)
             }
             if let message = list?.error ?? error, !message.isEmpty {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .font(.jbSubheadline).foregroundStyle(JB.warn)
+                Text(message)
+                    .font(.jbMono(12)).foregroundStyle(JB.warn)
                     .listRowBackground(JB.panelFill)
             }
             if let list, list.emails.isEmpty, !loading, (list.error ?? "").isEmpty {
-                empty("tray", unreadOnly ? "No unread mail" : "No messages",
-                      "Nothing in \(folder) right now.")
+                empty("tray", unreadOnly ? "No unread mail" : "No messages")
             }
             ForEach(list?.emails ?? []) { message in
                 row(message)
             }
+        } header: {
+            JBSectionHeader(folder, count: list.map { $0.total > $0.emails.count ? $0.total : $0.emails.count })
         }
+        .animation(JB.smooth, value: list?.emails.map(\.uid) ?? [])
     }
 
     private func row(_ message: JBEmailSummary) -> some View {
@@ -131,7 +124,7 @@ struct EmailView: View {
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash") { deleteTarget = message }.tint(JB.danger)
-            Button("Archive", systemImage: "archivebox") { Task { await archive(message.uid) } }.tint(.indigo)
+            Button("Archive", systemImage: "archivebox") { Task { await archive(message.uid) } }.tint(JB.ink3)
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button(message.isRead ? "Unread" : "Read",
@@ -140,6 +133,7 @@ struct EmailView: View {
             }
             .tint(JB.accent)
         }
+        .sensoryFeedback(.selection, trigger: message.isRead)
     }
 
     private func canReply(_ uid: String) -> Bool {
@@ -205,27 +199,25 @@ private struct EmailRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 11) {
-            Circle()
-                .fill(message.isRead ? Color.clear : JB.accent)
-                .frame(width: 8, height: 8)
-                .padding(.top, 6)
+            JBStatusDot(color: message.isRead ? .clear : JB.accent, size: 7)
+                .padding(.top, 7)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(from)
-                        .font(message.isRead ? .subheadline : .subheadline.bold())
+                        .font(.jb(15, message.isRead ? .regular : .semibold))
                         .foregroundStyle(JB.ink)
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     if message.isFlagged {
-                        Image(systemName: "flag.fill").font(.jbCaption).foregroundStyle(JB.warn)
+                        Image(systemName: "flag").font(.jbCaption).foregroundStyle(JB.warn)
                             .accessibilityLabel("Flagged")
                     }
                     if busy { JBSpinner(size: 10) }
                 }
                 Text(message.subject.isEmpty ? "(no subject)" : message.subject)
-                    .font(.jbSubheadline).foregroundStyle(JB.ink.opacity(0.9)).lineLimit(2)
+                    .font(.jb(14)).foregroundStyle(JB.ink2).lineLimit(2)
                 if let date = message.date, !date.isEmpty {
-                    Text(date).font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(1)
+                    Text(date).font(.jbMono(10.5)).foregroundStyle(JB.ink3).lineLimit(1)
                 }
             }
         }
@@ -260,21 +252,20 @@ private struct EmailMessageView: View {
             VStack(alignment: .leading, spacing: 16) {
                 if let detail = message?.detail {
                     header(detail)
-                    Divider().overlay(JB.ink.opacity(0.2))
+                    Divider().overlay(JB.line)
                     Text(Self.readableBody(detail.body ?? ""))
+                        .font(.jb(15)).lineSpacing(4)
                         .foregroundStyle(JB.ink)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     attachments(detail)
                 } else if let error {
-                    empty("envelope.badge", "Couldn't open message", error)
+                    empty("envelope", "Couldn't open message")
                 } else {
                     JBSpinner(size: 16).frame(maxWidth: .infinity).padding(.vertical, 50)
                 }
                 if !canReply {
-                    Label("Replies send from the first connected account. Open this on Mac to reply from its own account.",
-                          systemImage: "envelope.badge.shield.half.filled")
-                        .font(.jbCaption).foregroundStyle(JB.ink2)
+                    Text("Replies send from the first account").font(.jbMono(11)).foregroundStyle(JB.ink3)
                 }
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -293,7 +284,7 @@ private struct EmailMessageView: View {
             Button("Delete email", role: .destructive) { Task { await delete() } }
             Button("Keep it", role: .cancel) {}
         } message: {
-            Text("“\(message?.detail.subject ?? "")” is removed from the mailbox on the server. This can't be undone.")
+            Text("“\(message?.detail.subject ?? "")” is removed from the mailbox.")
         }
         .alert("Message", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
         .task(id: uid) { await load() }
@@ -304,7 +295,7 @@ private struct EmailMessageView: View {
         ToolbarItemGroup(placement: .topBarTrailing) {
             if actionBusy { JBSpinner(size: 10) }
             Button { showReply = true } label: {
-                Image(systemName: "arrowshape.turn.up.left").foregroundStyle(JB.accent)
+                Image(systemName: "arrowshape.turn.up.left").foregroundStyle(JB.ink)
             }
             .accessibilityLabel("Reply")
             .disabled(message == nil || actionBusy || !canReply)
@@ -313,7 +304,7 @@ private struct EmailMessageView: View {
                 Button("Archive", systemImage: "archivebox") { Task { await archive() } }
                 Button("Delete", systemImage: "trash", role: .destructive) { confirmDelete = true }
             } label: {
-                Image(systemName: "ellipsis.circle").foregroundStyle(JB.accent)
+                Image(systemName: "ellipsis.circle").foregroundStyle(JB.ink)
             }
             .accessibilityLabel("Email actions")
             .disabled(message == nil || actionBusy)
@@ -323,26 +314,26 @@ private struct EmailMessageView: View {
     private func header(_ detail: JBEmailDetail) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(detail.subject.isEmpty ? "(no subject)" : detail.subject)
-                .font(.jbTitle3.bold()).foregroundStyle(JB.ink)
+                .font(.jb(20, .semibold)).tracking(-0.3).foregroundStyle(JB.ink)
             Text(detail.fromName?.isEmpty == false ? detail.fromName! : (detail.fromAddress ?? "Unknown sender"))
-                .font(.jbSubheadline.weight(.semibold)).foregroundStyle(JB.ink.opacity(0.9))
+                .font(.jb(14, .medium)).foregroundStyle(JB.ink)
             VStack(alignment: .leading, spacing: 2) {
                 if let address = detail.fromAddress, detail.fromName?.isEmpty == false { Text(address) }
                 if let to = detail.to, !to.isEmpty { Text("To: \(to)") }
                 if let date = detail.date, !date.isEmpty { Text(date) }
             }
-            .font(.jbCaption).foregroundStyle(JB.ink2)
+            .font(.jbMono(11)).foregroundStyle(JB.ink3)
         }
     }
 
     @ViewBuilder
     private func attachments(_ detail: JBEmailDetail) -> some View {
         if !detail.attachments.isEmpty {
-            Divider().overlay(JB.ink.opacity(0.2))
-            Text("Attachments").font(.jbSubheadline.weight(.semibold)).foregroundStyle(JB.ink)
+            Divider().overlay(JB.line)
+            JBSectionHeader("Attachments", count: detail.attachments.count)
             ForEach(detail.attachments) { file in
                 Label(file.filename ?? "Attachment", systemImage: "paperclip")
-                    .font(.jbSubheadline).foregroundStyle(JB.ink2)
+                    .font(.jbMono(12)).foregroundStyle(JB.ink2)
             }
         }
     }
@@ -397,7 +388,7 @@ private struct EmailComposeView: View {
         NavigationStack {
             Form {
                 Section {
-                    if !from.isEmpty { LabeledContent("From", value: from) }
+                    if !from.isEmpty { LabeledContent("From") { Text(from).font(.jbMono(12)) } }
                     TextField("To", text: $to)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
@@ -418,13 +409,13 @@ private struct EmailComposeView: View {
                 if let reply {
                     JBSection("Original message") {
                         Text(reply.detail.body ?? "")
-                            .font(.jbFootnote).foregroundStyle(JB.ink2).lineLimit(8)
+                            .font(.jbMono(11)).foregroundStyle(JB.ink3).lineLimit(8)
                     }
                     .listRowBackground(JB.panelFill)
                 }
             }
             .jbForm()
-            .navigationTitle(reply == nil ? "New Email" : "Reply")
+            .navigationTitle(reply == nil ? "New email" : "Reply")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

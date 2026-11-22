@@ -39,6 +39,7 @@ struct WorkdirView: View {
         }
         .listStyle(.insetGrouped)
         .jbForm()
+        .animation(JB.smooth, value: rows.map(\.path))
         .navigationTitle("Files")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.load() }
@@ -49,7 +50,7 @@ struct WorkdirView: View {
                     showBind = true
                 } label: {
                     Image(systemName: "folder.badge.gearshape")
-                        .foregroundStyle(JB.accent)
+                        .foregroundStyle(JB.ink)
                 }
                 .accessibilityLabel("Change bound folder")
             }
@@ -84,7 +85,7 @@ struct WorkdirView: View {
                 renameTarget = nil
             }
         } message: {
-            Text("Renames the file on the backend host. Anything referring to it by its old name will stop finding it.")
+            Text("Renames the file on the backend host.")
         }
         .alert(deleteTitle, isPresented: Binding(
             get: { deleteTarget != nil }, set: { if !$0 { deleteTarget = nil } })) {
@@ -106,21 +107,21 @@ struct WorkdirView: View {
     private var breadcrumb: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
-                Image(systemName: "folder.fill")
+                Image(systemName: "folder")
                     .font(.jbCaption)
-                    .foregroundStyle(JB.accent)
+                    .foregroundStyle(JB.ink2)
                 Text(rootName)
-                    .font(.jbSubheadline.weight(.semibold))
+                    .font(.jbMono(12, .medium))
                     .foregroundStyle(JB.ink)
                 Spacer(minLength: 4)
-                Text("\(store.entries(at: "").count) items")
-                    .font(.jbCaption2)
-                    .foregroundStyle(JB.ink2)
+                Text("\(store.entries(at: "").count)")
+                    .font(.jbMono(10.5))
+                    .foregroundStyle(JB.ink3)
             }
             if !rootParent.isEmpty {
                 Text(rootParent)
-                    .font(.jbCaption2)
-                    .foregroundStyle(JB.ink2)
+                    .font(.jbMono(10.5))
+                    .foregroundStyle(JB.ink3)
                     .lineLimit(1)
                     .truncationMode(.head)
             }
@@ -186,13 +187,13 @@ struct WorkdirView: View {
                 renameName = entry.name
                 renameTarget = path
             }
-            .tint(JB.accent)
+            .tint(JB.ink3)
         }
     }
 
     private func icon(_ entry: JBWorkdirEntry, path: String) -> String {
         guard !entry.isDir else {
-            return store.expanded.contains(path) ? "folder.fill" : "folder"
+            return "folder"
         }
         switch JBFileKind.of(entry.name) {
         case .image: return "photo"
@@ -230,42 +231,28 @@ struct WorkdirView: View {
         guard let target = deleteTarget else { return "" }
         let isDir = rows.first { $0.path == target }?.entry.isDir == true
         return isDir
-            ? "Deletes the folder and everything inside it on the backend host. This cannot be undone from the app."
-            : "Deletes the file on the backend host. This cannot be undone from the app."
+            ? "Deletes the folder and everything inside it on the backend host."
+            : "Deletes the file on the backend host."
     }
 
     // MARK: States
 
     private var loadingState: some View {
-        HStack(spacing: 10) {
-            JBSpinner()
-            Text("Reading the bound folder…").font(.jbFootnote).foregroundStyle(JB.ink2)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 36)
-        .listRowBackground(Color.clear)
+        JBSpinner()
+            .frame(maxWidth: .infinity).padding(.vertical, 36)
+            .listRowBackground(Color.clear)
     }
 
     private var emptyFolderState: some View {
-        VStack(spacing: 6) {
-            Image(systemName: "tray").font(.jbTitle2).foregroundStyle(JB.ink2)
-            Text("This folder is empty").font(.jbSubheadline).foregroundStyle(JB.ink)
-            Text("Ask JoeBro to write a file here, or pull to refresh.")
-                .font(.jbFootnote).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 28)
-        .listRowBackground(Color.clear)
+        empty("tray", "Empty folder")
     }
 
     private var unboundState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "folder.badge.questionmark").font(.jbLargeTitle).foregroundStyle(JB.ink2)
-            Text("No folder bound").font(.jbHeadline).foregroundStyle(JB.ink)
-            Text("Bind a folder on the backend machine and JoeBro's file tools work inside it.")
-                .font(.jbFootnote).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
+        VStack(spacing: 12) {
+            Text(JBEmptyState.drawing(.files)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+            Text("No folder bound").font(.jb(13)).foregroundStyle(JB.ink2)
             Button("Choose folder") { showBind = true }
                 .buttonStyle(.jbPrimary)
-                .tint(JB.accent)
-                .foregroundStyle(JB.onAccent)
                 .padding(.top, 4)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 36)
@@ -287,7 +274,7 @@ private struct WorkdirRow: View {
             if depth > 0 {
                 HStack(spacing: 0) {
                     ForEach(0..<depth, id: \.self) { _ in
-                        Rectangle().fill(JB.ink.opacity(0.12)).frame(width: 1)
+                        Rectangle().fill(JB.line).frame(width: 1)
                             .padding(.leading, 7).padding(.trailing, 8)
                     }
                 }
@@ -296,7 +283,7 @@ private struct WorkdirRow: View {
             disclosure
             glyph
             Text(entry.name)
-                .font(entry.isDir ? .body.weight(.medium) : .body)
+                .font(entry.isDir ? .jb(15, .medium) : .jbMono(13.5))
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .foregroundStyle(entry.isDir ? JB.ink : JB.ink.opacity(0.88))
@@ -331,7 +318,7 @@ private struct WorkdirRow: View {
         } else {
             Image(systemName: icon)
                 .font(.jb(14))
-                .foregroundStyle(entry.isDir ? JB.accent : JB.ink.opacity(0.5))
+                .foregroundStyle(entry.isDir ? JB.ink2 : JB.ink3)
                 .frame(width: 20)
         }
     }
@@ -379,19 +366,19 @@ struct FolderPickerView: View {
                         path = path.isEmpty ? entry.name : path + "/" + entry.name
                         Task { await load() }
                     } label: {
-                        Label(entry.name, systemImage: "folder.fill")
+                        Label(entry.name, systemImage: "folder")
                             .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain)
                     .listRowBackground(JB.panelFill)
                 }
                 if entries.isEmpty && !loading {
-                    Text("No subfolders here.").foregroundStyle(JB.ink2)
+                    Text("No subfolders").font(.jbMono(12)).foregroundStyle(JB.ink3)
                         .listRowBackground(Color.clear)
                 }
             }
             .listStyle(.insetGrouped)
-        .jbForm()
+            .jbForm()
             .overlay { if loading { JBSpinner() } }
             .navigationTitle(path.isEmpty ? "Choose folder" : path)
             .navigationBarTitleDisplayMode(.inline)
