@@ -49,9 +49,7 @@ Claude Code, Codex and OpenCode sessions appear in your chat list while they are
 
 ![Shared Memory: one memory for every agent](README_assets/shared-memory.png)
 
-![Agents and subagents in the Agents tab and the Dynamic Island](README_assets/agents-island.png)
-
-![Resuming a recent coding session](README_assets/resume-session.png)
+![The Agents tab and the workspace](README_assets/agents.png)
 
 Push-to-start and the lock-screen buttons need the push setup below.
 
@@ -84,8 +82,6 @@ Push-to-start and the lock-screen buttons need the push setup below.
 1. On the Mac, open **Settings > Mobile** and turn on **Let my phone connect**.
 2. Open the app on the phone. It shows a short intro, then a scan screen.
 3. Scan the QR code on the Mac.
-
-![Pairing: scan the QR code on your Mac](README_assets/pairing.png)
 
 If you can't scan, use **Copy link** on the Mac and open it on the phone, or paste the URL and token by hand. The app checks the address and token before it saves anything. If the Mac is too old, it tells you to update to 1.3.0.
 
@@ -130,15 +126,11 @@ Two things in it are worth knowing about.
 
 **Header scenes.** Pick one of 34 animated scenes and it plays behind the JoeBro tab's header. The title and the settings button sit on glass, so they stay readable over any of them. The scenes are drawn in ASCII, in full colour, and run in a sandboxed web view that loads nothing from the network. They pause when the app isn't active, when the header is off screen and when **Reduce Motion** is on. A photo wallpaper turns them off. The Live Activity on the Lock Screen shows a still of the same scene.
 
-![Header scenes playing behind the JoeBro tab](README_assets/banner-scenes.png)
-
 The picker is **Appearance > JoeBro header scene**, and it is off until you choose one. The scene sits behind the header only. Your chat, the tab bar and every other screen stay as they were.
 
-![Choosing a header scene in Settings](README_assets/banner-settings.png)
+![Settings and appearance](README_assets/settings.png)
 
 **Black & White.** The last wallpaper swatch follows the iPhone's light or dark setting: black in dark mode, white in light mode. The other wallpapers stay dark. Header scenes still play on top, on their own dark ground.
-
-![Black & White in dark and light mode, with a header scene](README_assets/banner-black-and-white.png)
 
 The scenes come from [bas3line/ascii](https://github.com/bas3line/ascii) (MIT). The licence ships inside the app's `AsciiScenes` folder, and `Tools/AsciiScenes/README.md` says how to rebuild the bundled scene file.
 
@@ -164,11 +156,7 @@ The phone agent is JoeBro, on your phone, with a memory and a to-do list. All of
 
 **Memory files.** Plain Markdown files in JoeBro's data folder, under `muse/`. You can read them and edit them, on the Mac (**Brain > Phone memory**) or on the phone. `about-me` is always in the prompt. Every other file only contributes the lines that overlap with your message. The agent writes to them with its remember and forget tools. If **Learn durable facts into phone memory** is on, a light pass after a turn can add lasting facts, with duplicates and anything that looks like a secret filtered out. Memory is data, never instructions. It is separate from the Brain.
 
-![Memory files the phone agent reads and you can edit](README_assets/memory.png)
-
 **Tasks.** On the Mac, **Tasks > Phone agent** lists tasks that run in the background and say nothing. Each run ends with either the text you want to be notified about, or the word `NOTHING`. Only that text goes to the chat. If the result hasn't changed since last time, it isn't sent again. Two starters are built in, a morning briefing and an evening wrap-up. They only get created when you press them.
-
-![Tasks that run in the background and only speak up when it matters](README_assets/tasks.png)
 
 **Heartbeat.** Off by default. Every 30 minutes (you set it) it collects what changed: calendar, reminders, task results. It reduces each to a fingerprint. If nothing changed, it does not call a model at all. If something did, it asks a cheap background model whether it's worth your attention. If yes, the message is posted into the phone chat as a normal message and pushed. You answer yes or no in that chat. There is no approval queue.
 
@@ -177,8 +165,6 @@ It has two separate limits. Notifications: at most 2 a day by default, at least 
 **Pulse and reminders.** Pulse wakes the agent on a checklist you write in plain English, also off by default. Reminders fire once.
 
 **Notifications and inbox.** Every notice is written to the Inbox first, then pushed if push is set up, then sent to Telegram if you've set that up, otherwise it stays in the Inbox. The Mac has an **Inbox** tab. You can hide preview text on the lock screen in the app's settings.
-
-![The inbox of notices from the phone agent](README_assets/inbox.png)
 
 **Live Activities.** While the agent is working, it shows on the Lock Screen and Dynamic Island. With push configured, the Mac ends it when the work finishes. Without push, it updates while the app is open.
 
