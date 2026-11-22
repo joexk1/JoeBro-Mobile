@@ -249,7 +249,7 @@ struct WorkdirView: View {
 
     private var unboundState: some View {
         VStack(spacing: 12) {
-            Text(JBEmptyState.drawing(.files)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
+            JBEmptyState.icon(.files)
             Text("No folder bound").font(.jb(13)).foregroundStyle(JB.ink2)
             Button("Choose folder") { showBind = true }
                 .buttonStyle(.jbPrimary)

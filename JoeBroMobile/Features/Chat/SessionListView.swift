@@ -10,6 +10,7 @@ struct SessionListView: View {
     /// Called when a chat is chosen, so the container can push the transcript.
     var onOpen: (JBSession) -> Void
     var onNewChat: () -> Void = {}
+    var onOpenSettings: () -> Void = {}
 
     @State private var search = ""
     @State private var renameTargetID: String?
@@ -53,22 +54,10 @@ struct SessionListView: View {
         .animation(reduceMotion ? nil : JB.smooth, value: store.pinnedFolders)
         // searchable must stay attached to the List itself — attaching it to
         // the wallpaper's ZStack wrapper blanked the whole window.
-        .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search")
         .jbWallpaper()
-        .navigationTitle("Chats")
-        .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.reloadSessions() }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { Task { await store.newChat(); onNewChat() } } label: {
-                    Image(systemName: "plus")
-                        .font(.jb(18, .regular))
-                        .foregroundStyle(JB.ink)
-                        .frame(width: 44, height: 44, alignment: .center)
-                }
-                .accessibilityLabel("New chat")
-            }
-        }
+        .jbTopBar("Chats", search: $search, onAdd: { Task { await store.newChat(); onNewChat() } },
+                  addLabel: "New chat", onSettings: onOpenSettings)
         .modifier(SessionListDialogs(
             store: store, search: $search,
             renameTargetID: $renameTargetID, renameName: $renameName,

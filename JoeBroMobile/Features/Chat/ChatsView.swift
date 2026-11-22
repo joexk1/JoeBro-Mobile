@@ -737,6 +737,7 @@ struct ChatLine: Identifiable, Codable {
 struct ChatsView: View {
     let store: ChatStore
     @Binding var openSharedDraft: Bool
+    var onOpenSettings: () -> Void = {}
     var externalSidebar = false
     var onOpenSidebar: (() -> Void)? = nil
     @State private var openSession: JBSession?
@@ -759,7 +760,7 @@ struct ChatsView: View {
                 chatDetail
             } else {
                 SessionListView(store: store, onOpen: { session in openSession = session },
-                                onNewChat: { openDraft = true })
+                                onNewChat: { openDraft = true }, onOpenSettings: onOpenSettings)
                     .navigationDestination(item: $openSession) { session in
                         chatDetail
                             .task { await store.select(session.id) }

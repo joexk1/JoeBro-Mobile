@@ -51,20 +51,11 @@ struct WorkspaceHubView: View {
             }
             .listStyle(.insetGrouped)
         .jbForm()
-            .navigationTitle("Workspace")
-            .navigationBarTitleDisplayMode(.inline)
+            .jbTopBar("Workspace", onSettings: onOpenSettings)
             #if DEBUG
             .navigationDestination(isPresented: $debugOpen) { debugScreen }
             .task { if DemoMode.option("-JoeBroScreen") != nil { debugOpen = true } }
             #endif
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { onOpenSettings() } label: {
-                        JBSettingsGlyph()
-                    }
-                    .accessibilityLabel("Settings")
-                }
-            }
         }
     }
 
@@ -107,7 +98,7 @@ func alertBinding<T>(_ source: Binding<T?>) -> Binding<Bool> {
 @ViewBuilder
 func empty(_ symbol: String, _ title: String, _ detail: String = "") -> some View {
     VStack(spacing: 12) {
-        Text(JBEmptyState.drawing(.inbox)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
+        JBEmptyState.icon(.inbox)
         Text(title).font(.jb(13)).foregroundStyle(JB.ink2)
     }
     .frame(maxWidth: .infinity).padding(.vertical, 40)

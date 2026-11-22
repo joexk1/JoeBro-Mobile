@@ -57,7 +57,7 @@ struct RootView: View {
                         .tabItem { Label("JoeBro", systemImage: "face.smiling") }
                         .tag(MainTab.joeBro)
 
-                    ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft)
+                    ChatsView(store: runtime.chat, openSharedDraft: $openSharedDraft, onOpenSettings: { showSettings = true })
                         .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
                         .tag(MainTab.chats)
 

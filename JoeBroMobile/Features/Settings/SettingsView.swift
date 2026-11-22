@@ -127,7 +127,6 @@ struct MobileSettingsView: View {
                         if let data = try? await item?.loadTransferable(type: Data.self) {
                             theme.setWallpaper(data: data)
                             appearance.backdrop = .photo
-                            appearance.palette = .auto
                         }
                     }
                 }
@@ -187,18 +186,12 @@ struct MobileSettingsView: View {
                     let on = appearance.palette == p
                     Button {
                         appearance.palette = p
-                        appearance.backdrop = .palette
-                        if theme.wallpaperName == "photo" { theme.select(p.rawValue) }
-                    } label: {
-                        ZStack {
-                            if p == .mono {
-                                HStack(spacing: 0) { Color.black; Color.white }
-                            } else {
-                                p.accent
-                            }
+                        if p != .auto {
+                            appearance.backdrop = .palette
+                            if theme.wallpaperName == "photo" { theme.select(p.rawValue) }
                         }
-                        .frame(width: 30, height: 30)
-                        .clipShape(Circle())
+                    } label: {
+                        JBPaletteSwatch(palette: p, size: 30)
                         .overlay(Circle().strokeBorder(JB.lineStrong, lineWidth: 1))
                         .padding(3)
                         .overlay(Circle().strokeBorder(on ? JB.ink : .clear, lineWidth: 1.5))

@@ -244,7 +244,6 @@ struct AgentsTabView: View {
         .scrollIndicators(.hidden)
         .refreshable { await store.refresh() }
         .jbWallpaper()
-        .searchable(text: Bindable(store).search, prompt: "Search agents")
         .task(id: store.loading) {
             // Demo/screenshots: `-JoeBroAgentsEnd 1` scrolls to the end of the list.
             guard DemoMode.option("-JoeBroAgentsEnd") != nil, !store.loading else { return }
@@ -257,25 +256,10 @@ struct AgentsTabView: View {
     var body: some View {
         NavigationStack {
             scroller
-            .navigationTitle("Agents")
-            .navigationBarTitleDisplayMode(.inline)
+            .jbTopBar("Agents", search: Bindable(store).search, searchPrompt: "Search agents",
+                      onAdd: { showNewAgent = true }, addLabel: "New coding agent", onSettings: onOpenSettings)
             .sheet(isPresented: $showNewAgent) {
                 NewCodingAgentSheet(api: api) { Task { await store.refresh() } }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { showNewAgent = true } label: {
-                        Image(systemName: "plus").font(.jb(18, .regular)).foregroundStyle(JB.ink)
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("New coding agent")
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { onOpenSettings() } label: {
-                        JBSettingsGlyph()
-                    }
-                        .accessibilityLabel("Settings")
-                }
             }
             .navigationDestination(item: $open) { agent in
                 AgentDetailView(api: api, agent: agent, chatStore: chatStore)

@@ -88,7 +88,8 @@ struct AgentChatThread: View {
                     ForEach(Array(messages.enumerated()), id: \.offset) { i, m in
                         bubble(m, last: i == messages.count - 1)
                     }
-                    ForEach(Array(echoes.enumerated()), id: \.offset) { _, e in userCard(e.text, tag: e.via) }
+                    ForEach(Array(echoes.enumerated()).filter { e in !messages.contains { $0.content.contains(e.element.text) } },
+                            id: \.offset) { _, e in userCard(e.text, tag: e.via) }
                     if working { HStack(spacing: 6) { JBSpinner(); JBStreamCursor() } }
                     if waiting && !messages.contains(where: { $0.role == "approval" }) { approvalCard("needs your approval") }
                     if showScreen {
@@ -158,9 +159,6 @@ struct AgentChatThread: View {
                     .focused($focused)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .jbField(focused: focused)
-                Button { showScreen.toggle() } label: { JBIcon(.coding, size: 16) }
-                    .buttonStyle(JBIconButtonStyle(size: 40, active: showScreen))
-                    .accessibilityLabel("Terminal")
                 Button { Task { await send() } } label: { Image(systemName: "arrow.up") }
                     .buttonStyle(JBIconButtonStyle(size: 40, active: !draft.isEmpty))
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
@@ -177,12 +175,13 @@ struct AgentChatThread: View {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !sending else { return }
         sending = true
+        draft = ""
         defer { sending = false }
         do {
             let how = try await api.codingSend(id: agent.id, text: text)
-            echoes.append((text, how == "terminal" ? "sent" : "queued for its next turn"))
-            draft = ""; error = nil; sentTick += 1
+            echoes.append((text, how == "terminal" ? "sent" : "queued"))
+            error = nil; sentTick += 1
             await onChanged()
-        } catch { self.error = error.localizedDescription }
+        } catch { draft = text; self.error = error.localizedDescription }
     }
 }

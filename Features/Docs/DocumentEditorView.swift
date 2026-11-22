@@ -102,7 +102,7 @@ struct DocumentEditorView: View {
 
     private func failureState(_ message: String) -> some View {
         VStack(spacing: 12) {
-            Text(JBEmptyState.drawing(.plug)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+            JBEmptyState.icon(.plug)
             Text(message)
                 .font(.jb(12)).foregroundStyle(JB.ink2)
                 .multilineTextAlignment(.center)

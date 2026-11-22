@@ -206,7 +206,7 @@ struct CalendarAgendaView: View {
             let shown = mode == .agenda ? eventsInRange : eventsOn(mode == .day ? anchor : selectedDay)
             if shown.isEmpty {
                 VStack(spacing: 12) {
-                    Text(JBEmptyState.drawing(.done)).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize()
+                    JBEmptyState.icon(.done)
                     Text("No events").font(.jb(13)).foregroundStyle(JB.ink2)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 32)

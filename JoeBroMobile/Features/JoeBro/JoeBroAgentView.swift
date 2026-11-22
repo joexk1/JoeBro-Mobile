@@ -133,55 +133,22 @@ struct JoeBroAgentView: View {
         }
     }
 
+    // Same layout as JBTopBar on the other tabs, drawn over the banner.
     private var headerBar: some View {
         ZStack {
-            headerTitle
+            Text("JoeBro")
+                .font(.jb(17, .semibold)).tracking(-0.2)
+                .foregroundStyle(hasBanner ? Color.white : JB.ink)
+                .shadow(color: .black.opacity(hasBanner ? 0.45 : 0), radius: 6, y: 1)
+                .accessibilityAddTraits(.isHeader)
             HStack {
+                Color.clear.frame(width: 40, height: 40)
                 Spacer()
-                settingsControl
+                JBRoundButton(symbol: "gearshape", label: "Settings", onBanner: hasBanner, action: onOpenSettings)
             }
-            .padding(.horizontal, 16)
         }
-        .frame(height: 44)
-    }
-
-    private var titleLabel: some View {
-        Text("JoeBro")
-            .font(.jbHeadline)
-            .foregroundStyle(hasBanner ? Color.white : Color.joeInk)
-            .padding(.horizontal, 17)
-            .padding(.vertical, 9)
-            .accessibilityAddTraits(.isHeader)
-    }
-
-    @ViewBuilder private var headerTitle: some View {
-        if #available(iOS 26.0, *) {
-            titleLabel.glassEffect(.regular, in: Capsule())
-                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
-        } else {
-            titleLabel.background(JB.panelFill, in: Capsule())
-                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
-        }
-    }
-
-    private var settingsLabel: some View {
-        JBSettingsGlyph(onBanner: hasBanner)
-    }
-
-    @ViewBuilder private var settingsControl: some View {
-        if #available(iOS 26.0, *) {
-            Button(action: onOpenSettings) { settingsLabel }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: Capsule())
-                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
-                .accessibilityLabel("Settings")
-        } else {
-            Button(action: onOpenSettings) { settingsLabel }
-                .buttonStyle(.plain)
-                .background(JB.panelFill, in: Capsule())
-                .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
-                .accessibilityLabel("Settings")
-        }
+        .padding(.horizontal, 16)
+        .frame(height: 52)
     }
 
     private func documentSource(_ document: ChatDocumentRef) -> DocumentEditorStore.Source {
@@ -267,11 +234,11 @@ private struct JoeBroPresence: View {
                 // reads all around him; without one he keeps the full tile.
                 let side: CGFloat = hasBanner ? 66 : 94
                 RoundedRectangle(cornerRadius: side * 0.32, style: .continuous)
-                    .fill(hasBanner ? Color.black.opacity(0.42) : Color.joeInk.opacity(0.09))
+                    .fill(hasBanner ? Color.black.opacity(0.45) : Color.joeInk.opacity(0.09))
                     .frame(width: side, height: side)
                     .overlay {
                         RoundedRectangle(cornerRadius: side * 0.32, style: .continuous)
-                            .strokeBorder(hasBanner ? Color.white.opacity(0.14) : Color.joeInk.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
+                            .strokeBorder(hasBanner ? Color.white.opacity(0.16) : Color.joeInk.opacity(isWorking ? 0.14 : 0), lineWidth: 1)
                     }
                 JoeBroFigure(expression: expression, eyesClosed: blinking,
                              color: theme.joeBroColor,
@@ -291,11 +258,12 @@ private struct JoeBroPresence: View {
                     Circle().fill(!isAvailable ? Color.gray : isListening ? Color.red : isWorking ? JB.accent : JB.live)
                         .frame(width: 6, height: 6)
                     Text(!isAvailable ? "Offline" : isListening ? "Listening" : isUsingTools ? "Working on it" : isWorking ? "On it" : "Standing by")
-                        .font(.jbSubheadline).foregroundStyle(hasBanner ? Color.white : Color.joeInk.opacity(0.69))
+                        .font(.jb(14, .medium)).foregroundStyle(hasBanner ? Color.white : JB.ink2)
                 }
-                .padding(.horizontal, hasBanner ? 10 : 0)
-                .padding(.vertical, hasBanner ? 7 : 0)
-                .background(hasBanner ? Color.black.opacity(0.62) : .clear, in: Capsule())
+                .padding(.horizontal, hasBanner ? 11 : 0)
+                .frame(height: hasBanner ? 30 : nil)
+                .background(hasBanner ? Color.black.opacity(0.45) : .clear, in: Capsule())
+                .overlay(Capsule().strokeBorder(Color.white.opacity(hasBanner ? 0.16 : 0), lineWidth: 1))
             }
             Spacer(minLength: 0)
         }

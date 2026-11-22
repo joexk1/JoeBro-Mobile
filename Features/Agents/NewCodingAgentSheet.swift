@@ -21,6 +21,8 @@ struct NewCodingAgentSheet: View {
     @State private var repo = ""
     @State private var customRepo = ""
     @State private var agent = "claude"
+    @State private var permission = "edits"
+    @State private var prompt = ""
     @State private var busy = false
     @State private var error: String?
 
@@ -43,43 +45,46 @@ struct NewCodingAgentSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Device") {
+                Section {
                     Picker("Device", selection: $host) {
                         ForEach(hosts) { h in Text(h.up == false ? h.label + " (offline)" : h.label).tag(h.id) }
                     }
-                }
-                Section("Folder") {
-                    Picker("Folder", selection: $repo) {
-                        ForEach(folders, id: \.self) { f in Text(short(f)).tag(f) }
-                        Text("Other folder…").tag("__other")
+                    Picker("Agent", selection: $agent) {
+                        Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode")
                     }
+                    Picker("Permissions", selection: $permission) {
+                        Text("Ask first").tag("ask"); Text("Accept edits").tag("edits"); Text("Full access").tag("full")
+                    }
+                }
+                .pickerStyle(.menu)
+                Section("Folder") {
+                    ForEach(folders, id: \.self) { f in folderRow(f) }
+                    folderRow("__other")
                     if repo == "__other" {
                         TextField("/path/to/project", text: $customRepo)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
                 }
-                Section("Agent") {
-                    Picker("Agent", selection: $agent) {
-                        Text("Claude").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode")
-                    }.pickerStyle(.segmented)
-                }
-                Section {
-                    Button { Task { await start(resume: nil) } } label: {
-                        Label("Start a new session", systemImage: "plus")
+                if !folder.isEmpty {
+                    Section {
+                        TextField("First message (optional)", text: $prompt, axis: .vertical).lineLimit(1...4)
+                        Button { Task { await start(resume: nil) } } label: {
+                            Text("Start new session").font(.jb(16, .semibold)).frame(maxWidth: .infinity)
+                        }
+                        .disabled(busy || host.isEmpty)
                     }
-                    .disabled(busy || host.isEmpty || folder.isEmpty)
-                }
-                if !resumable.isEmpty {
-                    Section("Resume") {
-                        ForEach(resumable) { s in
-                            Button { Task { await start(resume: s.resume_id) } } label: {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text((s.summary ?? "").isEmpty ? "Session" : s.summary!).font(.jb(15, .medium)).foregroundStyle(JB.ink).lineLimit(2)
-                                    Text([s.agent ?? "", s.branch ?? "", rel(s.at)].filter { !$0.isEmpty }.joined(separator: " · "))
-                                        .font(.jb(13)).foregroundStyle(JB.ink3)
+                    if !resumable.isEmpty {
+                        Section("Or resume") {
+                            ForEach(resumable) { s in
+                                Button { Task { await start(resume: s.resume_id) } } label: {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text((s.summary ?? "").isEmpty ? "Session" : s.summary!).font(.jb(15, .medium)).foregroundStyle(JB.ink).lineLimit(2)
+                                        Text([s.agent ?? "", s.branch ?? "", rel(s.at)].filter { !$0.isEmpty }.joined(separator: " · "))
+                                            .font(.jb(13)).foregroundStyle(JB.ink3)
+                                    }
                                 }
+                                .disabled(busy)
                             }
-                            .disabled(busy)
                         }
                     }
                 }
@@ -93,6 +98,20 @@ struct NewCodingAgentSheet: View {
             }
             .task { await load() }
             .onChange(of: host) { repo = folders.first ?? "__other" }
+        }
+    }
+
+    private func folderRow(_ f: String) -> some View {
+        Button { repo = f } label: {
+            HStack(spacing: 12) {
+                Image(systemName: f == "__other" ? "plus" : "folder").foregroundStyle(repo == f ? JB.accent : JB.ink3).frame(width: 22)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(f == "__other" ? "Other folder…" : (f as NSString).lastPathComponent).font(.jb(15, .medium)).foregroundStyle(JB.ink)
+                    if f != "__other" { Text(f).font(.jb(12)).foregroundStyle(JB.ink3).lineLimit(1).truncationMode(.middle) }
+                }
+                Spacer()
+                if repo == f { Image(systemName: "checkmark").foregroundStyle(JB.accent) }
+            }
         }
     }
 
@@ -118,7 +137,8 @@ struct NewCodingAgentSheet: View {
     private func start(resume: String?) async {
         busy = true; error = nil
         defer { busy = false }
-        var body: [String: Any] = ["repo": folder, "host": host, "agent": agent]
+        var body: [String: Any] = ["repo": folder, "host": host, "agent": agent, "permission": permission]
+        if resume == nil, !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { body["prompt"] = prompt }
         body["resume"] = resume ?? false
         do {
             let r = try await api.send(StartReply.self, "/api/coding-agents/start", json: body)
