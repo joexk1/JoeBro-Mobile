@@ -271,6 +271,7 @@ struct AgentChatThread: View {
             }
         }
         .jbCard(padding: 12)
+        .background(RoundedRectangle(cornerRadius: JB.rCard, style: .continuous).fill(JB.surface.opacity(active ? 0.96 : 0)))   // solid while it waits on you
         .overlay(RoundedRectangle(cornerRadius: JB.rCard, style: .continuous).strokeBorder(JB.warn.opacity(active ? 0.5 : 0), lineWidth: 1))
     }
 
