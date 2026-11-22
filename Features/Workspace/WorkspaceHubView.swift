@@ -5,7 +5,6 @@ import SwiftUI
 struct WorkspaceHubView: View {
     let api: JoeBroAPI
     @State private var ws: WorkspaceAPI
-    @State private var hasEntered = false
     #if DEBUG
     /// `-JoeBroScreen tasks|memory|brain|inbox` opens that screen at launch (screenshots).
     @State private var debugOpen = false
@@ -21,7 +20,6 @@ struct WorkspaceHubView: View {
         }
     }
     #endif
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onOpenSettings: () -> Void = {}
 
     init(api: JoeBroAPI, onOpenSettings: @escaping () -> Void = {}) {
@@ -33,32 +31,30 @@ struct WorkspaceHubView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Mail & calendar") {
-                    row("envelope", "Email", "Read your inbox") { EmailView(api: api) }
-                    row("calendar", "Calendar", "Today and what's coming") { CalendarAgendaView(api: api) }
-                    row("cart", "Shopping", "Your list — tick things off") { ShoppingListView(api: api) }
-                }
-                Section("Work") {
-                    row("bell", "Notifications", "Reminders and updates from JoeBro") { MobileNotificationInbox(api: api) }
-                    row("magnifyingglass", "Research", "Deep research runs and reports") { ResearchView(api: api, ws: ws) }
-                    row("moon.stars", "Night Shift", "Queue coding tasks, review them in the morning") { NightShiftView(ws: ws) }
-                    row("clock.arrow.circlepath", "Tasks", "Prompts on a schedule") { TasksView(ws: ws) }
-                }
-                Section("Knowledge") {
-                    row("brain.head.profile", "Memory", "One memory for you, your projects and every agent") { SharedMemoryView(ws: ws) }
-                    row("brain", Flavor.brainTitle, "What JoeBro remembers") { BrainView(api: api, ws: ws) }
-                    row("person.text.rectangle", Flavor.memoryTitle, "Notes JoeBro keeps about you") { MuseView(ws: ws) }
-                    row("sparkles", "Skills", "Learned procedures") { SkillsView(ws: ws) }
-                    row("wrench.and.screwdriver", "Tools", "APIs, MCP servers, plugins") { ToolsView(ws: ws) }
-                    row("checkmark.shield", "AI Check", "Score text for AI likelihood") { AICheckView(ws: ws) }
-                }
+                Section {
+                    row("envelope", "Email") { EmailView(api: api) }
+                    row("calendar", "Calendar") { CalendarAgendaView(api: api) }
+                    row("cart", "Shopping") { ShoppingListView(api: api) }
+                } header: { JBSectionHeader("Mail & calendar") }
+                Section {
+                    row("bell", "Notifications") { MobileNotificationInbox(api: api) }
+                    row(.research, "Research") { ResearchView(api: api, ws: ws) }
+                    row(.nightShift, "Night Shift") { NightShiftView(ws: ws) }
+                    row(.tasks, "Tasks") { TasksView(ws: ws) }
+                } header: { JBSectionHeader("Work") }
+                Section {
+                    row(.memory, "Memory") { SharedMemoryView(ws: ws) }
+                    row(.memory, Flavor.brainTitle) { BrainView(api: api, ws: ws) }
+                    row(.agent, Flavor.memoryTitle) { MuseView(ws: ws) }
+                    row(.skills, "Skills") { SkillsView(ws: ws) }
+                    row(.tools, "Tools") { ToolsView(ws: ws) }
+                    row("checkmark.shield", "AI Check") { AICheckView(ws: ws) }
+                } header: { JBSectionHeader("Knowledge") }
             }
             .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .jbWallpaper()
+        .jbForm()
             .navigationTitle("Workspace")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { hasEntered = true }
             #if DEBUG
             .navigationDestination(isPresented: $debugOpen) { debugScreen }
             .task { if DemoMode.option("-JoeBroScreen") != nil { debugOpen = true } }
@@ -67,7 +63,7 @@ struct WorkspaceHubView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { onOpenSettings() } label: {
                         Image(systemName: "gearshape")
-                            .foregroundStyle(Color.accentTint)
+                            .foregroundStyle(JB.ink2)
                             .frame(width: 44, height: 44)
                     }
                     .accessibilityLabel("Settings")
@@ -79,23 +75,29 @@ struct WorkspaceHubView: View {
     /// Destination-builder links, not `NavigationLink(value:)`. A pushed screen
     /// that declares its own `navigationDestination(for:)` would otherwise fight
     /// the hub's destination table and the row would simply not open.
-    private func row<Destination: View>(_ symbol: String, _ title: String, _ subtitle: String,
+    private func row<Destination: View>(_ symbol: String, _ title: String,
                                         @ViewBuilder destination: () -> Destination) -> some View {
+        link(title, icon: Image(systemName: symbol).font(.jb(16)), destination: destination)
+    }
+
+    private func row<Destination: View>(_ glyph: JBGlyph, _ title: String,
+                                        @ViewBuilder destination: () -> Destination) -> some View {
+        link(title, icon: JBIcon(glyph, size: 17), destination: destination)
+    }
+
+    private func link<Icon: View, Destination: View>(_ title: String, icon: Icon,
+                                                     @ViewBuilder destination: () -> Destination) -> some View {
         NavigationLink(destination: destination()) {
             HStack(spacing: 13) {
-                Image(systemName: symbol)
-                    .font(.jb(17))
-                    .foregroundStyle(.joeInk.opacity(0.85))
+                icon
+                    .foregroundStyle(JB.ink2)
                     .frame(width: 28)
-                    .scaleEffect(reduceMotion || hasEntered ? 1 : 0.92)
-                    .opacity(reduceMotion || hasEntered ? 1 : 0.75)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: hasEntered)
-                Text(title).foregroundStyle(.joeInk)
+                Text(title).foregroundStyle(JB.ink)
             }
             .frame(minHeight: 44)
-            .accessibilityHint(subtitle)   // titles only on screen; VoiceOver still gets the description
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .listRowBackground(JB.panelFill)
+        .listRowSeparatorTint(JB.line)
     }
 }
 
@@ -107,11 +109,10 @@ func alertBinding<T>(_ source: Binding<T?>) -> Binding<Bool> {
 }
 
 @ViewBuilder
-func empty(_ symbol: String, _ title: String, _ detail: String) -> some View {
-    VStack(spacing: 10) {
-        Image(systemName: symbol).font(.jbLargeTitle).foregroundStyle(.secondary)
-        Text(title).font(.jbHeadline).foregroundStyle(.joeInk)
-        Text(detail).font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+func empty(_ symbol: String, _ title: String, _ detail: String = "") -> some View {
+    VStack(spacing: 12) {
+        Text(JBEmptyState.drawing(.inbox)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
+        Text(title).font(.jb(13)).foregroundStyle(JB.ink2)
     }
     .frame(maxWidth: .infinity).padding(.vertical, 40)
     .listRowBackground(Color.clear)
@@ -122,9 +123,7 @@ func empty(_ symbol: String, _ title: String, _ detail: String) -> some View {
 struct WSStatusDot: View {
     let on: Bool
     var body: some View {
-        Circle()
-            .fill(on ? Color.green : Color.joeInk.opacity(0.25))
-            .frame(width: 8, height: 8)
+        JBStatusDot(color: on ? JB.live : JB.ink3, size: 7)
             .accessibilityLabel(on ? "Enabled" : "Disabled")
     }
 }
@@ -138,7 +137,8 @@ struct WSToggle: View {
     var body: some View {
         Toggle("", isOn: Binding(get: { isOn }, set: set))
             .labelsHidden()
-            .tint(Color.accentTint)
+            .toggleStyle(JBSwitchStyle())
+            .sensoryFeedback(.selection, trigger: isOn)
             .accessibilityLabel(label)
     }
 }
@@ -154,7 +154,7 @@ struct WSPermissionPicker: View {
                 Label(value.label, systemImage: value.symbol).tag(value.rawValue)
             }
         }
-        .tint(Color.accentTint)
+        .tint(JB.accent)
     }
 }
 
@@ -172,7 +172,7 @@ struct DemoModelList: View {
                 Section(group.key) {
                     ForEach(group.value) { m in
                         Label { Text(m.display) } icon: { ProviderLogoView(model: m.modelID, size: 18) }
-                            .listRowBackground(Color.joeInk.opacity(0.06))
+                            .listRowBackground(JB.panelFill)
                     }
                 }
             }

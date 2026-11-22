@@ -17,7 +17,9 @@ struct DocumentEditorView: View {
     @State private var store: DocumentEditorStore
     @State private var mode: DocumentMode
     @FocusState private var editorFocused: Bool
+    @State private var jumpTo: Int?
     private let fallbackTitle: String
+    private var outline: [MDSection] { MDSection.parse(store.text).filter { $0.level > 0 } }
 
     init(api: JoeBroAPI,
          source: DocumentEditorStore.Source,
@@ -33,22 +35,34 @@ struct DocumentEditorView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Spacer(minLength: 0)
                 DocumentModeSwitch(mode: $mode)
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.black.opacity(0.16))
-            Divider().overlay(.joeInk.opacity(0.10))
+            .padding(.vertical, 8)
+            Divider().overlay(JB.line)
             content
-            Divider().overlay(.joeInk.opacity(0.12))
+            Divider().overlay(JB.line)
             DocumentStatusBar(store: store)
         }
-        .background(Color.black.opacity(0.22))
+        .background(JB.bg.opacity(0.4))
         .jbWallpaper()
         .navigationTitle(displayTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if mode == .view, store.isMarkdown, !outline.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        ForEach(outline) { h in
+                            Button(String(repeating: "  ", count: max(0, h.level - 1)) + h.title) { jumpTo = h.id }
+                        }
+                    } label: {
+                        Image(systemName: "list.bullet.indent").foregroundStyle(JB.ink2)
+                    }
+                    .accessibilityLabel("Outline")
+                }
+            }
+        }
         .task { await store.load() }
         // Flush on every mode change: the text itself is safe either way, but
         // the backend should not be two seconds behind what you are reading.
@@ -72,7 +86,7 @@ struct DocumentEditorView: View {
         } else if store.loadFailed {
             failureState(store.error ?? "The backend didn't return this document.")
         } else if mode == .view {
-            DocumentPreview(title: displayTitle, store: store)
+            DocumentPreview(title: displayTitle, store: store, jumpTo: $jumpTo)
         } else {
             DocumentEditorBody(store: store, focused: $editorFocused)
         }
@@ -80,25 +94,20 @@ struct DocumentEditorView: View {
 
     private var loadingState: some View {
         VStack(spacing: 12) {
-            ProgressView().tint(.joeInk)
-            Text("Loading \(fallbackTitle)…")
-                .font(.jbFootnote).foregroundStyle(.secondary)
+            JBSpinner()
+            Text(fallbackTitle).font(.jbMono(11)).foregroundStyle(JB.ink3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func failureState(_ message: String) -> some View {
         VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.jbLargeTitle).foregroundStyle(Color.accentTint)
-            Text("Couldn't open this document").font(.jbHeadline).foregroundStyle(.joeInk)
+            Text(JBEmptyState.drawing(.plug)).font(.jbMono(12)).foregroundStyle(JB.ink3).fixedSize()
             Text(message)
-                .font(.jbFootnote).foregroundStyle(.secondary)
+                .font(.jbMono(12)).foregroundStyle(JB.ink2)
                 .multilineTextAlignment(.center)
             Button("Try again") { Task { await store.load() } }
                 .buttonStyle(.jbPrimary)
-                .tint(Color.accentTint)
-                .foregroundStyle(Color.joeInverseInk)
                 .padding(.top, 2)
         }
         .padding(28)
@@ -108,44 +117,76 @@ struct DocumentEditorView: View {
 
 // MARK: - Mode switch
 
-/// A segmented View / Edit control with full-size touch targets and a clear
-/// selected state on both the preset and photo wallpapers.
+/// Quiet View / Edit segmented control.
 private struct DocumentModeSwitch: View {
     @Binding var mode: DocumentMode
 
     var body: some View {
-        HStack(spacing: 3) {
-            segment(.view, icon: "eye", label: "View")
-            segment(.edit, icon: "square.and.pencil", label: "Edit")
+        HStack(spacing: 2) {
+            segment(.view, label: "View")
+            segment(.edit, label: "Edit")
         }
-        .padding(3)
-        .frame(maxWidth: 248)
-        .background(.black.opacity(0.26), in: RoundedRectangle(cornerRadius: 17, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 17, style: .continuous)
-            .strokeBorder(.joeInk.opacity(0.19), lineWidth: 1))
+        .padding(2)
+        .jbSurface(.raised, radius: JB.rControl)
+        .sensoryFeedback(.selection, trigger: mode)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Document mode")
     }
 
-    private func segment(_ value: DocumentMode, icon: String, label: String) -> some View {
+    private func segment(_ value: DocumentMode, label: String) -> some View {
         let active = mode == value
         return Button {
-            withAnimation(.snappy(duration: 0.2)) { mode = value }
+            withAnimation(JB.snap) { mode = value }
         } label: {
-            HStack(spacing: 7) {
-                Image(systemName: icon).font(.jb(14, .semibold))
-                Text(label).font(.jb(14, .semibold))
-            }
-            .foregroundStyle(active ? Color.joeInverseInk.opacity(0.9) : .joeInk.opacity(0.76))
-            .frame(maxWidth: .infinity)
-            .frame(height: 42)
-            .background(active ? AnyShapeStyle(Color.accentTint) : AnyShapeStyle(Color.clear),
-                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            Text(label).font(.jb(13, .medium))
+                .foregroundStyle(active ? JB.ink : JB.ink3)
+                .padding(.horizontal, 14)
+                .frame(height: 30)
+                .background(active ? JB.hover : .clear, in: RoundedRectangle(cornerRadius: JB.rControl - 2, style: .continuous))
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(label)
         .accessibilityAddTraits(active ? .isSelected : [])
+    }
+}
+
+// MARK: - Markdown outline
+
+/// A markdown document split at headings so each can be scrolled to.
+struct MDSection: Identifiable {
+    let id: Int
+    let level: Int      // 0 = preamble before the first heading
+    let title: String
+    let body: String
+
+    static func parse(_ text: String) -> [MDSection] {
+        var out: [MDSection] = []
+        var level = 0, title = "", buf: [Substring] = []
+        var fenced = false
+        func flush() {
+            let body = buf.joined(separator: "\n")
+            if level > 0 || !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                out.append(MDSection(id: out.count, level: level, title: title, body: body))
+            }
+            buf = []
+        }
+        for line in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            if line.hasPrefix("```") || line.hasPrefix("~~~") { fenced.toggle() }
+            if !fenced, line.hasPrefix("#") {
+                let hashes = line.prefix { $0 == "#" }.count
+                let rest = line.dropFirst(hashes)
+                if hashes <= 6, rest.first == " " {
+                    flush()
+                    level = hashes
+                    title = rest.trimmingCharacters(in: .whitespaces)
+                    buf = [line]
+                    continue
+                }
+            }
+            buf.append(line)
+        }
+        flush()
+        return out
     }
 }
 
@@ -156,13 +197,15 @@ private struct DocumentModeSwitch: View {
 private struct DocumentPreview: View {
     let title: String
     let store: DocumentEditorStore
+    @Binding var jumpTo: Int?
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text(title)
-                    .font(.jbTitle2.bold())
-                    .foregroundStyle(.joeInk)
+                    .font(.jb(22, .semibold)).tracking(-0.3)
+                    .foregroundStyle(JB.ink)
                     .textSelection(.enabled)
                 body(for: store.text)
             }
@@ -173,6 +216,12 @@ private struct DocumentPreview: View {
             .padding(.bottom, 32)
         }
         .scrollDismissesKeyboard(.immediately)
+        .onChange(of: jumpTo) { _, id in
+            guard let id else { return }
+            withAnimation(JB.smooth) { proxy.scrollTo(id, anchor: .top) }
+            jumpTo = nil
+        }
+        }
     }
 
     @ViewBuilder
@@ -180,14 +229,18 @@ private struct DocumentPreview: View {
         if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             emptyBody
         } else if store.isMarkdown {
-            MarkdownText(text: text).textSelection(.enabled)
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(MDSection.parse(text)) { sec in
+                    MarkdownText(text: sec.body).textSelection(.enabled).id(sec.id)
+                }
+            }
         } else if store.isMonospaced {
             codeBody(text)
         } else {
             Text(text)
                 .font(.jbBody)
                 .lineSpacing(6)
-                .foregroundStyle(.joeInk)
+                .foregroundStyle(JB.ink)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -196,25 +249,18 @@ private struct DocumentPreview: View {
     private func codeBody(_ text: String) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             Text(text)
-                .font(.jbMono(.footnote))
+                .font(.jbMono(13))
                 .lineSpacing(3)
-                .foregroundStyle(.joeInk)
+                .foregroundStyle(JB.ink)
                 .textSelection(.enabled)
                 .padding(14)
         }
-        .background(.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .stroke(.joeInk.opacity(0.1), lineWidth: 1))
+        .jbSurface(.raised, radius: JB.rCard)
     }
 
     private var emptyBody: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("This document is empty.")
-                .font(.jbSubheadline).foregroundStyle(.secondary)
-            Text("Switch to Edit to start writing.")
-                .font(.jbFootnote).foregroundStyle(.tertiary)
-        }
-        .padding(.vertical, 20)
+        Text("Empty").font(.jbMono(12)).foregroundStyle(JB.ink3)
+            .padding(.vertical, 20)
     }
 }
 
@@ -228,20 +274,20 @@ private struct DocumentEditorBody: View {
         VStack(spacing: 0) {
             if store.isLibrary {
                 TextField("Document title", text: $store.title)
-                    .font(.jbHeadline)
-                    .foregroundStyle(.joeInk)
-                    .tint(Color.accentTint)
+                    .font(.jb(17, .semibold))
+                    .foregroundStyle(JB.ink)
+                    .tint(JB.accent)
                     .submitLabel(.done)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 13)
                     .onChange(of: store.title) { _, _ in store.titleChanged() }
-                Divider().overlay(.joeInk.opacity(0.12))
+                Divider().overlay(JB.line)
             }
             TextEditor(text: $store.text)
-                .font(store.isMonospaced ? .system(.body, design: .monospaced) : .body)
+                .font(store.isMonospaced ? .jbMono(14) : .jb(16))
                 .lineSpacing(store.isMonospaced ? 2 : 5)
-                .foregroundStyle(.joeInk)
-                .tint(Color.accentTint)
+                .foregroundStyle(JB.ink)
+                .tint(JB.accent)
                 .scrollContentBackground(.hidden)
                 .autocorrectionDisabled(store.isMonospaced)
                 .textInputAutocapitalization(store.isMonospaced ? .never : .sentences)
@@ -255,7 +301,7 @@ private struct DocumentEditorBody: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { focused = false }
-                    .foregroundStyle(Color.accentTint)
+                    .foregroundStyle(JB.accent)
                     .accessibilityLabel("Dismiss keyboard")
             }
         }
@@ -271,46 +317,36 @@ private struct DocumentStatusBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(store.language.isEmpty ? "text" : store.language)
-                .font(.jbCaption2.weight(.medium))
-                .foregroundStyle(.joeInk.opacity(0.75))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(.joeInk.opacity(0.1), in: Capsule())
+            JBChip(text: store.language.isEmpty ? "text" : store.language)
             Text(store.countSummary)
-                .font(.jbCaption)
-                .foregroundStyle(.secondary)
+                .font(.jbMono(11))
+                .foregroundStyle(JB.ink3)
             Spacer(minLength: 6)
             saveState
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 9)
-        .frame(minHeight: 36)
+        .padding(.vertical, 8)
+        .frame(minHeight: 34)
         .background(JB.panelFill)
     }
 
     @ViewBuilder
     private var saveState: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 6) {
             if store.saving {
-                ProgressView().controlSize(.mini).tint(.joeInk)
-                Text("Saving…")
+                JBSpinner(size: 10)
             } else if store.dirty {
-                Image(systemName: "circle.fill")
-                    .font(.jb(6)).foregroundStyle(.orange)
-                Text("Unsaved")
+                JBStatusDot(color: JB.warn, size: 6)
+                Text("unsaved")
             } else if let savedAt = store.savedAt {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.jbCaption).foregroundStyle(.green.opacity(0.85))
-                Text("Saved \(savedAt.formatted(date: .omitted, time: .shortened))")
+                JBStatusDot(color: JB.live, size: 6)
+                Text(savedAt.formatted(date: .omitted, time: .shortened))
             } else {
-                Image(systemName: "checkmark.circle")
-                    .font(.jbCaption).foregroundStyle(.secondary)
-                Text("Up to date")
+                JBStatusDot(color: JB.ink3, size: 6)
             }
         }
-        .font(.jbCaption)
-        .foregroundStyle(.secondary)
+        .font(.jbMono(11))
+        .foregroundStyle(JB.ink3)
         .accessibilityElement(children: .combine)
     }
 }

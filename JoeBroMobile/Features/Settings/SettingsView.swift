@@ -27,19 +27,16 @@ struct MobileSettingsView: View {
         NavigationStack {
             Form {
                 connectionSection
-                modelSection
-                subagentSection
-                joeBroSection
-                #if PERSONAL
-                AppleRemindersSettingsSection()
-                #endif
-                ProactiveModeSection(api: client())
-                HealthSettingsSection(api: client())
                 appearanceSection
-                pushSection
+                notificationsSection
+                agentsSection
+                personalSection
                 privacySection
             }
             .scrollContentBackground(.hidden)
+            .foregroundStyle(JB.ink)
+            .tint(JB.accent)
+            .toggleStyle(JBSwitchStyle())
             .background(WallpaperBackground(theme: theme))
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -47,28 +44,30 @@ struct MobileSettingsView: View {
         }
     }
 
+    private func group<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
+        Section {
+            content().jbRow()
+        } header: {
+            JBSectionHeader(title)
+        }
+    }
+
     // MARK: Connection
 
     private var connectionSection: some View {
-        Section {
-            LabeledContent("Name", value: DemoMode.active ? "Demo" : ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name)
-            LabeledContent("URL", value: DemoMode.active ? "Built-in sample data" : ServerConfig.urlString)
-            LabeledContent("Status", value: connectionStatus)
-            Button { Task { await testConnection() } } label: {
-                Label("Test connection", systemImage: "antenna.radiowaves.left.and.right")
+        group("Connection") {
+            LabeledContent("Name") { Text(DemoMode.active ? "Demo" : ServerConfig.name.isEmpty ? "Unnamed" : ServerConfig.name).font(.jbMono(13)) }
+            LabeledContent("URL") { Text(DemoMode.active ? "Sample data" : ServerConfig.urlString).font(.jbMono(13)).lineLimit(1) }
+            LabeledContent("Status") {
+                HStack(spacing: 6) {
+                    JBStatusDot(color: statusColor, live: connectionStatus == "Connected", size: 6)
+                    Text(connectionStatus).font(.jbMono(13))
+                }
             }
-            Button { repairing = true } label: {
-                Label("Pair again", systemImage: "qrcode.viewfinder")
-            }
-            Button(role: .destructive) { confirmForget = true } label: {
-                Label(DemoMode.active ? "Leave the demo" : "Forget this backend", systemImage: "trash")
-            }
-        } header: {
-            Text("Your backend")
-        } footer: {
-            Text("The app keeps recent content visible when it cannot connect. Away from home, Tailscale on both devices is the simplest way to stay reachable.")
+            Button("Test connection") { Task { await testConnection() } }
+            Button("Pair again") { repairing = true }
+            Button(DemoMode.active ? "Leave the demo" : "Forget this backend", role: .destructive) { confirmForget = true }
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
         .task { await testConnection() }
         .fullScreenCover(isPresented: $repairing) {
             OnboardingView(theme: theme, allowCancel: true,
@@ -79,6 +78,14 @@ struct MobileSettingsView: View {
             Button("Forget", role: .destructive) { Task { await forget() } }
         } message: {
             Text("This removes the saved URL and token and turns off push for this phone.")
+        }
+    }
+
+    private var statusColor: Color {
+        switch connectionStatus {
+        case "Connected": JB.live
+        case "Checking…", "Not checked": JB.ink3
+        default: JB.danger
         }
     }
 
@@ -95,34 +102,153 @@ struct MobileSettingsView: View {
         catch { connectionStatus = "Unreachable" }
     }
 
-    // MARK: Model
+    // MARK: Appearance
 
-    private var modelSection: some View {
-        Section {
-            modelRow
-            if let note = modelsNote {
-                Text(note).font(.jbCaption).foregroundStyle(.secondary)
+    private var appearance: JBAppearance { .shared }
+
+    private var backdropChoice: JBBackdropKind {
+        if theme.wallpaperName == "photo" { return .photo }
+        return appearance.backdrop == .scene && backgroundAnimation != BackgroundAnimation.off.rawValue ? .scene : .palette
+    }
+
+    private var appearanceSection: some View {
+        group("Appearance") {
+            paletteSwatches
+            ColorPicker("JoeBro colour", selection: Binding(get: { theme.joeBroColor },
+                                                            set: { theme.setJoeBroColor($0) }),
+                        supportsOpacity: false)
+            Picker("Backdrop", selection: Binding(get: { backdropChoice }, set: setBackdrop)) {
+                Text("Palette").tag(JBBackdropKind.palette)
+                Text("Photo").tag(JBBackdropKind.photo)
+                Text("Animated").tag(JBBackdropKind.scene)
             }
-        } header: {
-            Text("Model")
-        } footer: {
-            Text("Used for new chats and for agents that don't pick their own.")
+            .pickerStyle(.segmented)
+            if backdropChoice == .photo {
+                PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                    Text(theme.wallpaper == nil ? "Choose photo" : "Change photo")
+                }
+                .onChange(of: selectedPhoto) { _, item in
+                    Task { if let data = try? await item?.loadTransferable(type: Data.self) { theme.setWallpaper(data: data) } }
+                }
+            }
+            if backdropChoice == .scene {
+                Picker("Scene", selection: $backgroundAnimation) {
+                    ForEach(BackgroundAnimation.allCases.filter { $0 != .off }) { Text($0.label).tag($0.rawValue) }
+                }
+                .pickerStyle(.menu)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Panel opacity")
+                    Spacer()
+                    Text("\(Int(appearance.solidity * 100))%").font(.jbMono(12)).foregroundStyle(JB.ink2)
+                }
+                Slider(value: Binding(get: { appearance.solidity }, set: { appearance.solidity = $0 }), in: 0.35...1)
+            }
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .sensoryFeedback(.selection, trigger: appearance.palette)
+    }
+
+    private func setBackdrop(_ kind: JBBackdropKind) {
+        switch kind {
+        case .palette:
+            appearance.backdrop = .palette
+            if theme.wallpaperName == "photo" { theme.select(appearance.palette.rawValue) }
+        case .photo:
+            appearance.backdrop = .photo
+            if theme.wallpaper != nil { theme.select("photo") }
+            else { theme.wallpaperName = "photo" }
+        case .scene:
+            appearance.backdrop = .scene
+            if theme.wallpaperName == "photo" { theme.select(appearance.palette.rawValue) }
+            if backgroundAnimation == BackgroundAnimation.off.rawValue {
+                backgroundAnimation = BackgroundAnimation.allCases.first { $0 != .off }?.rawValue ?? "off"
+            }
+        }
+    }
+
+    private var paletteSwatches: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(JBPalette.allCases) { p in
+                    let on = appearance.palette == p
+                    Button { appearance.palette = p } label: {
+                        ZStack {
+                            if p == .mono {
+                                HStack(spacing: 0) { Color.black; Color.white }
+                            } else {
+                                p.accent
+                            }
+                        }
+                        .frame(width: 30, height: 30)
+                        .clipShape(Circle())
+                        .overlay(Circle().strokeBorder(JB.lineStrong, lineWidth: 1))
+                        .padding(3)
+                        .overlay(Circle().strokeBorder(on ? JB.ink : .clear, lineWidth: 1.5))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(p.label)
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    // MARK: Notifications
+
+    private var notificationsSection: some View {
+        group("Notifications") {
+            LabeledContent("Push") { Text(push.status).font(.jbMono(12)).foregroundStyle(JB.ink2).multilineTextAlignment(.trailing) }
+            if push.enabled {
+                Button("Refresh registration") { Task { await push.refresh() } }
+                Button("Disable push", role: .destructive) { Task { await push.disable() } }
+            } else {
+                Button("Enable push") { Task { await push.enable() } }
+            }
+            Toggle("Hide previews", isOn: $hideNotificationPreviews)
+                .onChange(of: hideNotificationPreviews) { _, _ in Task { await push.syncRegistration() } }
+            Button("iPhone notification settings") {
+                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { UIApplication.shared.open(url) }
+            }
+        }
+        .sensoryFeedback(.selection, trigger: hideNotificationPreviews)
+    }
+
+    // MARK: Agents
+
+    private var agentsSection: some View {
+        group("Agents") {
+            modelRow
+            Toggle("Subagents: JoeBro chooses", isOn: Binding(get: { subagentAuto },
+                                 set: { value in subagentAuto = value; Task { await saveSubagentAuto(value) } }))
+            subagentModelRow
+                .disabled(subagentAuto)
+                .opacity(subagentAuto ? 0.4 : 1)
+            ProactiveRows(api: client())
+            NavigationLink {
+                JoeBroSoulView(api: client())
+            } label: {
+                HStack(spacing: 8) { JBIcon(.agent, size: 15); Text("Soul") }
+            }
+            if let note = modelsNote ?? subagentNote {
+                Text(note).font(.jbMono(11)).foregroundStyle(JB.ink3)
+            }
+        }
+        .sensoryFeedback(.selection, trigger: subagentAuto)
         .task { await loadModels() }
     }
 
     @ViewBuilder private var modelRow: some View {
         if models.isEmpty {
             LabeledContent("Default model") {
-                if loadingModels { ProgressView().controlSize(.small) }
-                else { Text("Unavailable") }
+                if loadingModels { JBSpinner() } else { Text("Unavailable").foregroundStyle(JB.ink3) }
             }
         } else {
             HStack(spacing: 10) {
                 if let current = models.first(where: { $0.id == defaultModelID }) {
                     ProviderLogoView(model: current.modelID, size: 18)
-                        .foregroundStyle(.joeInk)
+                        .foregroundStyle(JB.ink)
                 }
                 Picker("Default model", selection: $defaultModelID) {
                     Text("Not set").tag("")
@@ -135,32 +261,9 @@ struct MobileSettingsView: View {
         }
     }
 
-    // MARK: Subagents
-
-    private var subagentSection: some View {
-        Section {
-            Toggle(isOn: Binding(get: { subagentAuto },
-                                 set: { value in subagentAuto = value; Task { await saveSubagentAuto(value) } })) {
-                Label("Let JoeBro choose", systemImage: "wand.and.stars")
-            }
-            subagentModelRow
-                .disabled(subagentAuto)
-                .opacity(subagentAuto ? 0.4 : 1)
-            if let note = subagentNote {
-                Text(note).font(.jbCaption).foregroundStyle(.secondary)
-            }
-        } header: {
-            Text("Subagents")
-        } footer: {
-            Text("Subagents are helpers JoeBro spawns for side tasks. When JoeBro chooses, it picks a model for each task and the fixed model below is not used.")
-        }
-        .tint(Color.accentTint)
-        .listRowBackground(Color.joeInk.opacity(0.06))
-    }
-
     @ViewBuilder private var subagentModelRow: some View {
         if models.isEmpty {
-            LabeledContent("Subagent model") { Text(loadingModels ? "Loading…" : "Unavailable") }
+            LabeledContent("Subagent model") { Text(loadingModels ? "Loading…" : "Unavailable").foregroundStyle(JB.ink3) }
         } else {
             Picker("Subagent model", selection: $subagentModelID) {
                 Text("Same as default").tag("")
@@ -176,7 +279,7 @@ struct MobileSettingsView: View {
         guard let api = client() else { return }
         do {
             try await api.setPreference("subagent_model_auto", value: on ? "true" : "false")
-            subagentNote = on ? "JoeBro will choose per task." : "Subagents use the fixed model."
+            subagentNote = nil
         } catch {
             subagentNote = "Could not save: \(error.localizedDescription)"
         }
@@ -188,122 +291,31 @@ struct MobileSettingsView: View {
         do {
             try await api.setPreference("subagent_model", value: choice?.modelID)
             try await api.setPreference("subagent_endpoint_id", value: choice?.endpointID)
-            subagentNote = choice.map { "Subagents use \($0.display)." } ?? "Subagent model cleared."
+            subagentNote = nil
         } catch {
             subagentNote = "Could not save: \(error.localizedDescription)"
         }
     }
 
-    // MARK: JoeBro
+    // MARK: Personal
 
-    private var joeBroSection: some View {
-        Section {
-            NavigationLink {
-                JoeBroSoulView(api: client())
-            } label: {
-                Label("Soul", systemImage: "sparkle")
-            }
+    private var personalSection: some View {
+        group("Personal") {
             LocationToggleRow()
-        } header: {
-            Text("JoeBro")
-        } footer: {
-            Text("Soul sets how JoeBro sounds and behaves in every new turn.")
+            #if PERSONAL
+            AppleRemindersRows()
+            #endif
+            HealthRows(api: client())
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
-    }
-
-    // MARK: Appearance
-
-    private var appearanceSection: some View {
-        Section {
-            ColorPicker(selection: Binding(get: { theme.joeBroColor },
-                                           set: { theme.setJoeBroColor($0) }),
-                        supportsOpacity: false) {
-                Label("JoeBro colour", systemImage: "paintpalette")
-            }
-            wallpaperSwatches
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                Label("Choose photo wallpaper", systemImage: "photo.on.rectangle")
-            }
-            .onChange(of: selectedPhoto) { _, item in
-                Task { if let data = try? await item?.loadTransferable(type: Data.self) { theme.setWallpaper(data: data) } }
-            }
-            if theme.wallpaperName == "photo" {
-                Button { theme.select(BackgroundPreset.purple.rawValue) } label: {
-                    Label("Use a colour wallpaper instead", systemImage: "circle.lefthalf.filled")
-                }
-            }
-            Picker("JoeBro header scene", selection: Binding(get: { BackgroundAnimation(rawValue: backgroundAnimation)?.rawValue ?? "off" },
-                set: { backgroundAnimation = $0 })) {
-                ForEach(BackgroundAnimation.allCases) { Text($0.label).tag($0.rawValue) }
-            }
-            .pickerStyle(.menu)
-        } header: {
-            Text("Appearance")
-        } footer: {
-            Text("Pick a colour wallpaper or use one of your own photos. Black & White follows the system light or dark setting. The header scene animates behind the JoeBro tab's title.")
-        }
-        .listRowBackground(Color.joeInk.opacity(0.06))
-    }
-
-    private var wallpaperSwatches: some View {
-        HStack(spacing: 10) {
-            ForEach(BackgroundPreset.allCases) { preset in
-                Button { theme.select(preset.rawValue) } label: {
-                    ZStack {
-                        if preset == .monochrome {
-                            HStack(spacing: 0) { Color.black; Color.white }
-                        } else {
-                            LinearGradient(colors: preset.colors, startPoint: .topLeading, endPoint: .bottomTrailing)
-                        }
-                    }
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.joeInk.opacity(theme.wallpaperName == preset.rawValue ? 1 : 0.2),
-                                             lineWidth: theme.wallpaperName == preset.rawValue ? 3 : 1))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(preset.label + (preset == .monochrome ? " · follows system appearance" : " wallpaper"))
-                .accessibilityAddTraits(theme.wallpaperName == preset.rawValue ? .isSelected : [])
-            }
-        }
-    }
-
-    private var pushSection: some View {
-        Section {
-            Text(push.status).font(.jbFootnote).foregroundStyle(.secondary)
-            if push.enabled {
-                Button("Refresh push registration") { Task { await push.refresh() } }
-                Button("Disable push notifications", role: .destructive) { Task { await push.disable() } }
-            } else {
-                Button { Task { await push.enable() } } label: {
-                    Label("Enable push notifications", systemImage: "bell.badge")
-                }
-            }
-            Button("Open iPhone notification settings") {
-                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { UIApplication.shared.open(url) }
-            }
-        } header: {
-            Text("Push notifications")
-        } footer: {
-            Text("Ask JoeBro to notify you about reminders, finished tasks, or changes you want watched. Hidden previews keep message text out of the lock screen.")
-        }
-        .listRowBackground(Color.joeInk.opacity(0.06))
     }
 
     // MARK: Privacy
 
     private var privacySection: some View {
-        Section {
+        group("Privacy") {
             Toggle("Require Face ID", isOn: $faceIDGate)
-            Toggle("Hide notification previews", isOn: $hideNotificationPreviews)
-                .onChange(of: hideNotificationPreviews) { _, _ in Task { await push.syncRegistration() } }
-        } header: {
-            Text("Privacy & Security")
-        } footer: {
-            Text("Face ID protects this app's screen. Backend access uses the token you paired with.")
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .sensoryFeedback(.selection, trigger: faceIDGate)
     }
 
     private func client() -> JoeBroAPI? {
@@ -334,7 +346,7 @@ struct MobileSettingsView: View {
         do {
             try await api.setPreference("default_model", value: choice?.modelID)
             try await api.setPreference("default_endpoint_id", value: choice?.endpointID)
-            modelsNote = choice.map { "Default is \($0.display)." } ?? "Default cleared."
+            modelsNote = nil
         } catch {
             modelsNote = "Could not save: \(error.localizedDescription)"
         }
@@ -355,13 +367,12 @@ private struct JoeBroSoulView: View {
         Form {
             Section {
                 if loading {
-                    ProgressView("Loading Soul…")
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    JBSpinner().frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     ZStack(alignment: .topLeading) {
                         if soul.isEmpty {
                             Text("How should JoeBro sound and behave with you?")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(JB.ink3)
                                 .padding(.top, 8)
                                 .padding(.leading, 5)
                         }
@@ -370,19 +381,20 @@ private struct JoeBroSoulView: View {
                             .scrollContentBackground(.hidden)
                     }
                     Text("\(soul.count) / 4,000")
-                        .font(.jbCaption.monospacedDigit())
-                        .foregroundStyle(soul.count > 4000 ? .red : .secondary)
+                        .font(.jbMono(11))
+                        .foregroundStyle(soul.count > 4000 ? JB.danger : JB.ink3)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-            } footer: {
-                Text("JoeBro uses this voice, these priorities and this working style in every new turn. Tool permissions stay separate.")
             }
+            .jbRow()
 
             if let error {
-                Section { Text(error).foregroundStyle(.red) }
+                Section { Text(error).foregroundStyle(JB.danger) }.jbRow()
             }
         }
         .scrollContentBackground(.hidden)
+        .foregroundStyle(JB.ink)
+        .tint(JB.accent)
         .navigationTitle("Soul")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -391,6 +403,7 @@ private struct JoeBroSoulView: View {
                     .disabled(loading || saving || soul == savedSoul || soul.count > 4000)
             }
         }
+        .sensoryFeedback(.success, trigger: saved) { _, new in new }
         .onChange(of: soul) { _, _ in saved = false }
         .task { await load() }
     }

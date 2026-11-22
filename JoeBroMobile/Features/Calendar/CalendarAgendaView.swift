@@ -48,7 +48,7 @@ struct CalendarAgendaView: View {
         ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     sourceCard
-                    if let message { Text(message).font(.jbFootnote).foregroundStyle(.orange).padding(14).jbGlass(16) }
+                    if let message { Text(message).font(.jbFootnote).foregroundStyle(JB.warn).padding(14).jbSurface(.panel, radius: JB.rCard) }
                     controls
                     if mode == .month { monthGrid }
                     if mode == .week { weekStrip }
@@ -87,7 +87,7 @@ struct CalendarAgendaView: View {
                     .font(.jbHeadline)
                 if macSource {
                     Text("Edit iPhone calendars here. The Mac remains JoeBro's only calendar mirror; the agent sees changes to calendars shared with that Mac after it syncs.")
-                        .font(.jbFootnote).foregroundStyle(.secondary)
+                        .font(.jbFootnote).foregroundStyle(JB.ink2)
                     if !canReadDeviceCalendar {
                         if EKEventStore.authorizationStatus(for: .event) == .denied {
                             Button("Open iPhone Settings") {
@@ -98,15 +98,15 @@ struct CalendarAgendaView: View {
                         }
                     }
                 } else if calDAVSource {
-                    Text("Changes save to the connected CalDAV calendar.").font(.jbFootnote).foregroundStyle(.secondary)
+                    Text("Changes save to the connected CalDAV calendar.").font(.jbFootnote).foregroundStyle(JB.ink2)
                 } else {
-                    Text("Connect a calendar in JoeBro Settings on your Mac.").font(.jbFootnote).foregroundStyle(.secondary)
+                    Text("Connect a calendar in JoeBro Settings on your Mac.").font(.jbFootnote).foregroundStyle(JB.ink2)
                 }
             }
             Spacer(minLength: 0)
-            if loading { ProgressView().tint(.joeInk) }
+            if loading { JBSpinner() }
         }
-        .padding(16).jbGlass(20)
+        .padding(16).jbSurface(.panel, radius: JB.rCard)
     }
 
     private var controls: some View {
@@ -128,7 +128,7 @@ struct CalendarAgendaView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(12).jbGlass(20)
+        .padding(12).jbSurface(.panel, radius: JB.rCard)
     }
 
     private var periodTitle: String {
@@ -166,7 +166,7 @@ struct CalendarAgendaView: View {
             HStack(spacing: 0) {
                 ForEach(0..<7, id: \.self) { offset in
                     Text(cal.veryShortStandaloneWeekdaySymbols[(cal.firstWeekday - 1 + offset) % 7])
-                        .font(.jbCaption2.weight(.semibold)).foregroundStyle(.secondary)
+                        .font(.jbCaption2.weight(.semibold)).foregroundStyle(JB.ink2)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -176,7 +176,7 @@ struct CalendarAgendaView: View {
                 }
             }
         }
-        .padding(12).jbGlass(20)
+        .padding(12).jbSurface(.panel, radius: JB.rCard)
     }
 
     private var weekStrip: some View {
@@ -185,7 +185,7 @@ struct CalendarAgendaView: View {
                 if let day = cal.date(byAdding: .day, value: offset, to: range.start) { dayButton(day, compact: false) }
             }
         }
-        .padding(8).jbGlass(20)
+        .padding(8).jbSurface(.panel, radius: JB.rCard)
     }
 
     private func dayButton(_ day: Date, compact: Bool) -> some View {
@@ -195,11 +195,11 @@ struct CalendarAgendaView: View {
             VStack(spacing: 3) {
                 if !compact { Text(day.formatted(.dateTime.weekday(.narrow))).font(.jbCaption2) }
                 Text(day.formatted(.dateTime.day())).font(.jbSubheadline.weight(selected ? .bold : .medium))
-                    .foregroundStyle(cal.isDate(day, equalTo: anchor, toGranularity: .month) ? .joeInk : .secondary)
+                    .foregroundStyle(cal.isDate(day, equalTo: anchor, toGranularity: .month) ? JB.ink : .secondary)
                 Circle().fill(count > 0 ? Color.cyan : .clear).frame(width: 4, height: 4)
             }
             .frame(maxWidth: .infinity, minHeight: compact ? 43 : 52)
-            .background(selected ? Color.joeInk.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 11))
+            .background(selected ? JB.ink.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 11))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(count) events")
@@ -230,15 +230,15 @@ struct CalendarAgendaView: View {
                 Text(event.allDay ? "All day" : event.start.formatted(date: .omitted, time: .shortened))
                     .font(.jbCaption.monospacedDigit())
             }
-            .foregroundStyle(.secondary).frame(width: 72, alignment: .leading)
+            .foregroundStyle(JB.ink2).frame(width: 72, alignment: .leading)
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.title).font(.jbHeadline).foregroundStyle(.joeInk)
-                if !event.location.isEmpty { Label(event.location, systemImage: "mappin").font(.jbCaption).foregroundStyle(.secondary) }
+                Text(event.title).font(.jbHeadline).foregroundStyle(JB.ink)
+                if !event.location.isEmpty { Label(event.location, systemImage: "mappin").font(.jbCaption).foregroundStyle(JB.ink2) }
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right").font(.jbCaption.bold()).foregroundStyle(.tertiary)
+            Image(systemName: "chevron.right").font(.jbCaption.bold()).foregroundStyle(JB.ink3)
         }
-        .padding(16).frame(maxWidth: .infinity, minHeight: 70, alignment: .leading).jbGlass(20)
+        .padding(16).frame(maxWidth: .infinity, minHeight: 70, alignment: .leading).jbSurface(.panel, radius: JB.rCard)
     }
 
     private var eventsInRange: [MobileEvent] {
@@ -384,16 +384,16 @@ private struct MobileEventEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Event") {
+                JBSection("Event") {
                     TextField("Title", text: $draft.title)
                     Toggle("All day", isOn: $draft.allDay)
                     DatePicker("Starts", selection: $draft.start,
                                displayedComponents: draft.allDay ? [.date] : [.date, .hourAndMinute])
                     DatePicker(draft.allDay ? "Last day" : "Ends", selection: $draft.end,
                                displayedComponents: draft.allDay ? [.date] : [.date, .hourAndMinute])
-                    if draft.allDay { Text("The last day is included.").font(.jbFootnote).foregroundStyle(.secondary) }
+                    if draft.allDay { Text("The last day is included.").font(.jbFootnote).foregroundStyle(JB.ink2) }
                 }
-                Section("Details") {
+                JBSection("Details") {
                     TextField("Location", text: $draft.location)
                     TextField("Notes", text: $draft.notes, axis: .vertical).lineLimit(3...6)
                 }
@@ -401,8 +401,7 @@ private struct MobileEventEditor: View {
                     Section { Button("Delete event", role: .destructive) { confirmDelete = true } }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .jbWallpaper()
+            .jbForm()
             .navigationTitle(draft.sourceID == nil ? "New event" : "Edit event")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

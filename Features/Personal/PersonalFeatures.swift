@@ -40,8 +40,8 @@ extension JoeBroAPI {
 
 // MARK: - Proactive mode (Settings)
 
-/// Off / Read only / Full — how much JoeBro may do in the background unasked.
-struct ProactiveModeSection: View {
+/// Off / Read only / Full: how much JoeBro may do in the background unasked.
+struct ProactiveRows: View {
     let api: JoeBroAPI?
     @State private var mode = "read_only"
     @State private var descriptions: [String: String] = [:]
@@ -51,20 +51,21 @@ struct ProactiveModeSection: View {
     private let modes: [(String, String)] = [("off", "Off"), ("read_only", "Read only"), ("full", "Full")]
 
     var body: some View {
-        Section {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) { JBIcon(.pulse, size: 15); Text("Proactive") }
             Picker("Proactive agent", selection: Binding(get: { mode }, set: { new in save(new) })) {
                 ForEach(modes, id: \.0) { Text($0.1).tag($0.0) }
             }
             .pickerStyle(.segmented)
             .disabled(!loaded)
             .accessibilityLabel("Proactive agent permissions")
-        } header: {
-            Text("Proactive agent")
-        } footer: {
-            Text(error ?? descriptions[mode] ?? "How much JoeBro may do in the background without being asked.")
-                .foregroundStyle(error == nil ? Color.secondary : Color.red)
+            if let error {
+                Text(error).font(.jbMono(11)).foregroundStyle(JB.danger)
+            } else if let d = descriptions[mode] {
+                Text(d).font(.jbCaption).foregroundStyle(JB.ink3)
+            }
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .sensoryFeedback(.selection, trigger: mode)
         .task { await load() }
     }
 
@@ -103,23 +104,23 @@ struct ShoppingListView: View {
         List {
             Section {
                 HStack(spacing: 10) {
-                    Image(systemName: "plus.circle.fill").foregroundStyle(Color.accentTint)
+                    Image(systemName: "plus.circle.fill").foregroundStyle(JB.accent)
                     TextField("Add item", text: $draft)
                         .focused($adding)
                         .submitLabel(.done)
                         .onSubmit(add)
-                        .foregroundStyle(.joeInk)
+                        .foregroundStyle(JB.ink)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
             }
             if let error {
-                Text(error).font(.jbFootnote).foregroundStyle(.red).listRowBackground(Color.clear)
+                Text(error).font(.jbFootnote).foregroundStyle(JB.danger).listRowBackground(Color.clear)
             }
             if !loading && items.isEmpty {
                 empty("cart", "Nothing to buy", "Add things here, or just tell JoeBro \"we're out of milk\".")
             }
             if !todo.isEmpty {
-                Section("To get") { ForEach(todo) { row($0) }.onDelete { remove(todo, $0) } }
+                JBSection("To get") { ForEach(todo) { row($0) }.onDelete { remove(todo, $0) } }
             }
             if !done.isEmpty {
                 Section {
@@ -130,14 +131,13 @@ struct ShoppingListView: View {
                         Spacer()
                         Button("Clear") { mutate(["action": "clear_checked"]) }
                             .font(.jbCaption.weight(.semibold))
-                            .foregroundStyle(Color.accentTint)
+                            .foregroundStyle(JB.accent)
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle("Shopping")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await load() }
@@ -150,26 +150,26 @@ struct ShoppingListView: View {
             HStack(spacing: 12) {
                 Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
                     .font(.jb(21))
-                    .foregroundStyle(item.checked ? Color.accentTint : .joeInk.opacity(0.45))
+                    .foregroundStyle(item.checked ? JB.accent : JB.ink.opacity(0.45))
                     .contentTransition(.symbolEffect(.replace))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.text)
                         .strikethrough(item.checked)
                         .foregroundStyle(item.checked ? .secondary : .primary)
                     if item.addedBy == "joebro" {
-                        Text("Added by JoeBro").font(.jbCaption2).foregroundStyle(.secondary)
+                        Text("Added by JoeBro").font(.jbCaption2).foregroundStyle(JB.ink2)
                     }
                 }
                 Spacer()
                 if !item.quantity.isEmpty {
-                    Text(item.quantity).font(.jbCallout).foregroundStyle(.secondary)
+                    Text(item.quantity).font(.jbCallout).foregroundStyle(JB.ink2)
                 }
             }
             .frame(minHeight: 40)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .listRowBackground(JB.panelFill)
         .accessibilityLabel("\(item.text)\(item.quantity.isEmpty ? "" : ", \(item.quantity)")")
         .accessibilityValue(item.checked ? "Ticked off" : "To get")
         .accessibilityAddTraits(.isButton)
@@ -346,44 +346,37 @@ final class HealthSync: ObservableObject {
     }
 }
 
-struct HealthSettingsSection: View {
+struct HealthRows: View {
     let api: JoeBroAPI?
     @ObservedObject private var health = HealthSync.shared
 
     var body: some View {
-        Section {
+        Group {
             if health.enabled {
                 Button {
                     Task { if let api { await health.sync(api: api) } }
                 } label: {
                     HStack {
-                        Label("Sync now", systemImage: "arrow.triangle.2.circlepath")
+                        Text("Sync Apple Health")
                         Spacer()
-                        if health.busy { ProgressView().controlSize(.small) }
+                        if health.busy { JBSpinner() }
+                        else if let last = health.lastSync {
+                            Text(last.formatted(.relative(presentation: .numeric))).font(.jbMono(11)).foregroundStyle(JB.ink3)
+                        }
                     }
                 }
                 .disabled(health.busy || api == nil)
-                Toggle("Share with JoeBro", isOn: $health.enabled).tint(Color.accentTint)
+                Toggle("Share Health with JoeBro", isOn: $health.enabled)
             } else {
-                Button {
+                Button("Connect Apple Health") {
                     Task { if await health.connect(), let api { await health.sync(api: api) } }
-                } label: {
-                    Label("Connect Apple Health", systemImage: "heart.text.square")
                 }
                 .disabled(!health.available)
             }
-        } header: {
-            Text("Apple Health")
-        } footer: {
-            Text(footer)
+            if !health.status.isEmpty {
+                Text(health.status).font(.jbMono(11)).foregroundStyle(JB.ink3)
+            }
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
-    }
-
-    private var footer: String {
-        var parts = ["Daily totals only (steps, sleep, heart rate, HRV, workouts, weight) go to your JoeBro server so it can review them and send a Sunday recap. Read-only."]
-        if let last = health.lastSync { parts.append("Last synced \(last.formatted(.relative(presentation: .named))).") }
-        if !health.status.isEmpty { parts.append(health.status) }
-        return parts.joined(separator: " ")
+        .sensoryFeedback(.selection, trigger: health.enabled)
     }
 }

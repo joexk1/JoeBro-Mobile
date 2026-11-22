@@ -19,39 +19,39 @@ struct MuseView: View {
                 ForEach(files) { file in
                     NavigationLink(destination: MuseFileView(ws: ws, name: file.name, onSaved: { Task { await load() } })) {
                         HStack(spacing: 13) {
-                            Image(systemName: file.always ? "person.crop.circle" : "doc.text")
-                                .foregroundStyle(.joeInk.opacity(0.85)).frame(width: 28)
+                            Group {
+                                if file.always { JBIcon(.agent, size: 17) } else { Image(systemName: "doc.text").font(.jb(16)) }
+                            }
+                            .foregroundStyle(JB.ink2).frame(width: 28)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(file.name).foregroundStyle(.joeInk)
-                                Text(file.always ? "Always in the prompt · \(file.lines) lines" : "\(file.lines) lines")
-                                    .font(.jbCaption).foregroundStyle(.secondary)
+                                Text(file.name).font(.jb(15)).foregroundStyle(JB.ink)
+                                Text(file.always ? "always on · \(file.lines) lines" : "\(file.lines) lines")
+                                    .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
                             }
                         }
                         .frame(minHeight: 48)
                     }
-                    .listRowBackground(Color.joeInk.opacity(0.06))
+                    .listRowBackground(JB.panelFill)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if !file.always {
-                            Button("Delete", systemImage: "trash") { deleteTarget = file }.tint(.red)
+                            Button("Delete", systemImage: "trash") { deleteTarget = file }.tint(JB.danger)
                         }
                     }
                 }
-            } footer: {
-                Text("Plain notes JoeBro can read and write. Only the lines relevant to your message are used, apart from about-me.")
             }
         }
+        .animation(JB.smooth, value: files.map(\.name))
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle(Flavor.memoryTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .overlay { if loading && files.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && files.isEmpty { JBSpinner(size: 16) } }
         .refreshable { await load() }
         .task { await load() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { newName = ""; adding = true } label: {
-                    Image(systemName: "plus").foregroundStyle(Color.accentTint)
+                    Image(systemName: "plus").foregroundStyle(JB.accent)
                 }
                 .accessibilityLabel("Add memory file")
             }
@@ -98,16 +98,16 @@ private struct MuseFileView: View {
 
     var body: some View {
         TextEditor(text: $text)
-            .font(.jbMono(.callout))
-            .foregroundStyle(.joeInk)
+            .font(.jbMono(14))
+            .foregroundStyle(JB.ink)
             .scrollContentBackground(.hidden)
             .padding(12)
-            .background(Color.joeInk.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+            .jbSurface(.panel, radius: JB.rCard)
             .padding(16)
             .jbWallpaper()
             .navigationTitle(name)
             .navigationBarTitleDisplayMode(.inline)
-            .overlay { if !loaded { ProgressView().controlSize(.large) } }
+            .overlay { if !loaded { JBSpinner(size: 16) } }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") { Task { await save() } }

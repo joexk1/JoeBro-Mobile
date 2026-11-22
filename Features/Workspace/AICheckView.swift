@@ -17,8 +17,8 @@ struct AICheckView: View {
                 editor
                 checkButton
                 if let error {
-                    Label(error, systemImage: "exclamationmark.triangle")
-                        .font(.jbSubheadline).foregroundStyle(.orange)
+                    Text(error)
+                        .font(.jbMono(12)).foregroundStyle(JB.warn)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let result { ScoreCard(result: result) }
@@ -35,22 +35,23 @@ struct AICheckView: View {
     private var editor: some View {
         TextEditor(text: $text)
             .frame(minHeight: 200)
-            .foregroundStyle(.joeInk)
+            .foregroundStyle(JB.ink)
+            .font(.jb(15))
             .scrollContentBackground(.hidden)
             .padding(10)
-            .jbGlass(16)
+            .jbSurface(.panel, radius: JB.rCard)
             .overlay(alignment: .topLeading) {
                 if text.isEmpty {
                     Text("Paste at least 20 words to score")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(JB.ink2)
                         .padding(18)
                         .allowsHitTesting(false)
                 }
             }
             .overlay(alignment: .bottomTrailing) {
                 Text("\(wordCount) words")
-                    .font(.jbCaption2)
-                    .foregroundStyle(wordCount < 20 ? .orange : .secondary)
+                    .font(.jbMono(11))
+                    .foregroundStyle(wordCount < 20 ? JB.warn : JB.ink3)
                     .padding(12)
                     .allowsHitTesting(false)
             }
@@ -61,15 +62,14 @@ struct AICheckView: View {
             Task { await check() }
         } label: {
             Group {
-                if checking { ProgressView().controlSize(.small) }
+                if checking { JBSpinner(tint: JB.onAccent) }
                 else { Text("Check") }
             }
             .frame(maxWidth: .infinity, minHeight: 28)
         }
         .buttonStyle(.jbPrimary)
-        .tint(Color.accentTint)
-        .foregroundStyle(Color.joeInverseInk)
         .disabled(wordCount < 20 || checking)
+        .sensoryFeedback(.success, trigger: result?.aiPercent)
     }
 
     private func check() async {
@@ -88,34 +88,34 @@ private struct ScoreCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("\(Int(result.aiPercent.rounded()))% likely AI")
-                .font(.jb(32, .bold))
+            Text("\(Int(result.aiPercent.rounded()))%")
+                .font(.jbMono(34, .medium))
                 .foregroundStyle(tint)
             ProgressView(value: min(1, max(0, result.aiPercent / 100)))
                 .tint(tint)
             Text("\(result.aiWords) of \(result.totalWords) words"
                  + (result.provider.map { " · \($0)" } ?? ""))
-                .font(.jbCaption).foregroundStyle(.secondary)
+                .font(.jbMono(11)).foregroundStyle(JB.ink3)
             if !result.flaggedSentences.isEmpty {
-                Divider().overlay(.joeInk.opacity(0.2))
-                Text("Flagged sentences").font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk)
+                Divider().overlay(JB.line)
+                JBSectionHeader("Flagged", count: result.flaggedSentences.count)
                 ForEach(result.flaggedSentences.indices, id: \.self) { index in
                     Text(result.flaggedSentences[index])
-                        .font(.jbFootnote).foregroundStyle(.secondary)
+                        .font(.jbFootnote).foregroundStyle(JB.ink2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .jbGlass(20)
+        .jbSurface(.panel, radius: JB.rCard)
     }
 
     private var tint: Color {
         switch result.aiPercent {
-        case ..<30: .green
-        case ..<70: .yellow
-        default: .orange
+        case ..<30: JB.live
+        case ..<70: JB.warn
+        default: JB.danger
         }
     }
 }

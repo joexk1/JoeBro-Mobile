@@ -38,8 +38,7 @@ struct WorkdirView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle("Files")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.load() }
@@ -50,7 +49,7 @@ struct WorkdirView: View {
                     showBind = true
                 } label: {
                     Image(systemName: "folder.badge.gearshape")
-                        .foregroundStyle(Color.accentTint)
+                        .foregroundStyle(JB.accent)
                 }
                 .accessibilityLabel("Change bound folder")
             }
@@ -109,19 +108,19 @@ struct WorkdirView: View {
             HStack(spacing: 6) {
                 Image(systemName: "folder.fill")
                     .font(.jbCaption)
-                    .foregroundStyle(Color.accentTint)
+                    .foregroundStyle(JB.accent)
                 Text(rootName)
                     .font(.jbSubheadline.weight(.semibold))
-                    .foregroundStyle(.joeInk)
+                    .foregroundStyle(JB.ink)
                 Spacer(minLength: 4)
                 Text("\(store.entries(at: "").count) items")
                     .font(.jbCaption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(JB.ink2)
             }
             if !rootParent.isEmpty {
                 Text(rootParent)
                     .font(.jbCaption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(JB.ink2)
                     .lineLimit(1)
                     .truncationMode(.head)
             }
@@ -170,7 +169,7 @@ struct WorkdirView: View {
                        busy: store.loadingSub == path || store.downloading == path)
         }
         .buttonStyle(.plain)
-        .listRowBackground(Color.joeInk.opacity(0.06))
+        .listRowBackground(JB.panelFill)
         .contextMenu {
             if !entry.isDir, case .text = JBFileKind.of(entry.name) {
                 Button("Open in editor", systemImage: "square.and.pencil") { openFile = path }
@@ -187,7 +186,7 @@ struct WorkdirView: View {
                 renameName = entry.name
                 renameTarget = path
             }
-            .tint(Color.accentTint)
+            .tint(JB.accent)
         }
     }
 
@@ -239,8 +238,8 @@ struct WorkdirView: View {
 
     private var loadingState: some View {
         HStack(spacing: 10) {
-            ProgressView().tint(.joeInk)
-            Text("Reading the bound folder…").font(.jbFootnote).foregroundStyle(.secondary)
+            JBSpinner()
+            Text("Reading the bound folder…").font(.jbFootnote).foregroundStyle(JB.ink2)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 36)
         .listRowBackground(Color.clear)
@@ -248,10 +247,10 @@ struct WorkdirView: View {
 
     private var emptyFolderState: some View {
         VStack(spacing: 6) {
-            Image(systemName: "tray").font(.jbTitle2).foregroundStyle(.secondary)
-            Text("This folder is empty").font(.jbSubheadline).foregroundStyle(.joeInk)
+            Image(systemName: "tray").font(.jbTitle2).foregroundStyle(JB.ink2)
+            Text("This folder is empty").font(.jbSubheadline).foregroundStyle(JB.ink)
             Text("Ask JoeBro to write a file here, or pull to refresh.")
-                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.jbFootnote).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 28)
         .listRowBackground(Color.clear)
@@ -259,14 +258,14 @@ struct WorkdirView: View {
 
     private var unboundState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "folder.badge.questionmark").font(.jbLargeTitle).foregroundStyle(.secondary)
-            Text("No folder bound").font(.jbHeadline).foregroundStyle(.joeInk)
+            Image(systemName: "folder.badge.questionmark").font(.jbLargeTitle).foregroundStyle(JB.ink2)
+            Text("No folder bound").font(.jbHeadline).foregroundStyle(JB.ink)
             Text("Bind a folder on the backend machine and JoeBro's file tools work inside it.")
-                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.jbFootnote).foregroundStyle(JB.ink2).multilineTextAlignment(.center)
             Button("Choose folder") { showBind = true }
                 .buttonStyle(.jbPrimary)
-                .tint(Color.accentTint)
-                .foregroundStyle(Color.joeInverseInk)
+                .tint(JB.accent)
+                .foregroundStyle(JB.onAccent)
                 .padding(.top, 4)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 36)
@@ -288,7 +287,7 @@ private struct WorkdirRow: View {
             if depth > 0 {
                 HStack(spacing: 0) {
                     ForEach(0..<depth, id: \.self) { _ in
-                        Rectangle().fill(.joeInk.opacity(0.12)).frame(width: 1)
+                        Rectangle().fill(JB.ink.opacity(0.12)).frame(width: 1)
                             .padding(.leading, 7).padding(.trailing, 8)
                     }
                 }
@@ -300,7 +299,7 @@ private struct WorkdirRow: View {
                 .font(entry.isDir ? .body.weight(.medium) : .body)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundStyle(entry.isDir ? .joeInk : .joeInk.opacity(0.88))
+                .foregroundStyle(entry.isDir ? JB.ink : JB.ink.opacity(0.88))
             Spacer(minLength: 4)
             trailing
         }
@@ -316,7 +315,7 @@ private struct WorkdirRow: View {
         if entry.isDir {
             Image(systemName: "chevron.right")
                 .font(.jb(10, .bold))
-                .foregroundStyle(.joeInk.opacity(0.55))
+                .foregroundStyle(JB.ink.opacity(0.55))
                 .rotationEffect(.degrees(expanded ? 90 : 0))
                 .animation(.snappy(duration: 0.2), value: expanded)
                 .frame(width: 12)
@@ -328,11 +327,11 @@ private struct WorkdirRow: View {
     @ViewBuilder
     private var glyph: some View {
         if busy {
-            ProgressView().controlSize(.mini).tint(.joeInk).frame(width: 20)
+            JBSpinner(size: 10).frame(width: 20)
         } else {
             Image(systemName: icon)
                 .font(.jb(14))
-                .foregroundStyle(entry.isDir ? Color.accentTint : .joeInk.opacity(0.5))
+                .foregroundStyle(entry.isDir ? JB.accent : JB.ink.opacity(0.5))
                 .frame(width: 20)
         }
     }
@@ -345,10 +344,10 @@ private struct WorkdirRow: View {
             switch JBFileKind.of(entry.name) {
             case .text:
                 Image(systemName: "chevron.right")
-                    .font(.jb(10, .bold)).foregroundStyle(.joeInk.opacity(0.3))
+                    .font(.jb(10, .bold)).foregroundStyle(JB.ink.opacity(0.3))
             default:
                 Image(systemName: "eye")
-                    .font(.jb(11)).foregroundStyle(.joeInk.opacity(0.35))
+                    .font(.jb(11)).foregroundStyle(JB.ink.opacity(0.35))
             }
         }
     }
@@ -373,7 +372,7 @@ struct FolderPickerView: View {
                         path = (path as NSString).deletingLastPathComponent
                         Task { await load() }
                     }
-                    .listRowBackground(Color.joeInk.opacity(0.06))
+                    .listRowBackground(JB.panelFill)
                 }
                 ForEach(entries) { entry in
                     Button {
@@ -384,17 +383,16 @@ struct FolderPickerView: View {
                             .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain)
-                    .listRowBackground(Color.joeInk.opacity(0.06))
+                    .listRowBackground(JB.panelFill)
                 }
                 if entries.isEmpty && !loading {
-                    Text("No subfolders here.").foregroundStyle(.secondary)
+                    Text("No subfolders here.").foregroundStyle(JB.ink2)
                         .listRowBackground(Color.clear)
                 }
             }
             .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .jbWallpaper()
-            .overlay { if loading { ProgressView().tint(.joeInk) } }
+        .jbForm()
+            .overlay { if loading { JBSpinner() } }
             .navigationTitle(path.isEmpty ? "Choose folder" : path)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

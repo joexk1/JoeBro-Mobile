@@ -18,21 +18,21 @@ struct SkillsView: View {
     var body: some View {
         List {
             if skills.isEmpty && !loading {
-                empty("sparkles", "No skills", "Skills are procedures JoeBro has learned. Add or upload one.")
+                empty("sparkles", "No skills")
             } else if filtered.isEmpty {
-                empty("magnifyingglass", "No matches", "No skill matches “\(search)”.")
+                empty("magnifyingglass", "No matches")
             }
             ForEach(filtered) { skill in
                 row(skill)
             }
         }
+        .animation(JB.smooth, value: filtered.map(\.id))
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .searchable(text: $search, prompt: "Search skills")
         .navigationTitle("Skills")
         .navigationBarTitleDisplayMode(.inline)
-        .overlay { if loading && skills.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && skills.isEmpty { JBSpinner(size: 16) } }
         .refreshable { await load() }
         .task { await load() }
         .toolbar {
@@ -41,7 +41,7 @@ struct SkillsView: View {
                     Button("New skill", systemImage: "square.and.pencil") { creating = true }
                     Button("Upload .md file", systemImage: "arrow.up.doc") { importingFile = true }
                 } label: {
-                    Image(systemName: "plus").foregroundStyle(Color.accentTint)
+                    Image(systemName: "plus").foregroundStyle(JB.accent)
                 }
                 .accessibilityLabel("Add skill")
             }
@@ -72,7 +72,6 @@ struct SkillsView: View {
         SkillRow(skill: skill) { on in
             Task { await act { try await ws.setSkillActive(id: skill.id, active: on) } }
         }
-        .listRowBackground(Color.joeInk.opacity(0.06))
         .contentShape(Rectangle())
         .onTapGesture { editing = skill }
         .contextMenu {
@@ -85,15 +84,16 @@ struct SkillsView: View {
             Button("Delete skill", systemImage: "trash", role: .destructive) { deleteTarget = skill }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button("Delete", systemImage: "trash") { deleteTarget = skill }.tint(.red)
-            Button("Edit", systemImage: "pencil") { editing = skill }.tint(.gray)
+            Button("Delete", systemImage: "trash") { deleteTarget = skill }.tint(JB.danger)
+            Button("Edit", systemImage: "pencil") { editing = skill }.tint(JB.ink3)
         }
+        .sensoryFeedback(.selection, trigger: skill.isActive)
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button(skill.isActive ? "Off" : "On",
                    systemImage: skill.isActive ? "pause.circle" : "play.circle") {
                 Task { await act { try await ws.setSkillActive(id: skill.id, active: !skill.isActive) } }
             }
-            .tint(Color.accentTint)
+            .tint(JB.accent)
         }
     }
 
@@ -154,9 +154,9 @@ private struct SkillRow: View {
         HStack(spacing: 11) {
             WSStatusDot(on: skill.isActive)
             VStack(alignment: .leading, spacing: 3) {
-                Text(skill.name).foregroundStyle(.joeInk).lineLimit(1)
+                Text(skill.name).font(.jb(15)).foregroundStyle(JB.ink).lineLimit(1)
                 if !skill.description.isEmpty {
-                    Text(skill.description).font(.jbCaption).foregroundStyle(.secondary).lineLimit(2)
+                    Text(skill.description).font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(2)
                 }
             }
             Spacer(minLength: 8)
@@ -194,21 +194,19 @@ private struct SkillEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Skill") {
+                JBSection("Skill") {
                     TextField("Name", text: $name)
                     TextField("Description", text: $description, axis: .vertical).lineLimit(2...4)
                     TextField("When to use", text: $whenToUse, axis: .vertical).lineLimit(2...4)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
-                Section("Procedure (markdown)") {
+                JBSection("Procedure (markdown)") {
                     TextEditor(text: $content)
+                        .font(.jbMono(13))
                         .frame(minHeight: 220)
                         .scrollContentBackground(.hidden)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
             }
-            .scrollContentBackground(.hidden)
-            .jbWallpaper()
+            .jbForm()
             .navigationTitle(skill == nil ? "New skill" : "Edit skill")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -217,7 +215,7 @@ private struct SkillEditor: View {
                     Button("Save") { Task { await save() } }.disabled(saving || !canSave)
                 }
             }
-            .overlay { if saving { ProgressView().controlSize(.large) } }
+            .overlay { if saving { JBSpinner(size: 16) } }
             .alert("Skill", isPresented: alertBinding($error)) { Button("OK") { error = nil } } message: { Text(error ?? "") }
         }
     }

@@ -31,14 +31,13 @@ struct ResearchView: View {
             librarySection
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .jbWallpaper()
+        .jbForm()
         .navigationTitle("Research")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await refresh() }
         .task { await refresh() }
         .task { models = (try? await api.models()) ?? [] }
-        .overlay { if loading && reports.isEmpty && active.isEmpty { ProgressView().controlSize(.large) } }
+        .overlay { if loading && reports.isEmpty && active.isEmpty { JBSpinner(size: 16) } }
         .alert("Cancel this research run?",
                isPresented: alertBinding($cancelTarget)) {
             Button("Stop the run", role: .destructive) {
@@ -65,11 +64,11 @@ struct ResearchView: View {
     // MARK: Sections
 
     private var launcher: some View {
-        Section("New run") {
+        JBSection("New run") {
             TextField("What should JoeBro research?", text: $query, axis: .vertical)
                 .lineLimit(1...4)
-                .foregroundStyle(.joeInk)
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .foregroundStyle(JB.ink)
+                .listRowBackground(JB.panelFill)
             if !models.isEmpty {
                 Picker("Model", selection: $model) {
                     Text("Default").tag(JBModelChoice?.none)
@@ -77,55 +76,55 @@ struct ResearchView: View {
                         Text(choice.display).tag(JBModelChoice?.some(choice))
                     }
                 }
-                .tint(Color.accentTint)
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .tint(JB.accent)
+                .listRowBackground(JB.panelFill)
             }
             Button {
                 Task { await start() }
             } label: {
                 HStack {
-                    if starting { ProgressView().controlSize(.small).tint(Color.accentTint) }
+                    if starting { JBSpinner().tint(JB.accent) }
                     Text(starting ? "Starting…" : "Start research")
                     Spacer()
                     Image(systemName: "sparkle.magnifyingglass")
                 }
-                .foregroundStyle(Color.accentTint)
+                .foregroundStyle(JB.accent)
                 .frame(minHeight: 44)
             }
             .disabled(starting || query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .listRowBackground(Color.joeInk.opacity(0.06))
+            .listRowBackground(JB.panelFill)
         }
     }
 
     private var activeSection: some View {
-        Section("In progress") {
+        JBSection("In progress") {
             ForEach(active) { run in
                 NavigationLink {
                     ResearchReportView(api: api, ws: ws, id: run.id, title: run.query)
                 } label: {
                     HStack(spacing: 13) {
-                        ProgressView().controlSize(.small).tint(Color.accentTint)
+                        JBSpinner().tint(JB.accent)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(run.query).foregroundStyle(.joeInk).lineLimit(2)
+                            Text(run.query).foregroundStyle(JB.ink).lineLimit(2)
                             Text(phases[run.id] ?? "Working…")
-                                .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                                .font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(1)
                         }
                     }
                     .frame(minHeight: 48)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
                 .contextMenu {
                     Button("Stop run", systemImage: "stop.circle", role: .destructive) { cancelTarget = run }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button("Stop", systemImage: "stop.circle") { cancelTarget = run }.tint(.orange)
+                    Button("Stop", systemImage: "stop.circle") { cancelTarget = run }.tint(JB.warn)
                 }
             }
         }
     }
 
     private var librarySection: some View {
-        Section("Library") {
+        JBSection("Library") {
             if reports.isEmpty && !loading {
                 empty("doc.text.magnifyingglass", "No reports yet",
                       "Start a run above, or kick one off from a chat.")
@@ -136,12 +135,12 @@ struct ResearchView: View {
                 } label: {
                     ReportRow(report: report)
                 }
-                .listRowBackground(Color.joeInk.opacity(0.06))
+                .listRowBackground(JB.panelFill)
                 .contextMenu {
                     Button("Delete report", systemImage: "trash", role: .destructive) { deleteTarget = report }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button("Delete", systemImage: "trash") { deleteTarget = report }.tint(.red)
+                    Button("Delete", systemImage: "trash") { deleteTarget = report }.tint(JB.danger)
                 }
             }
         }
@@ -197,8 +196,8 @@ private struct ReportRow: View {
                 .foregroundStyle(tint)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
-                Text(report.query).foregroundStyle(.joeInk).lineLimit(2)
-                Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
+                Text(report.query).foregroundStyle(JB.ink).lineLimit(2)
+                Text(subtitle).font(.jbCaption).foregroundStyle(JB.ink2).lineLimit(1)
             }
         }
         .frame(minHeight: 48)
@@ -214,7 +213,7 @@ private struct ReportRow: View {
     }
     private var tint: Color {
         switch report.status {
-        case "completed": Color.accentTint
+        case "completed": JB.accent
         case "failed": .orange
         case "cancelled": .secondary
         default: .yellow
@@ -243,7 +242,7 @@ private struct ResearchReportView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(report?.query ?? title).font(.jbTitle2.bold()).foregroundStyle(.joeInk)
+                Text(report?.query ?? title).font(.jbTitle2.bold()).foregroundStyle(JB.ink)
                 content
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -262,7 +261,7 @@ private struct ResearchReportView: View {
                     }
                     Button("Delete report", systemImage: "trash", role: .destructive) { confirmDelete = true }
                 } label: {
-                    Image(systemName: "ellipsis.circle").foregroundStyle(Color.accentTint)
+                    Image(systemName: "ellipsis.circle").foregroundStyle(JB.accent)
                 }
                 .accessibilityLabel("Report actions")
             }
@@ -291,11 +290,11 @@ private struct ResearchReportView: View {
         if let report {
             Label(report.status.capitalized,
                   systemImage: report.status == "completed" ? "checkmark.circle" : "circle.dotted")
-                .font(.jbSubheadline).foregroundStyle(.secondary)
+                .font(.jbSubheadline).foregroundStyle(JB.ink2)
             if report.status == "completed" {
                 let body = reportBodyWithoutSources
                 if body.isEmpty {
-                    empty("doc.text", "Report is empty", "The run finished without writing anything.")
+                    empty("doc.text", "Report is empty")
                 } else {
                     MarkdownText(text: body)
                         .textSelection(.enabled)
@@ -309,17 +308,17 @@ private struct ResearchReportView: View {
                     .textSelection(.enabled)
             } else {
                 HStack(spacing: 10) {
-                    ProgressView().controlSize(.small).tint(Color.accentTint)
-                    Text(phase ?? "JoeBro is working on this report.").foregroundStyle(.secondary)
+                    JBSpinner().tint(JB.accent)
+                    Text(phase ?? "JoeBro is working on this report.").foregroundStyle(JB.ink2)
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .jbGlass(16)
+                .jbSurface(.panel, radius: JB.rCard)
             }
         } else if let error {
             empty("exclamationmark.triangle", "Couldn't load report", error)
         } else {
-            ProgressView().controlSize(.large).frame(maxWidth: .infinity).padding(.vertical, 50)
+            JBSpinner(size: 16).frame(maxWidth: .infinity).padding(.vertical, 50)
         }
     }
 
@@ -355,30 +354,30 @@ struct ResearchSourcesView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Sources · \(sources.count)")
                 .font(.jbTitle3.bold())
-                .foregroundStyle(.joeInk)
+                .foregroundStyle(JB.ink)
             ForEach(Array(sources.enumerated()), id: \.offset) { index, source in
                 if let url = URL(string: source.url) {
                     Link(destination: url) {
                         HStack(alignment: .top, spacing: 12) {
                             Text("\(index + 1)")
-                                .font(.jbCaption.monospacedDigit().bold())
-                                .foregroundStyle(Color.accentTint)
+                                .font(.jbCaption.monospacedDigit())
+                                .foregroundStyle(JB.accent)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(source.title)
                                     .font(.jbSubheadline.weight(.semibold))
-                                    .foregroundStyle(.joeInk)
+                                    .foregroundStyle(JB.ink)
                             Text(url.host() ?? source.url)
                                 .font(.jbCaption)
-                                .foregroundStyle(Color.accentTint)
+                                .foregroundStyle(JB.accent)
                             }
                             Spacer(minLength: 4)
                             Image(systemName: "arrow.up.right")
                                 .font(.jbCaption)
-                                .foregroundStyle(Color.accentTint)
+                                .foregroundStyle(JB.accent)
                         }
                         .padding(12)
-                        .background(.joeInk.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                        .background(JB.ink.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
             }
