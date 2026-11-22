@@ -86,21 +86,21 @@ private struct FactRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: fact.kindSymbol).font(.caption).foregroundStyle(Color.accentTint)
-                Text(fact.kindLabel).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                if let t = fact.topic, !t.isEmpty { Text("· " + t).font(.caption).foregroundStyle(.secondary) }
+                Image(systemName: fact.kindSymbol).font(.jbCaption).foregroundStyle(Color.accentTint)
+                Text(fact.kindLabel).font(.jbCaption.weight(.semibold)).foregroundStyle(.secondary)
+                if let t = fact.topic, !t.isEmpty { Text("· " + t).font(.jbCaption).foregroundStyle(.secondary) }
                 Spacer()
-                if fact.isPinned { Image(systemName: "pin.fill").font(.caption).foregroundStyle(.orange) }
-                if fact.isArchived { Text("Archived").font(.caption2).foregroundStyle(.secondary) }
+                if fact.isPinned { Image(systemName: "pin.fill").font(.jbCaption).foregroundStyle(.orange) }
+                if fact.isArchived { Text("Archived").font(.jbCaption2).foregroundStyle(.secondary) }
             }
-            Text(fact.text).font(.subheadline).foregroundStyle(.joeInk).fixedSize(horizontal: false, vertical: true)
+            Text(fact.text).font(.jbSubheadline).foregroundStyle(.joeInk).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
                 ProgressView(value: fact.strengthValue).tint(fact.strengthValue < 0.3 ? .orange : Color.accentTint).frame(width: 54)
-                Text(fact.provenanceLine).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                Text(fact.provenanceLine).font(.jbCaption2).foregroundStyle(.secondary).lineLimit(1)
                 Spacer(minLength: 0)
-                Text(nsRelative(fact.updatedAt)).font(.caption2).foregroundStyle(.secondary)
+                Text(nsRelative(fact.updatedAt)).font(.jbCaption2).foregroundStyle(.secondary)
             }
-            if fact.scope == "project", let n = fact.projectName { Text(n).font(.caption2).foregroundStyle(.tertiary) }
+            if fact.scope == "project", let n = fact.projectName { Text(n).font(.jbCaption2).foregroundStyle(.tertiary) }
         }.padding(.vertical, 4).contentShape(Rectangle())
     }
 }
@@ -129,14 +129,14 @@ struct FactEditor: View {
                     LabeledContent("Recalled", value: "\(fact.recalls ?? 0) times")
                 }
                 if history.count > 1 {
-                    Section("Earlier versions") { ForEach(history.dropLast()) { Text($0.text).font(.footnote).foregroundStyle(.secondary) } }
+                    Section("Earlier versions") { ForEach(history.dropLast()) { Text($0.text).font(.jbFootnote).foregroundStyle(.secondary) } }
                 }
                 Section {
                     Button(fact.isPinned ? "Unpin" : "Pin") { Task { await run { try await ws.memoryPin(fact.id, pinned: !fact.isPinned) } } }
                     if fact.isArchived { Button("Restore") { Task { await run { try await ws.memoryRestore(fact.id) } } } }
                     else { Button("Archive", role: .destructive) { Task { await run { try await ws.memoryArchive(fact.id) } } } }
                 }
-                if let error { Text(error).foregroundStyle(.red).font(.footnote) }
+                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
             }
             .navigationTitle("Memory").navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -170,7 +170,7 @@ struct FactAdder: View {
                     ForEach(projects.filter { $0.key != "global" && $0.key != "user" }) { Text($0.label).tag($0.key) }
                 }
                 Picker("Kind", selection: $kind) { ForEach(["fact", "decision", "gotcha", "preference"], id: \.self) { Text($0.capitalized).tag($0) } }
-                if let error { Text(error).foregroundStyle(.red).font(.footnote) }
+                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
             }
             .navigationTitle("Add to memory").navigationBarTitleDisplayMode(.inline)
             .onAppear { if current != "__all" { target = current } }

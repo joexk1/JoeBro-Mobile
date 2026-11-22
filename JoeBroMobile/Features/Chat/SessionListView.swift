@@ -58,7 +58,7 @@ struct SessionListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { Task { await store.newChat(); onNewChat() } } label: {
                     Image(systemName: "square.and.pencil")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.jb(18, .medium))
                         .foregroundStyle(Color.accentTint)
                         .frame(width: 44, height: 44, alignment: .center)
                 }
@@ -100,7 +100,7 @@ struct SessionListView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "chevron.right")
-                    .font(.caption.bold())
+                    .font(.jbCaption.bold())
                     .foregroundStyle(.joeInk.opacity(0.65))
                     .rotationEffect(.degrees(collapsed ? 0 : 90))
                     .frame(width: 12)
@@ -111,16 +111,16 @@ struct SessionListView: View {
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
                 Text(folder).lineLimit(1).foregroundStyle(.joeInk)
                 if store.pinnedFolders.contains(folder) {
-                    Image(systemName: "pin.fill").font(.caption2).foregroundStyle(.orange)
+                    Image(systemName: "pin.fill").font(.jbCaption2).foregroundStyle(.orange)
                 }
                 Spacer(minLength: 6)
                 Text("\(count)")
-                    .font(.caption.weight(.semibold))
+                    .font(.jbCaption.weight(.semibold))
                     .foregroundStyle(.joeInk.opacity(0.7))
                     .padding(.horizontal, 8).padding(.vertical, 2)
                     .background(.joeInk.opacity(0.12), in: Capsule())
             }
-            .font(.subheadline.weight(.semibold))
+            .font(.jbSubheadline.weight(.semibold))
             .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
@@ -170,7 +170,7 @@ struct SessionListView: View {
         Button { onOpen(session) } label: {
             HStack(spacing: 12) {
                 Image(systemName: session.mode == "agent" ? "hammer.fill" : "bubble.left")
-                    .font(.footnote)
+                    .font(.jbFootnote)
                     .foregroundStyle(session.mode == "agent" ? .orange : .joeInk.opacity(0.55))
                     .frame(width: 18)
                     .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
@@ -180,12 +180,12 @@ struct SessionListView: View {
                     Text(session.name).lineLimit(1).foregroundStyle(.joeInk)
                     if let model = session.model, !model.isEmpty {
                         Text(model.components(separatedBy: "/").last ?? model)
-                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                            .font(.jbCaption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
                 Spacer(minLength: 6)
-                if session.isImportant == true { Image(systemName: "pin.fill").font(.caption2).foregroundStyle(.orange) }
-                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.35))
+                if session.isImportant == true { Image(systemName: "pin.fill").font(.jbCaption2).foregroundStyle(.orange) }
+                Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.35))
             }
             .frame(minHeight: 44)
             .contentShape(Rectangle())
@@ -234,9 +234,9 @@ struct SessionListView: View {
 
     private var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "bubble.left.and.bubble.right").font(.largeTitle).foregroundStyle(.secondary)
-            Text("No chats yet").font(.headline).foregroundStyle(.joeInk)
-            Text("Tap the pencil to start one.").font(.footnote).foregroundStyle(.secondary)
+            Image(systemName: "bubble.left.and.bubble.right").font(.jbLargeTitle).foregroundStyle(.secondary)
+            Text("No chats yet").font(.jbHeadline).foregroundStyle(.joeInk)
+            Text("Tap the pencil to start one.").font(.jbFootnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)

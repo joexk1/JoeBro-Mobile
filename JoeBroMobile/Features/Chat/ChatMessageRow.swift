@@ -47,7 +47,7 @@ struct ChatMessageRow: View {
         if !line.text.isEmpty {
             if isUser {
                 Text(line.text)
-                    .font(.body)
+                    .font(.jbBody)
                     .foregroundStyle(.joeInk)
                     .lineSpacing(3)
                     .textSelection(.enabled)
@@ -76,7 +76,7 @@ struct ChatMessageRow: View {
     private var thinkingBlock: some View {
         DisclosureGroup {
             Text(line.thinking)
-                .font(.footnote)
+                .font(.jbFootnote)
                 .foregroundStyle(.joeInk.opacity(0.75))
                 .lineSpacing(2)
                 .textSelection(.enabled)
@@ -84,7 +84,7 @@ struct ChatMessageRow: View {
                 .padding(.top, 6)
         } label: {
             Label("Thinking", systemImage: "sparkles")
-                .font(.caption.weight(.semibold))
+                .font(.jbCaption.weight(.semibold))
                 .foregroundStyle(.joeInk.opacity(0.8))
         }
         .tint(.accentTint)
@@ -94,7 +94,7 @@ struct ChatMessageRow: View {
     private var attachmentChips: some View {
         ForEach(line.attachments, id: \.self) { name in
             Label(name, systemImage: "paperclip")
-                .font(.caption)
+                .font(.jbCaption)
                 .foregroundStyle(.joeInk.opacity(0.7))
                 .lineLimit(1)
         }
@@ -104,9 +104,9 @@ struct ChatMessageRow: View {
         Button { onOpenDocument(document) } label: {
             HStack(spacing: 10) {
                 Image(systemName: "doc.text.fill").foregroundStyle(.accentTint)
-                Text(document.title).font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk).lineLimit(1)
+                Text(document.title).font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk).lineLimit(1)
                 Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.5))
+                Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.5))
             }
             .padding(.horizontal, 12)
             .frame(minHeight: 44)
@@ -120,7 +120,7 @@ struct ChatMessageRow: View {
     private var typingIndicator: some View {
         HStack(spacing: 7) {
             ProgressView().controlSize(.small).tint(.accentTint)
-            Text("JoeBro is replying…").font(.caption).foregroundStyle(.secondary)
+            Text("JoeBro is replying…").font(.jbCaption).foregroundStyle(.secondary)
         }
     }
 }
@@ -213,14 +213,14 @@ private struct ChatVisualizationView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: symbol)
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.jb(18, .medium))
                     .foregroundStyle(tint)
                     .frame(width: 36, height: 36)
                     .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(visual.title).font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
+                    Text(visual.title).font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk)
                     if !visual.subtitle.isEmpty {
-                        Text(visual.subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Text(visual.subtitle).font(.jbCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Spacer(minLength: 0)
@@ -235,7 +235,7 @@ private struct ChatVisualizationView: View {
             }
             if visual.rows.count > 5 {
                 Button(showAll ? "Show less" : "Show all \(visual.rows.count)") { showAll.toggle() }
-                    .font(.caption.weight(.semibold)).foregroundStyle(tint)
+                    .font(.jbCaption.weight(.semibold)).foregroundStyle(tint)
             }
         }
         .padding(14)
@@ -258,8 +258,8 @@ private struct ChatVisualizationView: View {
 
     private func metricView(_ metric: ChatVisualization.Metric) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(metric.value).font(.system(size: 25, weight: .medium, design: .rounded)).monospacedDigit().foregroundStyle(.joeInk)
-            Text(metric.label).font(.caption2).foregroundStyle(.secondary)
+            Text(metric.value).font(.jb(25, .medium)).monospacedDigit().foregroundStyle(.joeInk)
+            Text(metric.label).font(.jbCaption2).foregroundStyle(.secondary)
         }
     }
 
@@ -283,7 +283,7 @@ private struct ChatVisualizationView: View {
                 Spacer()
                 Text(visual.series.last?.label ?? "")
             }
-            .font(.caption2).foregroundStyle(.secondary)
+            .font(.jbCaption2).foregroundStyle(.secondary)
         }
         .accessibilityLabel(visual.title + " trend: " + visual.series.map { "\($0.label), \($0.value.formatted())" }.joined(separator: "; "))
     }
@@ -293,21 +293,21 @@ private struct ChatVisualizationView: View {
             if visual.kind == "shopping" || visual.kind == "plan" {
                 Image(systemName: row.state == "done" ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(row.state == "done" ? tint : Color.secondary)
-                    .font(.subheadline).padding(.top, 2)
+                    .font(.jbSubheadline).padding(.top, 2)
             } else {
                 RoundedRectangle(cornerRadius: 2).fill(tint.opacity(0.65)).frame(width: 3)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(row.title).font(.subheadline).foregroundStyle(.joeInk)
+                Text(row.title).font(.jbSubheadline).foregroundStyle(.joeInk)
                     .strikethrough(row.state == "done" && visual.kind == "shopping")
                 if !row.detail.isEmpty {
-                    Text(row.detail).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(row.detail).font(.jbCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 0)
             if !row.state.isEmpty && !["shopping", "plan"].contains(visual.kind) {
                 Text(row.state.replacingOccurrences(of: "_", with: " ").capitalized)
-                    .font(.system(size: 10, weight: .semibold)).foregroundStyle(tint)
+                    .font(.jb(10, .semibold)).foregroundStyle(tint)
                     .padding(.horizontal, 7).padding(.vertical, 4)
                     .background(tint.opacity(0.1), in: Capsule())
             }

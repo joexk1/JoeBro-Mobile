@@ -18,7 +18,7 @@ struct AICheckView: View {
                 checkButton
                 if let error {
                     Label(error, systemImage: "exclamationmark.triangle")
-                        .font(.subheadline).foregroundStyle(.orange)
+                        .font(.jbSubheadline).foregroundStyle(.orange)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let result { ScoreCard(result: result) }
@@ -49,7 +49,7 @@ struct AICheckView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 Text("\(wordCount) words")
-                    .font(.caption2)
+                    .font(.jbCaption2)
                     .foregroundStyle(wordCount < 20 ? .orange : .secondary)
                     .padding(12)
                     .allowsHitTesting(false)
@@ -66,7 +66,7 @@ struct AICheckView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 28)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.jbPrimary)
         .tint(Color.accentTint)
         .foregroundStyle(Color.joeInverseInk)
         .disabled(wordCount < 20 || checking)
@@ -89,19 +89,19 @@ private struct ScoreCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("\(Int(result.aiPercent.rounded()))% likely AI")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.jb(32, .bold))
                 .foregroundStyle(tint)
             ProgressView(value: min(1, max(0, result.aiPercent / 100)))
                 .tint(tint)
             Text("\(result.aiWords) of \(result.totalWords) words"
                  + (result.provider.map { " · \($0)" } ?? ""))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.jbCaption).foregroundStyle(.secondary)
             if !result.flaggedSentences.isEmpty {
                 Divider().overlay(.joeInk.opacity(0.2))
-                Text("Flagged sentences").font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
+                Text("Flagged sentences").font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk)
                 ForEach(result.flaggedSentences.indices, id: \.self) { index in
                     Text(result.flaggedSentences[index])
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.jbFootnote).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }

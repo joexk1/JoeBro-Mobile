@@ -67,11 +67,11 @@ struct JoeBroAgentView: View {
                 if let issue = store.mainConnectionIssue, store.selectedSessionID == nil {
                     VStack(spacing: 16) {
                         Image(systemName: "wifi.exclamationmark")
-                            .font(.title2).foregroundStyle(.joeInk.opacity(0.65))
-                        Text(issue).font(.subheadline).foregroundStyle(.joeInk.opacity(0.8))
+                            .font(.jbTitle2).foregroundStyle(.joeInk.opacity(0.65))
+                        Text(issue).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.8))
                             .multilineTextAlignment(.center)
                         Button("Try again") { Task { await store.load() } }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.jbSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -147,7 +147,7 @@ struct JoeBroAgentView: View {
 
     private var titleLabel: some View {
         Text("JoeBro")
-            .font(.headline)
+            .font(.jbHeadline)
             .foregroundStyle(hasBanner ? Color.white : Color.joeInk)
             .padding(.horizontal, 17)
             .padding(.vertical, 9)
@@ -159,14 +159,14 @@ struct JoeBroAgentView: View {
             titleLabel.glassEffect(.regular, in: Capsule())
                 .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
         } else {
-            titleLabel.background(.ultraThinMaterial, in: Capsule())
+            titleLabel.background(JB.panelFill, in: Capsule())
                 .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
         }
     }
 
     private var settingsLabel: some View {
         Image(systemName: "gearshape")
-            .font(.system(size: 22, weight: .regular))
+            .font(.jb(22, .regular))
             .foregroundStyle(hasBanner ? Color.white : Color.accentTint)
             .frame(width: 44, height: 44)
     }
@@ -181,7 +181,7 @@ struct JoeBroAgentView: View {
         } else {
             Button(action: onOpenSettings) { settingsLabel }
                 .buttonStyle(.plain)
-                .background(.ultraThinMaterial, in: Capsule())
+                .background(JB.panelFill, in: Capsule())
                 .environment(\.colorScheme, hasBanner ? .dark : colorScheme)
                 .accessibilityLabel("Settings")
         }
@@ -288,7 +288,7 @@ private struct JoeBroPresence: View {
                     Circle().fill(!isAvailable ? Color.gray : isListening ? Color.red : isWorking ? Color.accentTint : .mint)
                         .frame(width: 6, height: 6)
                     Text(!isAvailable ? "Offline" : isListening ? "Listening" : isUsingTools ? "Working on it" : isWorking ? "On it" : "Standing by")
-                        .font(.subheadline).foregroundStyle(hasBanner ? Color.white : Color.joeInk.opacity(0.69))
+                        .font(.jbSubheadline).foregroundStyle(hasBanner ? Color.white : Color.joeInk.opacity(0.69))
                 }
                 .padding(.horizontal, hasBanner ? 10 : 0)
                 .padding(.vertical, hasBanner ? 7 : 0)

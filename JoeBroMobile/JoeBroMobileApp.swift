@@ -62,7 +62,7 @@ struct JoeBroMobileApp: App {
             .safeAreaInset(edge: .top, spacing: 0) {
                 if demo && !DemoMode.hidesBanner {
                     Text("Demo mode: sample data, not connected to a Mac")
-                        .font(.caption2.weight(.semibold)).foregroundStyle(.black)
+                        .font(.jbCaption2.weight(.semibold)).foregroundStyle(.black)
                         .frame(maxWidth: .infinity).padding(.vertical, 3).background(Color.yellow)
                 }
             }
@@ -86,7 +86,8 @@ struct JoeBroMobileApp: App {
             } message: {
                 Text("This replaces the backend this phone is currently paired with.")
             }
-            .preferredColorScheme(theme.preset == .monochrome ? nil : .dark)
+            .font(.jbBody)
+            .tint(JB.accent)
             .task {
                 guard ServerConfig.isPaired, !DemoMode.active else { return }
                 await MobilePushNotifications.shared.refresh()
@@ -429,11 +430,11 @@ struct MobileNotificationInbox: View {
             ForEach(items) { item in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        if item.read == 0 { Circle().fill(Color.accentColor).frame(width: 7, height: 7) }
-                        Text(item.title.isEmpty ? "JoeBro" : item.title).font(.headline)
+                        if item.read == 0 { Circle().fill(JB.accent).frame(width: 7, height: 7) }
+                        Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                     }
                     Text(item.body).textSelection(.enabled)
-                    Text(item.created_at).font(.caption).foregroundStyle(.secondary)
+                    Text(item.created_at).font(.jbCaption).foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
@@ -500,9 +501,9 @@ struct MobileNotificationInbox: View {
             NavigationStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(item.title.isEmpty ? "JoeBro" : item.title).font(.headline)
+                        Text(item.title.isEmpty ? "JoeBro" : item.title).font(.jbHeadline)
                         Text(item.body).textSelection(.enabled)
-                        Text(item.created_at).font(.caption).foregroundStyle(.secondary)
+                        Text(item.created_at).font(.jbCaption).foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()

@@ -817,7 +817,7 @@ struct ChatsView: View {
     /// not white, so an untinted icon-only button reads as washed out.
     private func toolbarIcon(_ symbol: String) -> some View {
         Image(systemName: symbol)
-            .font(.body.weight(.medium))
+            .font(.jbBody.weight(.medium))
             .foregroundStyle(.joeInk)
     }
 

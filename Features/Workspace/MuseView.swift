@@ -24,7 +24,7 @@ struct MuseView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(file.name).foregroundStyle(.joeInk)
                                 Text(file.always ? "Always in the prompt · \(file.lines) lines" : "\(file.lines) lines")
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(.jbCaption).foregroundStyle(.secondary)
                             }
                         }
                         .frame(minHeight: 48)
@@ -98,7 +98,7 @@ private struct MuseFileView: View {
 
     var body: some View {
         TextEditor(text: $text)
-            .font(.system(.callout, design: .monospaced))
+            .font(.jbMono(.callout))
             .foregroundStyle(.joeInk)
             .scrollContentBackground(.hidden)
             .padding(12)

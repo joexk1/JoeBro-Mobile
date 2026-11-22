@@ -154,10 +154,10 @@ struct ChatTranscriptView<Composer: View>: View {
                 jump(proxy, animated: true)
             } label: {
                 Image(systemName: "arrow.down")
-                    .font(.headline.bold())
+                    .font(.jbHeadline.bold())
                     .foregroundStyle(.joeInk)
                     .frame(width: 44, height: 44)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .background(JB.panelFill, in: Circle())
                     .overlay(Circle().strokeBorder(.joeInk.opacity(0.25)))
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
                     .contentShape(Circle())
@@ -199,12 +199,12 @@ struct ChatEmptyState: View {
         VStack(spacing: 16) {
             if !isMainJoeBro {
                 Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72)
-                Text("What can I help with?").font(.title2.bold()).foregroundStyle(.joeInk)
+                Text("What can I help with?").font(.jbTitle2.bold()).foregroundStyle(.joeInk)
                 Text("Ask a question or put JoeBro to work.")
-                    .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    .font(.jbSubheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
             } else {
                 Text("Say hello, or give me something to take care of.")
-                    .font(.subheadline).foregroundStyle(.joeInk.opacity(0.7))
+                    .font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }

@@ -101,7 +101,7 @@ struct MobileSettingsView: View {
         Section {
             modelRow
             if let note = modelsNote {
-                Text(note).font(.caption).foregroundStyle(.secondary)
+                Text(note).font(.jbCaption).foregroundStyle(.secondary)
             }
         } header: {
             Text("Model")
@@ -147,7 +147,7 @@ struct MobileSettingsView: View {
                 .disabled(subagentAuto)
                 .opacity(subagentAuto ? 0.4 : 1)
             if let note = subagentNote {
-                Text(note).font(.caption).foregroundStyle(.secondary)
+                Text(note).font(.jbCaption).foregroundStyle(.secondary)
             }
         } header: {
             Text("Subagents")
@@ -271,7 +271,7 @@ struct MobileSettingsView: View {
 
     private var pushSection: some View {
         Section {
-            Text(push.status).font(.footnote).foregroundStyle(.secondary)
+            Text(push.status).font(.jbFootnote).foregroundStyle(.secondary)
             if push.enabled {
                 Button("Refresh push registration") { Task { await push.refresh() } }
                 Button("Disable push notifications", role: .destructive) { Task { await push.disable() } }
@@ -370,7 +370,7 @@ private struct JoeBroSoulView: View {
                             .scrollContentBackground(.hidden)
                     }
                     Text("\(soul.count) / 4,000")
-                        .font(.caption.monospacedDigit())
+                        .font(.jbCaption.monospacedDigit())
                         .foregroundStyle(soul.count > 4000 ? .red : .secondary)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }

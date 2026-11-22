@@ -156,7 +156,7 @@ private struct SkillRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(skill.name).foregroundStyle(.joeInk).lineLimit(1)
                 if !skill.description.isEmpty {
-                    Text(skill.description).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    Text(skill.description).font(.jbCaption).foregroundStyle(.secondary).lineLimit(2)
                 }
             }
             Spacer(minLength: 8)

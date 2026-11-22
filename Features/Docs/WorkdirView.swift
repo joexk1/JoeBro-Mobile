@@ -108,19 +108,19 @@ struct WorkdirView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
                 Image(systemName: "folder.fill")
-                    .font(.caption)
+                    .font(.jbCaption)
                     .foregroundStyle(Color.accentTint)
                 Text(rootName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.jbSubheadline.weight(.semibold))
                     .foregroundStyle(.joeInk)
                 Spacer(minLength: 4)
                 Text("\(store.entries(at: "").count) items")
-                    .font(.caption2)
+                    .font(.jbCaption2)
                     .foregroundStyle(.secondary)
             }
             if !rootParent.isEmpty {
                 Text(rootParent)
-                    .font(.caption2)
+                    .font(.jbCaption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.head)
@@ -240,7 +240,7 @@ struct WorkdirView: View {
     private var loadingState: some View {
         HStack(spacing: 10) {
             ProgressView().tint(.joeInk)
-            Text("Reading the bound folder…").font(.footnote).foregroundStyle(.secondary)
+            Text("Reading the bound folder…").font(.jbFootnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 36)
         .listRowBackground(Color.clear)
@@ -248,10 +248,10 @@ struct WorkdirView: View {
 
     private var emptyFolderState: some View {
         VStack(spacing: 6) {
-            Image(systemName: "tray").font(.title2).foregroundStyle(.secondary)
-            Text("This folder is empty").font(.subheadline).foregroundStyle(.joeInk)
+            Image(systemName: "tray").font(.jbTitle2).foregroundStyle(.secondary)
+            Text("This folder is empty").font(.jbSubheadline).foregroundStyle(.joeInk)
             Text("Ask JoeBro to write a file here, or pull to refresh.")
-                .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 28)
         .listRowBackground(Color.clear)
@@ -259,12 +259,12 @@ struct WorkdirView: View {
 
     private var unboundState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "folder.badge.questionmark").font(.largeTitle).foregroundStyle(.secondary)
-            Text("No folder bound").font(.headline).foregroundStyle(.joeInk)
+            Image(systemName: "folder.badge.questionmark").font(.jbLargeTitle).foregroundStyle(.secondary)
+            Text("No folder bound").font(.jbHeadline).foregroundStyle(.joeInk)
             Text("Bind a folder on the backend machine and JoeBro's file tools work inside it.")
-                .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Button("Choose folder") { showBind = true }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.jbPrimary)
                 .tint(Color.accentTint)
                 .foregroundStyle(Color.joeInverseInk)
                 .padding(.top, 4)
@@ -315,7 +315,7 @@ private struct WorkdirRow: View {
     private var disclosure: some View {
         if entry.isDir {
             Image(systemName: "chevron.right")
-                .font(.system(size: 10, weight: .bold))
+                .font(.jb(10, .bold))
                 .foregroundStyle(.joeInk.opacity(0.55))
                 .rotationEffect(.degrees(expanded ? 90 : 0))
                 .animation(.snappy(duration: 0.2), value: expanded)
@@ -331,7 +331,7 @@ private struct WorkdirRow: View {
             ProgressView().controlSize(.mini).tint(.joeInk).frame(width: 20)
         } else {
             Image(systemName: icon)
-                .font(.system(size: 14))
+                .font(.jb(14))
                 .foregroundStyle(entry.isDir ? Color.accentTint : .joeInk.opacity(0.5))
                 .frame(width: 20)
         }
@@ -345,10 +345,10 @@ private struct WorkdirRow: View {
             switch JBFileKind.of(entry.name) {
             case .text:
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.joeInk.opacity(0.3))
+                    .font(.jb(10, .bold)).foregroundStyle(.joeInk.opacity(0.3))
             default:
                 Image(systemName: "eye")
-                    .font(.system(size: 11)).foregroundStyle(.joeInk.opacity(0.35))
+                    .font(.jb(11)).foregroundStyle(.joeInk.opacity(0.35))
             }
         }
     }

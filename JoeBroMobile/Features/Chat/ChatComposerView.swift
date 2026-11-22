@@ -42,7 +42,7 @@ struct ChatComposerView: View {
                     .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .strokeBorder(.joeInk.opacity(0.16), lineWidth: 1))
             } else {
-                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(JB.panelFill)
             }
         }
         .padding(.horizontal, 10)
@@ -93,7 +93,7 @@ struct ChatComposerView: View {
     private func iconToggle(symbol: String, isOn: Bool, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.subheadline.weight(.semibold))
+                .font(.jbSubheadline.weight(.semibold))
                 .foregroundStyle(isOn ? Color.accentTint : Color.joeInk.opacity(0.68))
                 .frame(width: 36, height: 44)
                 .contentShape(Rectangle())
@@ -116,7 +116,7 @@ struct ChatComposerView: View {
         } label: {
             Image(systemName: store.permissionMode == "sandbox" ? "lock.fill" :
                     store.permissionMode == "readonly" ? "eye.fill" : "lock.open.fill")
-                .font(.subheadline.weight(.semibold))
+                .font(.jbSubheadline.weight(.semibold))
                 .foregroundStyle(store.permissionMode == "full" ? Color.red :
                                  store.permissionMode == "readonly" ? Color.orange : Color.joeInk.opacity(0.68))
                 .frame(width: 36, height: 44)
@@ -156,7 +156,7 @@ struct ChatComposerView: View {
 
                 Button(action: toggleVoice) {
                     Image(systemName: voice.isRecording ? "stop.circle.fill" : "mic.fill")
-                        .font(.headline)
+                        .font(.jbHeadline)
                         .foregroundStyle(voice.isRecording ? Color.red : Color.joeInk.opacity(0.85))
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
@@ -179,7 +179,7 @@ struct ChatComposerView: View {
                 else { store.send() }
             } label: {
                 Image(systemName: store.busy ? (store.stopping || store.stopRequested ? "ellipsis" : "stop.fill") : "arrow.up")
-                    .font(.headline.bold())
+                    .font(.jbHeadline.bold())
                     .foregroundStyle(Color.joeInverseInk)
                     .frame(width: 44, height: 44)
                     .background(store.busy || canSend ? Color.accentTint : Color.joeInk.opacity(0.25), in: Circle())
@@ -193,7 +193,7 @@ struct ChatComposerView: View {
 
     private func composerIcon(_ symbol: String) -> some View {
         Image(systemName: symbol)
-            .font(.headline)
+            .font(.jbHeadline)
             .foregroundStyle(.joeInk.opacity(0.85))
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
@@ -215,14 +215,14 @@ struct ChatComposerView: View {
         if store.uploadingAttachment {
             HStack(spacing: 7) {
                 ProgressView().controlSize(.mini).tint(.accentTint)
-                Text("Uploading attachment…").font(.caption).foregroundStyle(.secondary)
+                Text("Uploading attachment…").font(.jbCaption).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         ForEach(store.pendingAttachments) { attachment in
             HStack(spacing: 6) {
                 Label(attachment.name, systemImage: "paperclip")
-                    .font(.caption).foregroundStyle(.joeInk.opacity(0.8)).lineLimit(1)
+                    .font(.jbCaption).foregroundStyle(.joeInk.opacity(0.8)).lineLimit(1)
                 Spacer(minLength: 4)
                 Button {
                     store.pendingAttachments.removeAll { $0.id == attachment.id }
@@ -242,7 +242,7 @@ struct ChatComposerView: View {
                 Image(systemName: "waveform").symbolEffect(.variableColor.iterative)
                 Text("Listening on this iPhone…")
             }
-            .font(.caption).foregroundStyle(.mint)
+            .font(.jbCaption).foregroundStyle(.mint)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -296,9 +296,9 @@ struct ChatModelPicker: View {
                 ProviderLogoView(model: store.selectedModel?.modelID ?? "", size: 15)
                 Text(store.selectedModel?.display ?? (store.models.isEmpty ? "No model" : "Select model"))
                     .lineLimit(1)
-                Image(systemName: "chevron.up.chevron.down").font(.system(size: 8, weight: .bold))
+                Image(systemName: "chevron.up.chevron.down").font(.jb(8, .bold))
             }
-            .font(.caption.weight(.semibold))
+            .font(.jbCaption.weight(.semibold))
             .foregroundStyle(.joeInk)
             .padding(.horizontal, 11)
             .frame(height: 44)

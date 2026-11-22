@@ -75,8 +75,8 @@ struct RootView: View {
             } else {
                 VStack(spacing: 22) {
                     Image("JoeBroLogo").resizable().scaledToFit().frame(width: 92, height: 92)
-                    Text("JoeBro is locked").font(.title2.bold())
-                    Button("Unlock") { Task { await authenticate() } }.buttonStyle(.borderedProminent)
+                    Text("JoeBro is locked").font(.jbTitle2.bold())
+                    Button("Unlock") { Task { await authenticate() } }.buttonStyle(.jbPrimary)
                 }
             }
         }

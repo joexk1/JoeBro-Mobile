@@ -24,8 +24,7 @@ struct MarkdownText: View {
         switch block {
         case .heading(let level, let content):
             inline(content)
-                .font(.system(size: [26, 22, 19, 17, 16, 15][min(level - 1, 5)],
-                              weight: level <= 2 ? .bold : .semibold))
+                .font(.jb([26, 22, 19, 17, 16, 15][min(level - 1, 5)], level <= 2 ? .bold : .semibold))
                 .padding(.top, level <= 2 ? 6 : 2)
 
         case .paragraph(let content):
@@ -62,11 +61,11 @@ struct MarkdownText: View {
         case .code(let language, let content):
             VStack(alignment: .leading, spacing: 4) {
                 if !language.isEmpty {
-                    Text(language).font(.caption2).foregroundStyle(.secondary)
+                    Text(language).font(.jbCaption2).foregroundStyle(.secondary)
                 }
                 ScrollView(.horizontal) {
                     Text(content)
-                        .font(.system(.footnote, design: .monospaced))
+                        .font(.jbMono(.footnote))
                         .textSelection(.enabled)
                         .padding(10)
                 }

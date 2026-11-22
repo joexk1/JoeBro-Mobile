@@ -82,7 +82,7 @@ struct DocumentEditorView: View {
         VStack(spacing: 12) {
             ProgressView().tint(.joeInk)
             Text("Loading \(fallbackTitle)…")
-                .font(.footnote).foregroundStyle(.secondary)
+                .font(.jbFootnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -90,13 +90,13 @@ struct DocumentEditorView: View {
     private func failureState(_ message: String) -> some View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle).foregroundStyle(Color.accentTint)
-            Text("Couldn't open this document").font(.headline).foregroundStyle(.joeInk)
+                .font(.jbLargeTitle).foregroundStyle(Color.accentTint)
+            Text("Couldn't open this document").font(.jbHeadline).foregroundStyle(.joeInk)
             Text(message)
-                .font(.footnote).foregroundStyle(.secondary)
+                .font(.jbFootnote).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button("Try again") { Task { await store.load() } }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.jbPrimary)
                 .tint(Color.accentTint)
                 .foregroundStyle(Color.joeInverseInk)
                 .padding(.top, 2)
@@ -133,8 +133,8 @@ private struct DocumentModeSwitch: View {
             withAnimation(.snappy(duration: 0.2)) { mode = value }
         } label: {
             HStack(spacing: 7) {
-                Image(systemName: icon).font(.system(size: 14, weight: .semibold))
-                Text(label).font(.system(size: 14, weight: .semibold))
+                Image(systemName: icon).font(.jb(14, .semibold))
+                Text(label).font(.jb(14, .semibold))
             }
             .foregroundStyle(active ? Color.joeInverseInk.opacity(0.9) : .joeInk.opacity(0.76))
             .frame(maxWidth: .infinity)
@@ -161,7 +161,7 @@ private struct DocumentPreview: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text(title)
-                    .font(.title2.bold())
+                    .font(.jbTitle2.bold())
                     .foregroundStyle(.joeInk)
                     .textSelection(.enabled)
                 body(for: store.text)
@@ -185,7 +185,7 @@ private struct DocumentPreview: View {
             codeBody(text)
         } else {
             Text(text)
-                .font(.body)
+                .font(.jbBody)
                 .lineSpacing(6)
                 .foregroundStyle(.joeInk)
                 .textSelection(.enabled)
@@ -196,7 +196,7 @@ private struct DocumentPreview: View {
     private func codeBody(_ text: String) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             Text(text)
-                .font(.system(.footnote, design: .monospaced))
+                .font(.jbMono(.footnote))
                 .lineSpacing(3)
                 .foregroundStyle(.joeInk)
                 .textSelection(.enabled)
@@ -210,9 +210,9 @@ private struct DocumentPreview: View {
     private var emptyBody: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("This document is empty.")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.jbSubheadline).foregroundStyle(.secondary)
             Text("Switch to Edit to start writing.")
-                .font(.footnote).foregroundStyle(.tertiary)
+                .font(.jbFootnote).foregroundStyle(.tertiary)
         }
         .padding(.vertical, 20)
     }
@@ -228,7 +228,7 @@ private struct DocumentEditorBody: View {
         VStack(spacing: 0) {
             if store.isLibrary {
                 TextField("Document title", text: $store.title)
-                    .font(.headline)
+                    .font(.jbHeadline)
                     .foregroundStyle(.joeInk)
                     .tint(Color.accentTint)
                     .submitLabel(.done)
@@ -272,13 +272,13 @@ private struct DocumentStatusBar: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(store.language.isEmpty ? "text" : store.language)
-                .font(.caption2.weight(.medium))
+                .font(.jbCaption2.weight(.medium))
                 .foregroundStyle(.joeInk.opacity(0.75))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(.joeInk.opacity(0.1), in: Capsule())
             Text(store.countSummary)
-                .font(.caption)
+                .font(.jbCaption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 6)
             saveState
@@ -286,7 +286,7 @@ private struct DocumentStatusBar: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 9)
         .frame(minHeight: 36)
-        .background(.ultraThinMaterial)
+        .background(JB.panelFill)
     }
 
     @ViewBuilder
@@ -297,19 +297,19 @@ private struct DocumentStatusBar: View {
                 Text("Saving…")
             } else if store.dirty {
                 Image(systemName: "circle.fill")
-                    .font(.system(size: 6)).foregroundStyle(.orange)
+                    .font(.jb(6)).foregroundStyle(.orange)
                 Text("Unsaved")
             } else if let savedAt = store.savedAt {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.caption).foregroundStyle(.green.opacity(0.85))
+                    .font(.jbCaption).foregroundStyle(.green.opacity(0.85))
                 Text("Saved \(savedAt.formatted(date: .omitted, time: .shortened))")
             } else {
                 Image(systemName: "checkmark.circle")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.jbCaption).foregroundStyle(.secondary)
                 Text("Up to date")
             }
         }
-        .font(.caption)
+        .font(.jbCaption)
         .foregroundStyle(.secondary)
         .accessibilityElement(children: .combine)
     }

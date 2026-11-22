@@ -260,10 +260,10 @@ private struct ToolRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).foregroundStyle(.joeInk).lineLimit(1)
                 if !subtitle.isEmpty {
-                    Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(2)
                 }
                 if let detail, !detail.isEmpty {
-                    Text(detail).font(.caption2).foregroundStyle(.secondary.opacity(0.8)).lineLimit(1)
+                    Text(detail).font(.jbCaption2).foregroundStyle(.secondary.opacity(0.8)).lineLimit(1)
                 }
             }
             Spacer(minLength: 8)
@@ -284,21 +284,21 @@ private struct MCPRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(server.name).foregroundStyle(.joeInk).lineLimit(1)
                     Text(server.command.isEmpty ? "No command set" : server.command)
-                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 8)
                 WSToggle(label: "\(server.name) enabled", isOn: server.enabled, set: setOn)
             }
             if !server.error.isEmpty {
                 Label(server.error, systemImage: "exclamationmark.triangle")
-                    .font(.caption2).foregroundStyle(.orange).lineLimit(3)
+                    .font(.jbCaption2).foregroundStyle(.orange).lineLimit(3)
             } else if server.tools.isEmpty {
                 Text(server.enabled ? "No tools discovered yet." : "Disabled.")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(.jbCaption2).foregroundStyle(.secondary)
             } else {
                 Text("\(server.tools.count) tools · " + server.tools.prefix(4).joined(separator: ", ")
                      + (server.tools.count > 4 ? "…" : ""))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                    .font(.jbCaption2).foregroundStyle(.secondary).lineLimit(2)
             }
         }
         .frame(minHeight: 48)
@@ -411,14 +411,14 @@ private struct MCPServerEditor: View {
             if let server, !server.tools.isEmpty {
                 Section("Discovered tools") {
                     ForEach(server.tools, id: \.self) { tool in
-                        Text(tool).font(.subheadline).foregroundStyle(.joeInk)
+                        Text(tool).font(.jbSubheadline).foregroundStyle(.joeInk)
                     }
                 }
                 .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let message = server?.error, !message.isEmpty {
                 Section("Last discovery error") {
-                    Text(message).font(.footnote).foregroundStyle(.orange)
+                    Text(message).font(.jbFootnote).foregroundStyle(.orange)
                 }
                 .listRowBackground(Color.joeInk.opacity(0.06))
             }

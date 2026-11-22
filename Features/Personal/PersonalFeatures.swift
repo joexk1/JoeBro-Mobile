@@ -113,7 +113,7 @@ struct ShoppingListView: View {
                 .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let error {
-                Text(error).font(.footnote).foregroundStyle(.red).listRowBackground(Color.clear)
+                Text(error).font(.jbFootnote).foregroundStyle(.red).listRowBackground(Color.clear)
             }
             if !loading && items.isEmpty {
                 empty("cart", "Nothing to buy", "Add things here, or just tell JoeBro \"we're out of milk\".")
@@ -129,7 +129,7 @@ struct ShoppingListView: View {
                         Text("Ticked off")
                         Spacer()
                         Button("Clear") { mutate(["action": "clear_checked"]) }
-                            .font(.caption.weight(.semibold))
+                            .font(.jbCaption.weight(.semibold))
                             .foregroundStyle(Color.accentTint)
                     }
                 }
@@ -149,7 +149,7 @@ struct ShoppingListView: View {
         Button { toggle(item) } label: {
             HStack(spacing: 12) {
                 Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 21))
+                    .font(.jb(21))
                     .foregroundStyle(item.checked ? Color.accentTint : .joeInk.opacity(0.45))
                     .contentTransition(.symbolEffect(.replace))
                 VStack(alignment: .leading, spacing: 2) {
@@ -157,12 +157,12 @@ struct ShoppingListView: View {
                         .strikethrough(item.checked)
                         .foregroundStyle(item.checked ? .secondary : .primary)
                     if item.addedBy == "joebro" {
-                        Text("Added by JoeBro").font(.caption2).foregroundStyle(.secondary)
+                        Text("Added by JoeBro").font(.jbCaption2).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
                 if !item.quantity.isEmpty {
-                    Text(item.quantity).font(.callout).foregroundStyle(.secondary)
+                    Text(item.quantity).font(.jbCallout).foregroundStyle(.secondary)
                 }
             }
             .frame(minHeight: 40)

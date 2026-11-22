@@ -321,13 +321,13 @@ struct AgentsTabView: View {
                         .fill(.joeInk)
                         .frame(width: 49, height: 49)
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 29, weight: .light))
+                        .font(.jb(29, .light))
                         .foregroundStyle(Color.accentTint)
                         .symbolEffect(.pulse, options: .repeating, isActive: mainJoeBro.busy && !reduceMotion)
                 }
                 VStack(alignment: .leading, spacing: 5) {
                     Text(Flavor.mainAgentName)
-                        .font(.headline)
+                        .font(.jbHeadline)
                         .foregroundStyle(.joeInk)
                     HStack(spacing: 6) {
                         Circle()
@@ -336,13 +336,13 @@ struct AgentsTabView: View {
                             .frame(width: 7, height: 7)
                         Text(mainJoeBro.busy ? "Working now" :
                              mainJoeBro.mainConnectionIssue == nil ? "Standing by" : "Offline")
-                            .font(.caption)
+                            .font(.jbCaption)
                             .foregroundStyle(.joeInk.opacity(0.72))
                     }
                 }
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right")
-                    .font(.caption2.bold())
+                    .font(.jbCaption2.bold())
                     .foregroundStyle(.joeInk.opacity(0.55))
             }
             .padding(16)
@@ -359,11 +359,11 @@ struct AgentsTabView: View {
     private var sectionHeader: some View {
         HStack {
             Text(store.activeOnly ? "RUNNING NOW" : "RECENT ACTIVITY")
-                .font(.caption2.weight(.bold)).tracking(1.5)
+                .font(.jbCaption2.weight(.bold)).tracking(1.5)
                 .foregroundStyle(.joeInk.opacity(0.6))
             Spacer()
             Text("\(store.visible.count + (showJoeBroCard ? 1 : 0))")
-                .font(.caption.monospacedDigit())
+                .font(.jbCaption.monospacedDigit())
                 .foregroundStyle(.joeInk.opacity(0.55))
                 .contentTransition(.numericText())
         }
@@ -400,14 +400,14 @@ struct AgentsTabView: View {
             .pickerStyle(.segmented)
             HStack {
                 Text("KIND")
-                    .font(.caption2.weight(.bold)).tracking(1.5)
+                    .font(.jbCaption2.weight(.bold)).tracking(1.5)
                     .foregroundStyle(.joeInk.opacity(0.6))
                 Spacer()
                 if store.filter != nil {
                     Button("Show all") { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
                         store.filter = nil
                     } }
-                        .font(.caption.weight(.semibold))
+                        .font(.jbCaption.weight(.semibold))
                         .foregroundStyle(.joeInk)
                 }
             }
@@ -430,20 +430,20 @@ struct AgentsTabView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: kind.symbol)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.jb(17, .medium))
                     .frame(width: 28)
                     .foregroundStyle(selected ? .joeInk : .joeInk.opacity(0.72))
                     .scaleEffect(reduceMotion || symbolsReady ? 1 : 0.92)
                     .opacity(reduceMotion || symbolsReady ? 1 : 0.75)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: symbolsReady)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(kind.label).font(.subheadline.weight(.semibold))
+                    Text(kind.label).font(.jbSubheadline.weight(.semibold))
                     Text(store.activeOnly ? "active" : "total")
-                        .font(.caption2).foregroundStyle(.joeInk.opacity(0.55))
+                        .font(.jbCaption2).foregroundStyle(.joeInk.opacity(0.55))
                 }
                 Spacer(minLength: 2)
                 Text("\(store.count(for: kind))")
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .font(.jbSubheadline.weight(.semibold).monospacedDigit())
                     .foregroundStyle(.joeInk.opacity(0.78))
                     .contentTransition(.numericText())
             }
@@ -461,7 +461,7 @@ struct AgentsTabView: View {
         if agent.kind == .subagent, agent.parentID != nil {
             Label("Spawned by \(store.parentName(of: agent) ?? "another agent")",
                   systemImage: "arrow.turn.down.right")
-                .font(.caption)
+                .font(.jbCaption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
@@ -471,13 +471,13 @@ struct AgentsTabView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: (agent.kind ?? .unknown).symbol)
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.jb(18, .medium))
                     .foregroundStyle(.joeInk)
                     .frame(width: 40, height: 40)
                     .background(.joeInk.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
                 VStack(alignment: .leading, spacing: 5) {
                     Text(agent.displayTitle)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.jbSubheadline.weight(.semibold))
                         .foregroundStyle(.joeInk)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
@@ -492,30 +492,30 @@ struct AgentsTabView: View {
                             Text("\(count) sources")
                         }
                     }
-                    .font(.caption)
+                    .font(.jbCaption)
                     .foregroundStyle(.joeInk.opacity(0.66))
                 }
                 Spacer(minLength: 5)
                 if agent.isLive { ProgressView().controlSize(.small).tint(.joeInk) }
-                else { Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.joeInk.opacity(0.4)) }
+                else { Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.4)) }
             }
             if let preview = agent.isLive ? agent.progress : (agent.failed ? agent.error : agent.result),
                !preview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(preview.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(.caption)
+                    .font(.jbCaption)
                     .foregroundStyle(.joeInk.opacity(0.7))
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
             if let date = [agent.finishedAt, agent.startedAt, agent.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
                 Text(agentRelativeDate(date))
-                    .font(.caption2)
+                    .font(.jbCaption2)
                     .foregroundStyle(.joeInk.opacity(0.48))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(15)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .background(JB.panelFill, in: RoundedRectangle(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.joeInk.opacity(0.11)))
         .contentShape(Rectangle())
     }
@@ -523,19 +523,19 @@ struct AgentsTabView: View {
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 13) {
             Image(systemName: store.activeOnly ? "circle.dotted.circle" : "person.3.sequence")
-                .font(.system(size: 30, weight: .light))
+                .font(.jb(30, .light))
                 .foregroundStyle(.joeInk.opacity(0.8))
             Text(store.search.isEmpty ? (store.activeOnly ? "Quiet right now" : "No agents yet") : "No matches")
-                .font(.title3.weight(.semibold))
+                .font(.jbTitle3.weight(.semibold))
                 .foregroundStyle(.joeInk)
             if !store.search.isEmpty || !store.activeOnly {
                 Text(store.search.isEmpty ? "Completed work will collect here." : "Try another search or kind.")
-                    .font(.subheadline)
+                    .font(.jbSubheadline)
                     .foregroundStyle(.joeInk.opacity(0.65))
             }
             if store.filter != nil {
                 Button("Show all kinds") { store.filter = nil }
-                    .font(.subheadline.weight(.semibold))
+                    .font(.jbSubheadline.weight(.semibold))
                     .foregroundStyle(.joeInk)
             }
         }
@@ -591,14 +591,14 @@ struct AgentDetailView: View {
                 }
                 if let error = current.error, !error.isEmpty {
                     Text(error)
-                        .font(.footnote)
+                        .font(.jbFootnote)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(14).jbGlass(16)
                 }
                 if let cancelNote {
                     Label(cancelNote, systemImage: "stop.circle")
-                        .font(.footnote)
+                        .font(.jbFootnote)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -609,7 +609,7 @@ struct AgentDetailView: View {
                         .padding(16).jbGlass(20)
                 } else if !loading && !current.isLive {
                     Text(current.isSessionOnly ? "No replies in this chat yet." : "This agent finished without a result.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.jbFootnote).foregroundStyle(.secondary)
                 }
                 if let sources = current.sources, !sources.isEmpty {
                     ResearchSourcesView(sources: sources)
@@ -617,15 +617,15 @@ struct AgentDetailView: View {
                 if !displayedMessages.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Transcript")
-                            .font(.headline)
+                            .font(.jbHeadline)
                             .foregroundStyle(.joeInk)
                         ForEach(Array(displayedMessages.enumerated()), id: \.offset) { index, message in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(message.role.capitalized)
-                                    .font(.caption.weight(.semibold))
+                                    .font(.jbCaption.weight(.semibold))
                                     .foregroundStyle(.joeInk.opacity(0.55))
                                 Text(message.content)
-                                    .font(.subheadline)
+                                    .font(.jbSubheadline)
                                     .foregroundStyle(.joeInk.opacity(0.88))
                                     .textSelection(.enabled)
                             }
@@ -702,7 +702,7 @@ struct AgentDetailView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(current.displayTitle)
-                .font(.title2.weight(.bold))
+                .font(.jbTitle2.weight(.bold))
                 .foregroundStyle(.joeInk)
             HStack(spacing: 8) {
                 Image(systemName: (current.kind ?? .unknown).symbol)
@@ -711,17 +711,17 @@ struct AgentDetailView: View {
                 Circle().fill(statusColor(current)).frame(width: 7, height: 7)
                 Text(statusLabel(current))
             }
-            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+            .font(.jbSubheadline.weight(.medium)).foregroundStyle(.secondary)
             if let model = current.model, !model.isEmpty {
                 Text(model.components(separatedBy: "/").last ?? model)
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.jbCaption).foregroundStyle(.secondary)
             }
             if let started = [current.startedAt, current.createdAt].compactMap({ $0 }).first(where: { !$0.isEmpty }) {
                 Text("Started \(agentRelativeDate(started))")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.jbCaption).foregroundStyle(.secondary)
             }
             if current.isLive, let progress = current.progress, !progress.isEmpty {
-                Text(progress).font(.subheadline).foregroundStyle(.joeInk.opacity(0.8))
+                Text(progress).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.8))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

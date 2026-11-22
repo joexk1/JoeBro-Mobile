@@ -108,7 +108,7 @@ struct ResearchView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(run.query).foregroundStyle(.joeInk).lineLimit(2)
                             Text(phases[run.id] ?? "Working…")
-                                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
                         }
                     }
                     .frame(minHeight: 48)
@@ -193,12 +193,12 @@ private struct ReportRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: symbol)
-                .font(.body)
+                .font(.jbBody)
                 .foregroundStyle(tint)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
                 Text(report.query).foregroundStyle(.joeInk).lineLimit(2)
-                Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
             }
         }
         .frame(minHeight: 48)
@@ -243,7 +243,7 @@ private struct ResearchReportView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(report?.query ?? title).font(.title2.bold()).foregroundStyle(.joeInk)
+                Text(report?.query ?? title).font(.jbTitle2.bold()).foregroundStyle(.joeInk)
                 content
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -291,7 +291,7 @@ private struct ResearchReportView: View {
         if let report {
             Label(report.status.capitalized,
                   systemImage: report.status == "completed" ? "checkmark.circle" : "circle.dotted")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.jbSubheadline).foregroundStyle(.secondary)
             if report.status == "completed" {
                 let body = reportBodyWithoutSources
                 if body.isEmpty {
@@ -354,27 +354,27 @@ struct ResearchSourcesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Sources · \(sources.count)")
-                .font(.title3.bold())
+                .font(.jbTitle3.bold())
                 .foregroundStyle(.joeInk)
             ForEach(Array(sources.enumerated()), id: \.offset) { index, source in
                 if let url = URL(string: source.url) {
                     Link(destination: url) {
                         HStack(alignment: .top, spacing: 12) {
                             Text("\(index + 1)")
-                                .font(.caption.monospacedDigit().bold())
+                                .font(.jbCaption.monospacedDigit().bold())
                                 .foregroundStyle(Color.accentTint)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(source.title)
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(.jbSubheadline.weight(.semibold))
                                     .foregroundStyle(.joeInk)
                             Text(url.host() ?? source.url)
-                                .font(.caption)
+                                .font(.jbCaption)
                                 .foregroundStyle(Color.accentTint)
                             }
                             Spacer(minLength: 4)
                             Image(systemName: "arrow.up.right")
-                                .font(.caption)
+                                .font(.jbCaption)
                                 .foregroundStyle(Color.accentTint)
                         }
                         .padding(12)

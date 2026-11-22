@@ -44,12 +44,12 @@ struct ChatToolCallCard: View {
         } label: {
             HStack(spacing: 9) {
                 Image(systemName: ChatToolCallCard.icon(for: call.name))
-                    .font(.footnote.weight(.semibold))
+                    .font(.jbFootnote.weight(.semibold))
                     .foregroundStyle(accent)
                     .frame(width: 18)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(label.uppercased())
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .font(.jb(11, .bold))
                         .tracking(0.7)
                         .foregroundStyle(.joeInk)
                         .lineLimit(1)
@@ -57,7 +57,7 @@ struct ChatToolCallCard: View {
                 }
                 Spacer(minLength: 6)
                 Image(systemName: "chevron.right")
-                    .font(.caption2.bold())
+                    .font(.jbCaption2.bold())
                     .foregroundStyle(.joeInk.opacity(0.5))
                     .rotationEffect(.degrees(expanded ? 90 : 0))
             }
@@ -81,17 +81,17 @@ struct ChatToolCallCard: View {
         HStack(spacing: 6) {
             if finished {
                 Image(systemName: failed ? "exclamationmark.octagon.fill" : "checkmark.circle.fill")
-                    .font(.system(size: 9))
+                    .font(.jb(9))
                     .foregroundStyle(accent)
             } else {
                 ProgressView().controlSize(.mini).tint(accent)
             }
             Text(stateText)
-                .font(.caption2.weight(failed ? .bold : .regular))
+                .font(.jbCaption2.weight(failed ? .bold : .regular))
                 .foregroundStyle(failed ? accent : .secondary)
             if !expanded, !call.command.isEmpty {
                 Text(call.command)
-                    .font(.system(size: 10.5, design: .monospaced))
+                    .font(.jbMono(10.5))
                     .foregroundStyle(.joeInk.opacity(0.45))
                     .lineLimit(1)
             }
@@ -106,7 +106,7 @@ struct ChatToolCallCard: View {
             if !call.output.isEmpty {
                 ScrollView {
                     Text(ChatToolCallCard.clamp(call.output))
-                        .font(.system(size: 11.5, design: .monospaced))
+                        .font(.jbMono(11.5))
                         .foregroundStyle(failed ? accent : .joeInk.opacity(0.88))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -117,7 +117,7 @@ struct ChatToolCallCard: View {
             }
             if call.command.isEmpty && call.output.isEmpty {
                 Text(call.finished ? "No output." : "Working…")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.jbCaption).foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 12)
@@ -126,7 +126,7 @@ struct ChatToolCallCard: View {
 
     private func pane(_ text: String, opacity: Double) -> some View {
         Text(text)
-            .font(.system(size: 11.5, design: .monospaced))
+            .font(.jbMono(11.5))
             .foregroundStyle(.joeInk.opacity(0.9))
             .textSelection(.enabled)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,14 +196,14 @@ struct ChatToolActivity: View {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
                         if running { ProgressView().controlSize(.mini).tint(.joeInk) }
-                        else { Image(systemName: failed ? "exclamationmark.circle" : "wrench.and.screwdriver").font(.caption2) }
-                        Text("\(count) \(count == 1 ? "step" : "steps")").font(.caption.weight(.medium))
-                        Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold))
+                        else { Image(systemName: failed ? "exclamationmark.circle" : "wrench.and.screwdriver").font(.jbCaption2) }
+                        Text("\(count) \(count == 1 ? "step" : "steps")").font(.jbCaption.weight(.medium))
+                        Image(systemName: "chevron.down").font(.jb(9, .semibold))
                             .rotationEffect(.degrees(expanded ? 180 : 0))
                     }
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(.joeInk.opacity(expanded ? 0.12 : 0.06), in: Capsule())
-                    Text(summary).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    Text(summary).font(.jbCaption).foregroundStyle(.secondary).lineLimit(2)
                     Spacer(minLength: 0)
                 }
                 .foregroundStyle(.joeInk.opacity(0.8))
@@ -222,7 +222,7 @@ struct ChatToolActivity: View {
                     if calls.isEmpty {
                         ForEach(legacyNames.indices, id: \.self) { index in
                             Label(ChatToolCallCard.prettyName(legacyNames[index]), systemImage: "checkmark")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.jbCaption).foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -242,21 +242,21 @@ private struct ChatToolStep: View {
         DisclosureGroup(isExpanded: $expanded) {
             ForEach(calls) { call in
                 VStack(alignment: .leading, spacing: 6) {
-                    if !call.command.isEmpty { Text(call.command).font(.system(.caption, design: .monospaced)).textSelection(.enabled) }
+                    if !call.command.isEmpty { Text(call.command).font(.jbMono(.caption)).textSelection(.enabled) }
                     if !call.output.isEmpty {
-                        ScrollView { Text(call.output).font(.system(.caption, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
+                        ScrollView { Text(call.output).font(.jbMono(.caption)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
                             .frame(maxHeight: 220)
                     }
-                    if call.command.isEmpty && call.output.isEmpty { Text(call.finished ? "No output" : "Running…").font(.caption).foregroundStyle(.secondary) }
+                    if call.command.isEmpty && call.output.isEmpty { Text(call.finished ? "No output" : "Running…").font(.jbCaption).foregroundStyle(.secondary) }
                 }.padding(.vertical, 6)
             }
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: running ? "ellipsis" : failed ? "xmark" : "checkmark")
                     .foregroundStyle(failed ? Color.red : Color.secondary)
-                    .font(.caption2).frame(width: 12)
+                    .font(.jbCaption2).frame(width: 12)
                 Text(ChatToolCallCard.prettyName(calls[0].name) + (calls.count > 1 ? " (\(calls.count))" : ""))
-                    .font(.caption.weight(.medium)).foregroundStyle(.joeInk)
+                    .font(.jbCaption.weight(.medium)).foregroundStyle(.joeInk)
                     .lineLimit(2)
             }.frame(minHeight: 32)
         }.tint(.joeInk.opacity(0.5))

@@ -73,7 +73,7 @@ struct NightShiftView: View {
                             Image(systemName: icon(task.state)).foregroundStyle(.secondary).frame(width: 24)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(task.name).foregroundStyle(.joeInk).lineLimit(1)
-                                Text("\(task.state.capitalized) · \(task.agentLabel)").font(.caption).foregroundStyle(.secondary)
+                                Text("\(task.state.capitalized) · \(task.agentLabel)").font(.jbCaption).foregroundStyle(.secondary)
                             }
                         }.listRowBackground(Color.joeInk.opacity(0.06))
                     }
@@ -117,10 +117,10 @@ struct NightShiftView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.name).foregroundStyle(.joeInk).lineLimit(2)
                 Text([task.repoName, task.agentLabel, task.model].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    .font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 0)
-            if task.state == "running" { Text("Running").font(.caption2).foregroundStyle(Color.accentTint) }
+            if task.state == "running" { Text("Running").font(.jbCaption2).foregroundStyle(Color.accentTint) }
         }
         .frame(minHeight: 48).listRowBackground(Color.joeInk.opacity(0.06))
     }
@@ -156,32 +156,32 @@ struct ReviewCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text(task.name).font(.headline).foregroundStyle(.joeInk)
+                Text(task.name).font(.jbHeadline).foregroundStyle(.joeInk)
                 Spacer()
                 if let t = task.result?.tests, let ok = t.passed {
                     Label(ok ? "Tests passed" : "Tests failed", systemImage: ok ? "checkmark.circle.fill" : "xmark.octagon.fill")
-                        .font(.caption.weight(.semibold)).foregroundStyle(ok ? .green : .red)
+                        .font(.jbCaption.weight(.semibold)).foregroundStyle(ok ? .green : .red)
                 }
             }
             Text([task.repoName, task.agentLabel, task.model].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.jbCaption).foregroundStyle(.secondary)
             if let d = task.result?.diff {
                 HStack(spacing: 14) {
-                    Text("\(d.files ?? 0) files").font(.subheadline)
-                    Text("+\(d.insertions ?? 0)").foregroundStyle(.green).font(.subheadline.monospacedDigit())
-                    Text("-\(d.deletions ?? 0)").foregroundStyle(.red).font(.subheadline.monospacedDigit())
-                    if let m = task.result?.durationS { Text("\(Int(m / 60)) min").font(.caption).foregroundStyle(.secondary) }
+                    Text("\(d.files ?? 0) files").font(.jbSubheadline)
+                    Text("+\(d.insertions ?? 0)").foregroundStyle(.green).font(.jbSubheadline.monospacedDigit())
+                    Text("-\(d.deletions ?? 0)").foregroundStyle(.red).font(.jbSubheadline.monospacedDigit())
+                    if let m = task.result?.durationS { Text("\(Int(m / 60)) min").font(.jbCaption).foregroundStyle(.secondary) }
                 }
             }
-            if let s = task.result?.summary, !s.isEmpty { Text(s).font(.subheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(5) }
+            if let s = task.result?.summary, !s.isEmpty { Text(s).font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(5) }
             if let shot { Image(uiImage: shot).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 10)) }
             HStack(spacing: 8) {
-                Button("Approve", action: approve).buttonStyle(.borderedProminent).tint(Color.accentTint)
-                Button("Reject", role: .destructive, action: reject).buttonStyle(.bordered)
-                Button("Follow-up", action: followUp).buttonStyle(.bordered)
+                Button("Approve", action: approve).buttonStyle(.jbPrimary).tint(Color.accentTint)
+                Button("Reject", role: .destructive, action: reject).buttonStyle(.jbSecondary)
+                Button("Follow-up", action: followUp).buttonStyle(.jbSecondary)
                 Spacer(minLength: 0)
                 Button { open() } label: { Image(systemName: "doc.text.magnifyingglass") }.accessibilityLabel("See the diff")
-            }.font(.subheadline)
+            }.font(.jbSubheadline)
         }
         .padding(.vertical, 6)
         .listRowBackground(Color.joeInk.opacity(0.06))
@@ -199,14 +199,14 @@ struct NightDiffView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(task.result?.diff?.fileList ?? [], id: \.path) { f in
-                        HStack { Text(f.path).font(.footnote.monospaced()); Spacer()
-                            Text("+\(f.added ?? 0)").foregroundStyle(.green); Text("-\(f.removed ?? 0)").foregroundStyle(.red) }.font(.caption)
+                        HStack { Text(f.path).font(.jbFootnote.monospaced()); Spacer()
+                            Text("+\(f.added ?? 0)").foregroundStyle(.green); Text("-\(f.removed ?? 0)").foregroundStyle(.red) }.font(.jbCaption)
                     }
                     if let out = task.result?.tests?.outputTail, !out.isEmpty {
-                        Text(out).font(.caption.monospaced()).padding(8).background(.black.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                        Text(out).font(.jbCaption.monospaced()).padding(8).background(.black.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
                     }
-                    ForEach(task.result?.learned ?? [], id: \.self) { Label($0, systemImage: "brain").font(.footnote) }
-                    Text(diff).font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
+                    ForEach(task.result?.learned ?? [], id: \.self) { Label($0, systemImage: "brain").font(.jbFootnote) }
+                    Text(diff).font(.jbMono(11)).textSelection(.enabled)
                 }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
             }
             .jbWallpaper().navigationTitle(task.name).navigationBarTitleDisplayMode(.inline)
@@ -248,7 +248,7 @@ struct NightComposer: View {
                     }
                     TextField("Test command (optional)", text: $tests).textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
-                if let error { Text(error).foregroundStyle(.red).font(.footnote) }
+                if let error { Text(error).foregroundStyle(.red).font(.jbFootnote) }
             }
             .navigationTitle("Queue a task").navigationBarTitleDisplayMode(.inline)
             .onChange(of: agent) { _, _ in model = "" }

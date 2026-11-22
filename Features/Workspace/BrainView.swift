@@ -112,13 +112,13 @@ private struct MemoryRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             if memory.pinned == true {
-                Image(systemName: "pin.fill").font(.caption)
+                Image(systemName: "pin.fill").font(.jbCaption)
                     .foregroundStyle(.orange).padding(.top, 3)
                     .accessibilityLabel("Pinned")
             }
             VStack(alignment: .leading, spacing: 3) {
                 Text(memory.displayText).foregroundStyle(.joeInk).lineLimit(4)
-                Text(memory.category ?? "general").font(.caption2).foregroundStyle(.secondary)
+                Text(memory.category ?? "general").font(.jbCaption2).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }

@@ -89,6 +89,7 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
     var wallpaperName: String = UserDefaults.standard.string(forKey: "wallpaperName") ?? BackgroundPreset.purple.rawValue
 
     init() {
+        JBFonts.register()
         joeBroColor = Self.savedJoeBroColor()
         loadWallpaper()
         // The tab bar and nav bars are opaque by default on iOS, which hid
@@ -135,7 +136,10 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
     func select(_ name: String) {
         wallpaperName = name
         UserDefaults.standard.set(name, forKey: "wallpaperName")
-        if name == "photo" { loadWallpaper() } else { wallpaper = nil }
+        if name == "photo" { loadWallpaper() } else {
+            wallpaper = nil
+            JBAppearance.shared.palette = JBPalette(legacy: name)
+        }
     }
 
     private func loadWallpaper() { wallpaper = UIImage(contentsOfFile: Self.wallpaperURL.path) }
@@ -148,11 +152,20 @@ enum BackgroundAnimation: String, CaseIterable, Identifiable {
     private static func makeChromeTransparent() {
         let tab = UITabBarAppearance()
         tab.configureWithTransparentBackground()
+        for item in [tab.stackedLayoutAppearance, tab.inlineLayoutAppearance, tab.compactInlineLayoutAppearance] {
+            item.normal.titleTextAttributes = [.font: JBFonts.uiFont(10, .medium)]
+            item.selected.titleTextAttributes = [.font: JBFonts.uiFont(10, .semibold)]
+        }
         UITabBar.appearance().standardAppearance = tab
         UITabBar.appearance().scrollEdgeAppearance = tab
 
         let nav = UINavigationBarAppearance()
         nav.configureWithTransparentBackground()
+        nav.titleTextAttributes = [.font: JBFonts.uiFont(17, .semibold)]
+        nav.largeTitleTextAttributes = [.font: JBFonts.uiFont(32, .semibold), .kern: -0.6]
+        let barButton = UIBarButtonItemAppearance()
+        barButton.normal.titleTextAttributes = [.font: JBFonts.uiFont(17)]
+        nav.buttonAppearance = barButton
         UINavigationBar.appearance().standardAppearance = nav
         UINavigationBar.appearance().compactAppearance = nav
         UINavigationBar.appearance().scrollEdgeAppearance = nav
@@ -169,17 +182,13 @@ struct WallpaperBackground: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color.black
+                JB.bg
                 if theme.wallpaperName == "photo", let wallpaper = theme.wallpaper {
                     Image(uiImage: wallpaper).resizable().scaledToFill()
                         .frame(width: geo.size.width, height: geo.size.height).clipped()
                         .overlay(Color.black.opacity(0.32))
-                } else if theme.preset == .monochrome {
-                    colorScheme == .dark ? Color.black : Color.white
                 } else {
-                    LinearGradient(colors: (theme.preset ?? .purple).colors,
-                                   startPoint: .topLeading,
-                                   endPoint: .bottomTrailing)
+                    JBDitherBackdrop(palette: JBAppearance.shared.palette)
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -303,17 +312,8 @@ private struct AsciiSceneWebView: UIViewRepresentable {
     }
 }
 
-struct GlassPanel: ViewModifier {
-    var radius: CGFloat = 24
-    func body(content: Content) -> some View {
-        content
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).stroke(Color.joeInk.opacity(0.16), lineWidth: 1))
-    }
-}
-
 extension View {
-    func jbGlass(_ radius: CGFloat = 24) -> some View { modifier(GlassPanel(radius: radius)) }
+    func jbGlass(_ radius: CGFloat = JB.rPanel) -> some View { jbSurface(.panel, radius: radius) }
 }
 
 /// Each TabView page is hosted in its own controller whose view paints an
@@ -334,22 +334,10 @@ extension View {
 }
 
 extension Color {
-    /// The app's single accent. Controls must not inherit pure white or
-    /// toggles and destructive buttons render as white-on-white blobs.
-    static var joeInk: Color { Color.primary }
-    static var joeInverseInk: Color {
-        Color(UIColor { traits in traits.userInterfaceStyle == .dark ? .black : .white })
-    }
-    static var accentTint: Color {
-        Color(UIColor { traits in
-            if UserDefaults.standard.string(forKey: "wallpaperName") == BackgroundPreset.monochrome.rawValue {
-                return traits.userInterfaceStyle == .dark ? .white : .black
-            }
-            return traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0.72, green: 0.78, blue: 1, alpha: 1)
-                : UIColor(red: 0.22, green: 0.30, blue: 0.65, alpha: 1)
-        })
-    }
+    /// Legacy names, now backed by JBDesign tokens.
+    static var joeInk: Color { JB.ink }
+    static var joeInverseInk: Color { JB.inverse }
+    static var accentTint: Color { JB.accent }
 }
 
 extension ShapeStyle where Self == Color {
@@ -360,10 +348,9 @@ extension ShapeStyle where Self == Color {
 }
 
 
-/// Switches read as switches in every colour theme: the on state is always green
-/// (a theme-coloured tint went white-on-white in the light themes).
+/// Switches read as switches in every palette: the on state is always phosphor.
 struct JoeSwitchStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
-        Toggle(configuration).toggleStyle(.switch).tint(.green)
+        Toggle(configuration).toggleStyle(.switch).tint(JB.live)
     }
 }

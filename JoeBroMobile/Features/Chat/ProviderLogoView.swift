@@ -37,7 +37,7 @@ struct ProviderLogoView: View {
                 Image(asset).renderingMode(.template).resizable().scaledToFit()
             } else {
                 Text(String(model.prefix(1)).uppercased())
-                    .font(.system(size: size * 0.68, weight: .heavy, design: .rounded))
+                    .font(.jb(size * 0.68, .heavy))
             }
         }
         .frame(width: size, height: size)

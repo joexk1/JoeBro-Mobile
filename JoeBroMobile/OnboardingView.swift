@@ -70,10 +70,10 @@ struct OnboardingView: View {
     private func infoPage(_ title: String, _ text: String, _ symbol: String) -> some View {
         VStack(spacing: 20) {
             Spacer()
-            Image(systemName: symbol).font(.system(size: 64)).foregroundStyle(Color.accentTint)
-            Text(title).font(.title.bold()).multilineTextAlignment(.center)
-            Text(text).font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            Button("Next") { withAnimation { page += 1 } }.buttonStyle(.borderedProminent).controlSize(.large)
+            Image(systemName: symbol).font(.jb(64)).foregroundStyle(Color.accentTint)
+            Text(title).font(.jbTitle.bold()).multilineTextAlignment(.center)
+            Text(text).font(.jbBody).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Button("Next") { withAnimation { page += 1 } }.buttonStyle(.jbPrimary).controlSize(.large)
             demoButton
             Spacer(); Spacer()
         }
@@ -84,18 +84,18 @@ struct OnboardingView: View {
         ScrollView {
             VStack(spacing: 18) {
                 Image("JoeBroLogo").resizable().scaledToFit().frame(width: 72, height: 72).padding(.top, 40)
-                Text("Pair this phone").font(.title.bold())
+                Text("Pair this phone").font(.jbTitle.bold())
                 if let paired {
                     Label("Paired with \(paired)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                 }
                 Button { requestCamera() } label: {
                     Label("Scan QR code", systemImage: "qrcode.viewfinder").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent).controlSize(.large).disabled(busy)
+                .buttonStyle(.jbPrimary).controlSize(.large).disabled(busy)
 
                 Button(showManual ? "Hide details" : "Paste link or enter details") {
                     withAnimation { showManual.toggle() }
-                }.font(.footnote)
+                }.font(.jbFootnote)
 
                 if showManual {
                     VStack(spacing: 12) {
@@ -108,13 +108,13 @@ struct OnboardingView: View {
                             .keyboardType(.URL).textFieldStyle(.roundedBorder)
                         SecureField("Token", text: $token).textFieldStyle(.roundedBorder)
                         Button("Pair") { Task { await pair(PairingPayload(url: url, token: token, name: "")) } }
-                            .buttonStyle(.bordered).disabled(url.isEmpty || busy)
+                            .buttonStyle(.jbSecondary).disabled(url.isEmpty || busy)
                     }
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
                 demoButton
                 if busy { ProgressView() }
-                if let message { Text(message).font(.footnote).foregroundStyle(.red).multilineTextAlignment(.center) }
+                if let message { Text(message).font(.jbFootnote).foregroundStyle(.red).multilineTextAlignment(.center) }
             }
             .padding(.horizontal, 32).padding(.bottom, 60)
         }
@@ -122,7 +122,7 @@ struct OnboardingView: View {
 
     @ViewBuilder private var demoButton: some View {
         if let onDemo {
-            Button("Try the demo", action: onDemo).font(.footnote).disabled(busy)
+            Button("Try the demo", action: onDemo).font(.jbFootnote).disabled(busy)
         }
     }
 

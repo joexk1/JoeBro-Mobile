@@ -94,13 +94,13 @@ struct EmailView: View {
         Section(folder) {
             if loading && list == nil {
                 Label("Connecting to your mailbox…", systemImage: "network")
-                    .font(.subheadline).foregroundStyle(.secondary)
+                    .font(.jbSubheadline).foregroundStyle(.secondary)
                     .frame(minHeight: 44)
                     .listRowBackground(Color.clear)
             }
             if let message = list?.error ?? error, !message.isEmpty {
                 Label(message, systemImage: "exclamationmark.triangle")
-                    .font(.subheadline).foregroundStyle(.orange)
+                    .font(.jbSubheadline).foregroundStyle(.orange)
                     .listRowBackground(Color.joeInk.opacity(0.06))
             }
             if let list, list.emails.isEmpty, !loading, (list.error ?? "").isEmpty {
@@ -218,15 +218,15 @@ private struct EmailRow: View {
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     if message.isFlagged {
-                        Image(systemName: "flag.fill").font(.caption).foregroundStyle(.orange)
+                        Image(systemName: "flag.fill").font(.jbCaption).foregroundStyle(.orange)
                             .accessibilityLabel("Flagged")
                     }
                     if busy { ProgressView().controlSize(.mini).tint(Color.accentTint) }
                 }
                 Text(message.subject.isEmpty ? "(no subject)" : message.subject)
-                    .font(.subheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(2)
+                    .font(.jbSubheadline).foregroundStyle(.joeInk.opacity(0.9)).lineLimit(2)
                 if let date = message.date, !date.isEmpty {
-                    Text(date).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(date).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
         }
@@ -275,7 +275,7 @@ private struct EmailMessageView: View {
                 if !canReply {
                     Label("Replies send from the first connected account. Open this on Mac to reply from its own account.",
                           systemImage: "envelope.badge.shield.half.filled")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.jbCaption).foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: 760, alignment: .leading)
@@ -324,15 +324,15 @@ private struct EmailMessageView: View {
     private func header(_ detail: JBEmailDetail) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(detail.subject.isEmpty ? "(no subject)" : detail.subject)
-                .font(.title3.bold()).foregroundStyle(.joeInk)
+                .font(.jbTitle3.bold()).foregroundStyle(.joeInk)
             Text(detail.fromName?.isEmpty == false ? detail.fromName! : (detail.fromAddress ?? "Unknown sender"))
-                .font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk.opacity(0.9))
+                .font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk.opacity(0.9))
             VStack(alignment: .leading, spacing: 2) {
                 if let address = detail.fromAddress, detail.fromName?.isEmpty == false { Text(address) }
                 if let to = detail.to, !to.isEmpty { Text("To: \(to)") }
                 if let date = detail.date, !date.isEmpty { Text(date) }
             }
-            .font(.caption).foregroundStyle(.secondary)
+            .font(.jbCaption).foregroundStyle(.secondary)
         }
     }
 
@@ -340,10 +340,10 @@ private struct EmailMessageView: View {
     private func attachments(_ detail: JBEmailDetail) -> some View {
         if !detail.attachments.isEmpty {
             Divider().overlay(.joeInk.opacity(0.2))
-            Text("Attachments").font(.subheadline.weight(.semibold)).foregroundStyle(.joeInk)
+            Text("Attachments").font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk)
             ForEach(detail.attachments) { file in
                 Label(file.filename ?? "Attachment", systemImage: "paperclip")
-                    .font(.subheadline).foregroundStyle(.secondary)
+                    .font(.jbSubheadline).foregroundStyle(.secondary)
             }
         }
     }
@@ -419,7 +419,7 @@ private struct EmailComposeView: View {
                 if let reply {
                     Section("Original message") {
                         Text(reply.detail.body ?? "")
-                            .font(.footnote).foregroundStyle(.secondary).lineLimit(8)
+                            .font(.jbFootnote).foregroundStyle(.secondary).lineLimit(8)
                     }
                     .listRowBackground(Color.joeInk.opacity(0.06))
                 }

@@ -25,7 +25,7 @@ struct TasksView: View {
             Section {
                 if personalTasks.isEmpty && !loading {
                     Text("No personal tasks yet. They run silently and only notify you when there is news.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.jbFootnote).foregroundStyle(.secondary)
                         .listRowBackground(Color.joeInk.opacity(0.06))
                 }
                 ForEach(personalTasks) { task in row(task) }
@@ -180,7 +180,7 @@ private struct TaskRow: View {
                     Text(task.name).foregroundStyle(.joeInk).lineLimit(1)
                     if task.isPaused {
                         Text("Paused")
-                            .font(.caption2)
+                            .font(.jbCaption2)
                             .padding(.horizontal, 7).padding(.vertical, 2)
                             .background(.joeInk.opacity(0.15), in: Capsule())
                             .foregroundStyle(.joeInk.opacity(0.8))
@@ -188,7 +188,7 @@ private struct TaskRow: View {
                     Spacer(minLength: 0)
                     if running { ProgressView().controlSize(.mini).tint(Color.accentTint) }
                 }
-                Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(subtitle).font(.jbCaption).foregroundStyle(.secondary).lineLimit(1)
             }
         }
         .frame(minHeight: 48)
@@ -246,7 +246,7 @@ struct TaskEditor: View {
                         .tint(Color.accentTint)
                     } else if schedule == "monthly" {
                         Text("Runs on the first day of each month")
-                            .font(.footnote).foregroundStyle(.secondary)
+                            .font(.jbFootnote).foregroundStyle(.secondary)
                     }
                     TextField("Time (HH:MM)", text: $time).keyboardType(.numbersAndPunctuation)
                     WSPermissionPicker(title: "Agent access", mode: $permissionMode)

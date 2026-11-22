@@ -79,11 +79,11 @@ struct DocsView: View {
                 Text(doc.displayTitle).lineLimit(1).foregroundStyle(.joeInk)
                 if let updated = doc.updatedAt, !updated.isEmpty {
                     Text(updated.prefix(16).replacingOccurrences(of: "T", with: " "))
-                        .font(.caption2).foregroundStyle(.secondary)
+                        .font(.jbCaption2).foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 6)
-            Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.tertiary)
+            Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.tertiary)
         }
         .frame(minHeight: 44)
         .contentShape(Rectangle())
@@ -101,7 +101,7 @@ struct DocsView: View {
     private var loadingState: some View {
         HStack(spacing: 10) {
             ProgressView().tint(.joeInk)
-            Text("Loading documents…").font(.footnote).foregroundStyle(.secondary)
+            Text("Loading documents…").font(.jbFootnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 40)
         .listRowBackground(Color.clear)
@@ -109,10 +109,10 @@ struct DocsView: View {
 
     private var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "doc.text").font(.largeTitle).foregroundStyle(.secondary)
-            Text("No documents").font(.headline)
+            Image(systemName: "doc.text").font(.jbLargeTitle).foregroundStyle(.secondary)
+            Text("No documents").font(.jbHeadline)
             Text("Anything JoeBro writes lands here, or tap the pencil to start one.")
-                .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                .font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 40)
         .listRowBackground(Color.clear)

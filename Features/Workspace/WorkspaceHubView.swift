@@ -84,7 +84,7 @@ struct WorkspaceHubView: View {
         NavigationLink(destination: destination()) {
             HStack(spacing: 13) {
                 Image(systemName: symbol)
-                    .font(.system(size: 17))
+                    .font(.jb(17))
                     .foregroundStyle(.joeInk.opacity(0.85))
                     .frame(width: 28)
                     .scaleEffect(reduceMotion || hasEntered ? 1 : 0.92)
@@ -109,9 +109,9 @@ func alertBinding<T>(_ source: Binding<T?>) -> Binding<Bool> {
 @ViewBuilder
 func empty(_ symbol: String, _ title: String, _ detail: String) -> some View {
     VStack(spacing: 10) {
-        Image(systemName: symbol).font(.largeTitle).foregroundStyle(.secondary)
-        Text(title).font(.headline).foregroundStyle(.joeInk)
-        Text(detail).font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+        Image(systemName: symbol).font(.jbLargeTitle).foregroundStyle(.secondary)
+        Text(title).font(.jbHeadline).foregroundStyle(.joeInk)
+        Text(detail).font(.jbFootnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
     }
     .frame(maxWidth: .infinity).padding(.vertical, 40)
     .listRowBackground(Color.clear)
