@@ -1,45 +1,77 @@
 import SwiftUI
 
-/// One transcript message. Kept as its own view so the transcript's body stays
-/// small (this project has already hit "unable to type-check this expression in
-/// reasonable time") and so streaming updates only re-render one row.
+/// Rows enter once, when they are the newest message; older rows that the lazy
+/// stack rebuilds while scrolling stay still.
+private struct RowEnter: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown: Bool
+    init(fresh: Bool) { _shown = State(initialValue: !fresh) }
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown || reduceMotion ? 0 : 6)
+            .onAppear { withAnimation(JB.smooth) { shown = true } }
+    }
+}
+
+/// One transcript message, ink on paper: the user's turn is a raised card,
+/// JoeBro's is plain text. Its own view so streaming re-renders one row.
 struct ChatMessageRow: View {
     let line: ChatLine
+    var fresh = false
     var onOpenDocument: (ChatDocumentRef) -> Void
+    var onRetry: () -> Void = {}
+    @State private var copied = false
 
     private var isUser: Bool { line.role == "user" }
 
     var body: some View {
         HStack(spacing: 0) {
             if isUser { Spacer(minLength: 44) }
-            bubble
-            if !isUser { Spacer(minLength: 32) }
+            content
+            if !isUser { Spacer(minLength: 16) }
         }
-    }
-
-    private var bubble: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if !line.thinking.isEmpty { thinkingBlock }
-            if !line.toolCalls.isEmpty || !line.tools.isEmpty {
-                ChatToolActivity(calls: line.toolCalls, legacyNames: line.tools)
+        .modifier(RowEnter(fresh: fresh))
+        .contextMenu {
+            if !line.text.isEmpty {
+                Button("Copy", systemImage: "doc.on.doc") {
+                    UIPasteboard.general.string = line.text
+                    copied.toggle()
+                }
             }
-            ForEach(line.visualizations.filter(\.isResult)) { visual in ChatVisualizationView(visual: visual) }
-            messageBody
-            ForEach(line.documents) { document in documentChip(document) }
-            attachmentChips
-            if line.streaming && line.text.isEmpty && line.toolCalls.isEmpty { typingIndicator }
+            if !line.streaming { Button("Retry", systemImage: "arrow.clockwise", action: onRetry) }
         }
-        .padding(.horizontal, 15)
-        .padding(.vertical, 13)
-        .background(bubbleFill, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(.joeInk.opacity(isUser ? 0.22 : 0.13), lineWidth: 1))
+        .sensoryFeedback(.success, trigger: copied)
     }
 
-    // The user speaks in a tinted bubble, JoeBro in plain glass — the clearest
-    // distinction that still reads as one material.
-    private var bubbleFill: Color {
-        isUser ? Color.accentTint.opacity(0.22) : Color.joeInk.opacity(0.07)
+    @ViewBuilder private var content: some View {
+        if isUser {
+            VStack(alignment: .leading, spacing: 8) {
+                messageBody
+                attachmentChips
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rCard, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: JB.rCard, style: .continuous).strokeBorder(JB.line, lineWidth: 1))
+        } else {
+            VStack(alignment: .leading, spacing: 10) {
+                if line.streaming && line.text.isEmpty && line.thinking.isEmpty && line.toolCalls.isEmpty {
+                    JBScrambleText(text: "thinking", active: true)
+                } else if !line.thinking.isEmpty {
+                    thinkingBlock
+                }
+                if !line.toolCalls.isEmpty || !line.tools.isEmpty {
+                    ChatToolActivity(calls: line.toolCalls, legacyNames: line.tools)
+                }
+                ForEach(line.visualizations.filter(\.isResult)) { visual in ChatVisualizationView(visual: visual) }
+                messageBody
+                if line.streaming && !line.text.isEmpty { JBStreamCursor() }
+                ForEach(line.documents) { document in documentChip(document) }
+                attachmentChips
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     @ViewBuilder
@@ -48,7 +80,7 @@ struct ChatMessageRow: View {
             if isUser {
                 Text(line.text)
                     .font(.jbBody)
-                    .foregroundStyle(.joeInk)
+                    .foregroundStyle(JB.ink)
                     .lineSpacing(3)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -74,28 +106,15 @@ struct ChatMessageRow: View {
     }
 
     private var thinkingBlock: some View {
-        DisclosureGroup {
-            Text(line.thinking)
-                .font(.jbFootnote)
-                .foregroundStyle(.joeInk.opacity(0.75))
-                .lineSpacing(2)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 6)
-        } label: {
-            Label("Thinking", systemImage: "sparkles")
-                .font(.jbCaption.weight(.semibold))
-                .foregroundStyle(.joeInk.opacity(0.8))
-        }
-        .tint(.accentTint)
+        ThinkingBlock(text: line.thinking, live: line.streaming && line.text.isEmpty)
     }
 
     @ViewBuilder
     private var attachmentChips: some View {
         ForEach(line.attachments, id: \.self) { name in
             Label(name, systemImage: "paperclip")
-                .font(.jbCaption)
-                .foregroundStyle(.joeInk.opacity(0.7))
+                .font(.jbMono(11))
+                .foregroundStyle(JB.ink3)
                 .lineLimit(1)
         }
     }
@@ -103,24 +122,46 @@ struct ChatMessageRow: View {
     private func documentChip(_ document: ChatDocumentRef) -> some View {
         Button { onOpenDocument(document) } label: {
             HStack(spacing: 10) {
-                Image(systemName: "doc.text.fill").foregroundStyle(.accentTint)
-                Text(document.title).font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk).lineLimit(1)
+                Image(systemName: "doc").foregroundStyle(JB.ink2)
+                Text(document.title).font(.jb(14, .medium)).foregroundStyle(JB.ink).lineLimit(1)
                 Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.jbCaption2.bold()).foregroundStyle(.joeInk.opacity(0.5))
+                Image(systemName: "chevron.right").font(.jb(11, .medium)).foregroundStyle(JB.ink3)
             }
             .padding(.horizontal, 12)
             .frame(minHeight: 44)
-            .background(.joeInk.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .jbSurface(.raised, radius: JB.rCard)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(JBPressStyle())
         .accessibilityLabel("Open document \(document.title)")
     }
+}
 
-    private var typingIndicator: some View {
-        HStack(spacing: 7) {
-            ProgressView().controlSize(.small).tint(.accentTint)
-            Text("JoeBro is replying…").font(.jbCaption).foregroundStyle(.secondary)
+private struct ThinkingBlock: View {
+    let text: String
+    let live: Bool
+    @State private var open = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button { withAnimation(JB.snap) { open.toggle() } } label: {
+                HStack(spacing: 6) {
+                    if live { JBScrambleText(text: "thinking", active: true) }
+                    else { Text("thought").font(.jbMono(12)).foregroundStyle(JB.ink3) }
+                    Image(systemName: "chevron.right").font(.jb(9, .medium)).foregroundStyle(JB.ink3)
+                        .rotationEffect(.degrees(open ? 90 : 0))
+                }
+                .frame(minHeight: 28)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if open {
+                Text(text)
+                    .font(.jb(13)).foregroundStyle(JB.ink2).lineSpacing(2)
+                    .textSelection(.enabled)
+                    .padding(.leading, 10)
+                    .overlay(alignment: .leading) { Rectangle().fill(JB.line).frame(width: 1) }
+                    .transition(.opacity)
+            }
         }
     }
 }
@@ -182,27 +223,29 @@ private struct ChatVisualizationView: View {
 
     private var tint: Color {
         switch visual.kind {
-        case "calendar", "reminders": return .orange
-        case "weather": return .cyan
-        case "shopping", "health": return .mint
-        case "memory", "research": return .purple
-        case "agents", "tasks", "plan": return .blue
-        default: return .accentTint
+        case "calendar", "reminders": return JB.warn
+        case "shopping", "health", "agents", "tasks", "plan": return JB.live
+        default: return JB.accent
         }
     }
-    private var symbol: String {
+    @ViewBuilder private var symbol: some View {
         switch visual.kind {
+        case "memory": JBIcon(.memory, size: 18)
+        case "agents": JBIcon(.coding, size: 18)
+        case "tasks", "plan": JBIcon(.tasks, size: 18)
+        case "research": JBIcon(.research, size: 18)
+        default: Image(systemName: Self.sfSymbol(visual.kind)).font(.jb(17, .regular))
+        }
+    }
+    private static func sfSymbol(_ kind: String) -> String {
+        switch kind {
         case "calendar": return "calendar"
-        case "weather": return "cloud.sun.fill"
-        case "shopping": return "basket.fill"
-        case "reminders": return "bell.badge.fill"
-        case "memory": return "brain.head.profile"
-        case "agents": return "terminal.fill"
-        case "tasks", "plan": return "checklist"
-        case "health": return "heart.fill"
-        case "research": return "sparkle.magnifyingglass"
-        case "email": return "envelope.fill"
-        default: return "square.grid.2x2.fill"
+        case "weather": return "cloud.sun"
+        case "shopping": return "basket"
+        case "reminders": return "bell"
+        case "health": return "heart"
+        case "email": return "envelope"
+        default: return "square.grid.2x2"
         }
     }
     private var visibleRows: [ChatVisualization.Row] {
@@ -212,15 +255,14 @@ private struct ChatVisualizationView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: symbol)
-                    .font(.jb(18, .medium))
+                symbol
                     .foregroundStyle(tint)
-                    .frame(width: 36, height: 36)
-                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                    .frame(width: 32, height: 32)
+                    .background(JB.raised, in: RoundedRectangle(cornerRadius: JB.rControl))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(visual.title).font(.jbSubheadline.weight(.semibold)).foregroundStyle(.joeInk)
+                    Text(visual.title).font(.jb(15, .semibold)).foregroundStyle(JB.ink)
                     if !visual.subtitle.isEmpty {
-                        Text(visual.subtitle).font(.jbCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Text(visual.subtitle).font(.jbMono(11)).foregroundStyle(JB.ink3).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Spacer(minLength: 0)
@@ -230,18 +272,17 @@ private struct ChatVisualizationView: View {
             VStack(spacing: 0) {
                 ForEach(Array(visibleRows.enumerated()), id: \.offset) { index, row in
                     rowView(row)
-                    if index < visibleRows.count - 1 { Divider().overlay(tint.opacity(0.1)).padding(.vertical, 9) }
+                    if index < visibleRows.count - 1 { Rectangle().fill(JB.line).frame(height: 1).padding(.vertical, 9) }
                 }
             }
             if visual.rows.count > 5 {
                 Button(showAll ? "Show less" : "Show all \(visual.rows.count)") { showAll.toggle() }
-                    .font(.jbCaption.weight(.semibold)).foregroundStyle(tint)
+                    .font(.jbMono(11, .medium)).foregroundStyle(JB.ink2)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(0.06), in: RoundedRectangle(cornerRadius: 17))
-        .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(tint.opacity(0.24), lineWidth: 1))
+        .jbSurface(.raised, radius: JB.rCard)
         .accessibilityElement(children: .contain)
     }
 
@@ -258,8 +299,8 @@ private struct ChatVisualizationView: View {
 
     private func metricView(_ metric: ChatVisualization.Metric) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(metric.value).font(.jb(25, .medium)).monospacedDigit().foregroundStyle(.joeInk)
-            Text(metric.label).font(.jbCaption2).foregroundStyle(.secondary)
+            Text(metric.value).font(.jbMono(22, .medium)).foregroundStyle(JB.ink)
+            Text(metric.label).font(.jbMono(10.5)).foregroundStyle(JB.ink3)
         }
     }
 
@@ -283,7 +324,7 @@ private struct ChatVisualizationView: View {
                 Spacer()
                 Text(visual.series.last?.label ?? "")
             }
-            .font(.jbCaption2).foregroundStyle(.secondary)
+            .font(.jbMono(10.5)).foregroundStyle(JB.ink3)
         }
         .accessibilityLabel(visual.title + " trend: " + visual.series.map { "\($0.label), \($0.value.formatted())" }.joined(separator: "; "))
     }
@@ -291,25 +332,22 @@ private struct ChatVisualizationView: View {
     private func rowView(_ row: ChatVisualization.Row) -> some View {
         HStack(alignment: .top, spacing: 9) {
             if visual.kind == "shopping" || visual.kind == "plan" {
-                Image(systemName: row.state == "done" ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(row.state == "done" ? tint : Color.secondary)
+                Image(systemName: row.state == "done" ? "checkmark.circle" : "circle")
+                    .foregroundStyle(row.state == "done" ? tint : JB.ink3)
                     .font(.jbSubheadline).padding(.top, 2)
             } else {
                 RoundedRectangle(cornerRadius: 2).fill(tint.opacity(0.65)).frame(width: 3)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(row.title).font(.jbSubheadline).foregroundStyle(.joeInk)
+                Text(row.title).font(.jb(14)).foregroundStyle(JB.ink)
                     .strikethrough(row.state == "done" && visual.kind == "shopping")
                 if !row.detail.isEmpty {
-                    Text(row.detail).font(.jbCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(row.detail).font(.jb(12)).foregroundStyle(JB.ink3).fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 0)
             if !row.state.isEmpty && !["shopping", "plan"].contains(visual.kind) {
-                Text(row.state.replacingOccurrences(of: "_", with: " ").capitalized)
-                    .font(.jb(10, .semibold)).foregroundStyle(tint)
-                    .padding(.horizontal, 7).padding(.vertical, 4)
-                    .background(tint.opacity(0.1), in: Capsule())
+                JBChip(text: row.state.replacingOccurrences(of: "_", with: " "))
             }
         }
         .fixedSize(horizontal: false, vertical: true)
