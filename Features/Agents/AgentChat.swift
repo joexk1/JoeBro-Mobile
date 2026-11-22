@@ -175,13 +175,19 @@ struct AgentChatThread: View {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !sending else { return }
         sending = true
-        draft = ""
+        draft = ""          // clear at once: no selected-text flash, no double send
+        // Shown immediately, labelled the same way the terminal shows it: queued while the agent works.
+        echoes.append((text, working ? "queued" : "sending"))
+        let idx = echoes.count - 1
         defer { sending = false }
         do {
             let how = try await api.codingSend(id: agent.id, text: text)
-            echoes.append((text, how == "terminal" ? "sent" : "queued"))
+            if echoes.indices.contains(idx) { echoes[idx].via = how == "terminal" && !working ? "sent" : "queued" }
             error = nil; sentTick += 1
             await onChanged()
-        } catch { draft = text; self.error = error.localizedDescription }
+        } catch {
+            if echoes.indices.contains(idx) { echoes.remove(at: idx) }
+            draft = text; self.error = error.localizedDescription
+        }
     }
 }
