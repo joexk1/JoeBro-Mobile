@@ -555,49 +555,7 @@ struct AgentDetailView: View {
             }
         }
         .task {
-            if agent.isSessionOnly {
-                if let id = agent.sessionID {
-                    repeat {
-                        do {
-                            let history = try await api.history(id)
-                            sessionMessages = history.history.map { JBAgentMessage(role: $0.role, content: $0.content) }
-                            error = nil
-                        } catch { self.error = error.localizedDescription }
-                        loading = false
-                        guard chatStore.workingSessions.contains(id) else { break }
-                        try? await Task.sleep(for: .seconds(5))
-                    } while !Task.isCancelled
-                }
-                loading = false
-                return
-            }
-            // Keep a running detail open until its final result is available; coding agents stay
-            // open (they take new instructions any time) at a faster pace.
-            while !Task.isCancelled {
-                do {
-                    let detail = try await api.agentDetail(id: activeID)
-                    full = detail
-                    if detail.id != activeID { resolvedID = detail.id }
-                    error = nil
-                } catch {
-                    if current.kind == .coding, let replacement = await findReplacement() {
-                        resolvedID = replacement.id
-                        full = (try? await api.agentDetail(id: replacement.id)) ?? replacement
-                        error = nil
-                    } else if full == nil {
-                        // Only alert when we have nothing loaded; avoid repeating alerts on background polls.
-                        self.error = error.localizedDescription
-                        loading = false
-                        break
-                    } else if current.kind == .coding {
-                        // Session ended/disappeared cleanly while open; stop polling quietly.
-                        break
-                    }
-                }
-                loading = false
-                guard current.isLive || (current.kind == .coding && current.status != "ended") else { break }
-                try? await Task.sleep(for: .seconds(current.kind == .coding ? 2.5 : 5))
-            }
+            await pollDetail()
         }
         .alert("Agent", isPresented: alertBinding($error)) {
             Button("OK") { error = nil }
@@ -619,6 +577,52 @@ struct AgentDetailView: View {
             }
         } message: {
             Text("The backend will request cancellation. The run may take a moment to finish.")
+        }
+    }
+
+    private func pollDetail() async {
+        if agent.isSessionOnly {
+            if let id = agent.sessionID {
+                repeat {
+                    do {
+                        let history = try await api.history(id)
+                        sessionMessages = history.history.map { JBAgentMessage(role: $0.role, content: $0.content) }
+                        error = nil
+                    } catch let loadError { self.error = loadError.localizedDescription }
+                    loading = false
+                    guard chatStore.workingSessions.contains(id) else { break }
+                    try? await Task.sleep(for: .seconds(5))
+                } while !Task.isCancelled
+            }
+            loading = false
+            return
+        }
+        // Keep a running detail open until its final result is available; coding agents stay
+        // open (they take new instructions any time) at a faster pace.
+        while !Task.isCancelled {
+            do {
+                let detail = try await api.agentDetail(id: activeID)
+                full = detail
+                if detail.id != activeID { resolvedID = detail.id }
+                error = nil
+            } catch let loadError {
+                if current.kind == .coding, let replacement = await findReplacement() {
+                    resolvedID = replacement.id
+                    full = (try? await api.agentDetail(id: replacement.id)) ?? replacement
+                    error = nil
+                } else if full == nil {
+                    // Only alert when we have nothing loaded; avoid repeating alerts on background polls.
+                    self.error = loadError.localizedDescription
+                    loading = false
+                    break
+                } else if current.kind == .coding {
+                    // Session ended/disappeared cleanly while open; stop polling quietly.
+                    break
+                }
+            }
+            loading = false
+            guard current.isLive || (current.kind == .coding && current.status != "ended") else { break }
+            try? await Task.sleep(for: .seconds(current.kind == .coding ? 2.5 : 5))
         }
     }
 
