@@ -209,7 +209,8 @@ struct TaskEditor: View {
 
     private static let weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     private static let models = ["claude": ["opus", "sonnet", "haiku"], "codex": ["gpt-5-codex", "gpt-5"],
-                                 "opencode": ["qwen3-coder:30b", "llama3.3:70b", "deepseek-v3.2"], "any": []]
+                                 "opencode": ["qwen3-coder:30b", "llama3.3:70b", "deepseek-v3.2"],
+                                 "agy": ["gemini-4-neon-high", "gemini-4-carbon-medium", "gemini-3.8-flash-high"], "any": []]
 
     var body: some View {
         NavigationStack {
@@ -243,7 +244,7 @@ struct TaskEditor: View {
                 if coding {
                     Section {
                         Picker("Agent", selection: $agent) {
-                            Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode"); Text("Any").tag("any")
+                            Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode"); Text("Antigravity").tag("agy"); Text("Any").tag("any")
                         }
                         Picker("Model", selection: $model) {
                             Text("Default").tag("")

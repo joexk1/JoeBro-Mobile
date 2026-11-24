@@ -52,7 +52,7 @@ struct NewCodingAgentSheet: View {
                         }
                     }
                     Picker("Agent", selection: $agent) {
-                        Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode")
+                        Text("Claude Code").tag("claude"); Text("Codex").tag("codex"); Text("OpenCode").tag("opencode"); Text("Antigravity").tag("agy")
                     }
                     Picker("Permissions", selection: $permission) {
                         Text("Ask first").tag("ask"); Text("Accept edits").tag("edits"); Text("Full access").tag("full")
