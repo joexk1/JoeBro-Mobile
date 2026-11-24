@@ -504,11 +504,14 @@ struct AgentDetailView: View {
     /// their full transcript lives.
     let chatStore: ChatStore
     @State private var full: JBAgentRecord?
+    @State private var resolvedID: String?
     @State private var loading = true
     @State private var error: String?
     @State private var confirmStop = false
     @State private var cancelNote: String?
     @State private var sessionMessages: [JBAgentMessage] = []
+
+    private var activeID: String { resolvedID ?? full?.id ?? agent.id }
 
     private var current: JBAgentRecord {
         let record = full ?? agent
@@ -571,8 +574,26 @@ struct AgentDetailView: View {
             // Keep a running detail open until its final result is available; coding agents stay
             // open (they take new instructions any time) at a faster pace.
             while !Task.isCancelled {
-                do { full = try await api.agentDetail(id: agent.id); error = nil }
-                catch { self.error = error.localizedDescription }
+                do {
+                    let detail = try await api.agentDetail(id: activeID)
+                    full = detail
+                    if detail.id != activeID { resolvedID = detail.id }
+                    error = nil
+                } catch {
+                    if current.kind == .coding, let replacement = await findReplacement() {
+                        resolvedID = replacement.id
+                        full = (try? await api.agentDetail(id: replacement.id)) ?? replacement
+                        error = nil
+                    } else if full == nil {
+                        // Only alert when we have nothing loaded; avoid repeating alerts on background polls.
+                        self.error = error.localizedDescription
+                        loading = false
+                        break
+                    } else if current.kind == .coding {
+                        // Session ended/disappeared cleanly while open; stop polling quietly.
+                        break
+                    }
+                }
                 loading = false
                 guard current.isLive || (current.kind == .coding && current.status != "ended") else { break }
                 try? await Task.sleep(for: .seconds(current.kind == .coding ? 2.5 : 5))
@@ -589,10 +610,10 @@ struct AgentDetailView: View {
                         if let session = agent.sessionID, chatStore.workingSessions.contains(session) {
                             try await api.stopChatAgentSession(id: session)
                         } else {
-                            try await api.cancelAgent(id: agent.id)
+                            try await api.cancelAgent(id: activeID)
                         }
                         cancelNote = "Stop requested"
-                        if !agent.isSessionOnly { full = try await api.agentDetail(id: agent.id) }
+                        if !agent.isSessionOnly { full = try await api.agentDetail(id: activeID) }
                     } catch { self.error = error.localizedDescription }
                 }
             }
@@ -601,8 +622,34 @@ struct AgentDetailView: View {
         }
     }
 
+    /// When an adopted `pid*` placeholder row is replaced by the agent's real session ID,
+    /// snap smoothly onto the replacement instead of failing with "no such agent".
+    private func findReplacement() async -> JBAgentRecord? {
+        guard let list = try? await api.agentRegistry() else { return nil }
+        let wantHarness = current.harness
+        let wantHost = current.host ?? (activeID.hasPrefix("code:") ? String(activeID.split(separator: ":").dropFirst().first ?? "") : "")
+        let wantCwd = current.cwd ?? ""
+        let candidates = list.filter { r in
+            r.kind == .coding && (r.parentID ?? "").isEmpty && r.id != activeID && r.status != "ended"
+                && (wantHarness.isEmpty || r.harness == wantHarness)
+                && (wantHost.isEmpty || (r.host ?? "").isEmpty || r.host == wantHost)
+        }
+        if !wantCwd.isEmpty {
+            let sameDir = candidates.filter { $0.cwd == wantCwd }
+            if sameDir.count == 1 { return sameDir[0] }
+        }
+        let sameTitle = candidates.filter { $0.title == current.title }
+        return sameTitle.count == 1 ? sameTitle[0] : nil
+    }
+
     private func reloadDetail() async {
-        if let d = try? await api.agentDetail(id: agent.id) { full = d }
+        if let d = try? await api.agentDetail(id: activeID) {
+            full = d
+            if d.id != activeID { resolvedID = d.id }
+        } else if current.kind == .coding, let rep = await findReplacement() {
+            resolvedID = rep.id
+            full = (try? await api.agentDetail(id: rep.id)) ?? rep
+        }
     }
 
     private var reportBody: some View {

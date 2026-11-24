@@ -13,6 +13,18 @@ extension JoeBroAPI {
         return r.delivered ?? "queued"
     }
 
+    /// Switch the active model on any coding agent. Uses the dedicated backend route when available,
+    /// falling back to `/model <model>` in the agent's terminal on older backends.
+    func codingSetModel(id: String, model: String, harness: String = "") async throws -> String {
+        do {
+            let r = try await send(SendResult.self, "api/coding-agents/\(segment(id))/model", json: ["model": model])
+            return r.delivered ?? "terminal"
+        } catch where error.isNotFound {
+            let mode = harness == "opencode" ? "queue" : "terminal"
+            return try await codingSend(id: id, text: "/model " + model, mode: mode)
+        }
+    }
+
     /// Approve or deny the agent's pending permission prompt. Returns a short outcome.
     func codingDecide(id: String, approve: Bool) async throws -> String {
         let r = try await send(DecideResult.self, "api/coding-agents/\(segment(id))/decide",
@@ -161,6 +173,10 @@ struct AgentChatThread: View {
     @State private var sentTick = 0
     @State private var voice = VoiceCapture()
     @State private var draftBeforeVoice = ""
+    @State private var switchingModel = false
+    @State private var pickedModel: String?
+    @State private var customModelOpen = false
+    @State private var customModelText = ""
     @FocusState private var focused: Bool
 
     private var messages: [JBAgentMessage] { agent.messages ?? [] }
@@ -298,8 +314,19 @@ struct AgentChatThread: View {
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
                     .accessibilityLabel("Send")
             }
-            if (agent.title ?? "").hasPrefix("Claude") { modelMenu }
+            if !agent.harness.isEmpty { modelMenu }
             if let error = error ?? voice.error { Text(error).font(.jb(11)).foregroundStyle(JB.danger) }
+        }
+        .alert("Switch model", isPresented: $customModelOpen) {
+            TextField("Model id (e.g. provider/model)", text: $customModelText)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+            Button("Switch") {
+                let m = customModelText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !m.isEmpty { Task { await switchModel(to: m) } }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Enter the model slug to pass to /model.")
         }
         .onChange(of: voice.transcript) { _, t in
             guard voice.isRecording, !t.isEmpty else { return }
@@ -311,26 +338,55 @@ struct AgentChatThread: View {
         .overlay(alignment: .top) { Rectangle().fill(JB.line).frame(height: 1) }
     }
 
-    /// Claude Code's /model, typed into its terminal (same as the Mac).
+    private var activeModel: String { pickedModel ?? agent.model ?? "" }
+
+    private var modelOptions: [JBCodingModel] {
+        CodingAgentModelPresets.options(for: agent.harness, current: activeModel, server: agent.availableModels)
+    }
+
+    private func isCurrentModel(_ id: String) -> Bool {
+        let cur = activeModel.lowercased()
+        guard !cur.isEmpty else { return false }
+        return cur == id.lowercased() || cur.contains(id.lowercased())
+    }
+
+    private func switchModel(to model: String) async {
+        switchingModel = true
+        defer { switchingModel = false }
+        do {
+            _ = try await api.codingSetModel(id: agent.id, model: model, harness: agent.harness)
+            pickedModel = model
+            error = nil
+            await onChanged()
+        } catch {
+            self.error = "Model change needs the agent idle in a Kitty/tmux terminal: " + error.localizedDescription
+        }
+    }
+
+    /// Model picker for every linked coding agent (Claude Code, Antigravity, Codex, OpenCode).
     private var modelMenu: some View {
         Menu {
-            ForEach([("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("default", "Default")], id: \.0) { m in
-                Button {
-                    Task {
-                        do { _ = try await api.codingSend(id: agent.id, text: "/model " + m.0, mode: "terminal"); error = nil; await onChanged() }
-                        catch { self.error = "Model change needs the agent idle in a Kitty/tmux terminal: " + error.localizedDescription }
-                    }
-                } label: {
-                    if (agent.model ?? "").lowercased().contains(m.0) { Label(m.1, systemImage: "checkmark") } else { Text(m.1) }
+            ForEach(modelOptions) { m in
+                Button { Task { await switchModel(to: m.id) } } label: {
+                    if isCurrentModel(m.id) { Label(m.label, systemImage: "checkmark") } else { Text(m.label) }
                 }
+            }
+            Divider()
+            Button("Custom model…") {
+                customModelText = activeModel
+                customModelOpen = true
             }
         } label: {
             HStack(spacing: 5) {
-                Text((agent.model ?? "").isEmpty ? "Model" : agent.model!).font(.jb(11.5)).foregroundStyle(JB.ink2).lineLimit(1)
+                ProviderLogoView(model: activeModel.isEmpty ? agent.harness : activeModel, size: 11)
+                if switchingModel { JBSpinner() }
+                Text(CodingAgentModelPresets.displayLabel(activeModel, in: modelOptions))
+                    .font(.jb(11.5)).foregroundStyle(JB.ink2).lineLimit(1)
                 Image(systemName: "chevron.down").font(.jb(8, .semibold)).foregroundStyle(JB.ink3)
             }
             .padding(.horizontal, 6).padding(.vertical, 2)
         }
+        .disabled(switchingModel)
     }
 
     private func submit() {
@@ -359,6 +415,62 @@ struct AgentChatThread: View {
     }
 }
 
+
+/// Default model presets per coding-agent harness, merged with any server-reported options and the active model.
+enum CodingAgentModelPresets {
+    static let defaults: [String: [JBCodingModel]] = [
+        "claude": [
+            .init(id: "opus", label: "Opus"),
+            .init(id: "sonnet", label: "Sonnet"),
+            .init(id: "haiku", label: "Haiku"),
+            .init(id: "default", label: "Default"),
+        ],
+        "agy": [
+            .init(id: "gemini-4-neon-high", label: "Gemini 4 Neon (High)"),
+            .init(id: "gemini-4-neon-medium", label: "Gemini 4 Neon (Medium)"),
+            .init(id: "gemini-4-carbon-high", label: "Gemini 4 Carbon (High)"),
+            .init(id: "gemini-4-hydrogen-high", label: "Gemini 4 Hydrogen (High)"),
+            .init(id: "gemini-pro-orchestrator-neon", label: "Orchestrator (Neon)"),
+            .init(id: "claude-opus-5-5-high", label: "Claude Opus 5.5 (High)"),
+            .init(id: "claude-sonnet-5-5-high", label: "Claude Sonnet 5.5 (High)"),
+        ],
+        "codex": [
+            .init(id: "gpt-6.2-sol", label: "GPT-6.2 Sol"),
+            .init(id: "gpt-6.2-astra", label: "GPT-6.2 Astra"),
+            .init(id: "gpt-6.1-terra", label: "GPT-6.1 Terra"),
+            .init(id: "gpt-5-codex", label: "GPT-5 Codex"),
+            .init(id: "gpt-5", label: "GPT-5"),
+        ],
+        "opencode": [
+            .init(id: "qwen3-coder:30b", label: "Qwen3 Coder 30B"),
+            .init(id: "llama3.3:70b", label: "Llama 3.3 70B"),
+            .init(id: "deepseek-v3.2", label: "DeepSeek V3.2"),
+        ],
+    ]
+
+    static func options(for harness: String, current: String?, server: [JBCodingModel]?) -> [JBCodingModel] {
+        var seen = Set<String>()
+        var out: [JBCodingModel] = []
+        func add(_ m: JBCodingModel) {
+            let k = m.id.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !k.isEmpty, seen.insert(k).inserted else { return }
+            out.append(m)
+        }
+        if let cur = current?.trimmingCharacters(in: .whitespacesAndNewlines), !cur.isEmpty {
+            let preset = (server ?? defaults[harness] ?? []).first { $0.id.lowercased() == cur.lowercased() }
+            add(preset ?? JBCodingModel(id: cur))
+        }
+        for m in server ?? [] { add(m) }
+        for m in defaults[harness] ?? [] { add(m) }
+        return out
+    }
+
+    static func displayLabel(_ model: String, in options: [JBCodingModel]) -> String {
+        guard !model.isEmpty else { return "Model" }
+        if let hit = options.first(where: { $0.id.lowercased() == model.lowercased() }) { return hit.label }
+        return model.components(separatedBy: "/").last ?? model
+    }
+}
 
 /// "Message from app via JoeBro: hi" / "[from app] hi" -> "hi" (how a delivered message is logged).
 func handoverStripped(_ s: String) -> String {

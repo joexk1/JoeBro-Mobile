@@ -70,6 +70,23 @@ public struct JBAgentPrompt: Decodable, Sendable, Hashable {
     }
 }
 
+public struct JBCodingModel: Decodable, Sendable, Hashable, Identifiable {
+    public let id: String
+    public let label: String
+    public init(id: String, label: String? = nil) {
+        self.id = id
+        self.label = label?.isEmpty == false ? label! : (id.components(separatedBy: "/").last ?? id)
+    }
+    enum CodingKeys: String, CodingKey { case id, label }
+    public init(from decoder: Decoder) throws {
+        if let s = try? String(from: decoder) { self.init(id: s); return }
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let id = (try? c.decode(String.self, forKey: .id)) ?? ""
+        let label = try? c.decode(String.self, forKey: .label)
+        self.init(id: id, label: label)
+    }
+}
+
 public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public let id: String
     public let kind: JBAgentKind?
@@ -77,7 +94,11 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public let status: String?
     public let live: Bool?
     public let open: Bool?      // coding: still a conversation in its terminal (the backend's one rule)
+    public let source: String?  // coding: claude | codex | opencode | agy
+    public let host: String?    // coding: linked computer slug
+    public let cwd: String?     // coding: working folder
     public let model: String?
+    public let availableModels: [JBCodingModel]?
     public let progress: String?
     public let result: String?
     public let error: String?
@@ -101,7 +122,9 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         kind = sessionKind
         title = session.name
         status = "idle"; live = nil; open = nil
+        source = nil; host = nil; cwd = nil
         model = session.model
+        availableModels = nil
         progress = nil
         result = nil
         error = nil
@@ -124,7 +147,9 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         kind = original.kind
         title = original.title
         status = localStatus; live = nil; open = original.open
+        source = original.source; host = original.host; cwd = original.cwd
         model = original.model
+        availableModels = original.availableModels
         progress = localStatus == "running" ? "Working in Chats" : original.progress
         result = original.result
         error = original.error
@@ -143,7 +168,8 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, kind, title, status, live, open, model, progress, result, error, messages, prompt
+        case id, kind, title, status, live, open, source, host, cwd, model, progress, result, error, messages, prompt
+        case availableModels = "available_models"
         case parentID = "parent_id", sessionID = "session_id", createdAt = "created_at", startedAt = "started_at", finishedAt = "finished_at"
         case resultChars = "result_chars", resultTruncated = "result_truncated", cancelRequested = "cancel_requested"
         case sourceCount = "source_count", sources
@@ -158,7 +184,11 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
         status = try? box.decode(String.self, forKey: .status)
         live = try? box.decode(Bool.self, forKey: .live)
         open = try? box.decode(Bool.self, forKey: .open)
+        source = try? box.decode(String.self, forKey: .source)
+        host = try? box.decode(String.self, forKey: .host)
+        cwd = try? box.decode(String.self, forKey: .cwd)
         model = try? box.decode(String.self, forKey: .model)
+        availableModels = try? box.decode([JBCodingModel].self, forKey: .availableModels)
         progress = try? box.decode(String.self, forKey: .progress)
         result = try? box.decode(String.self, forKey: .result)
         error = try? box.decode(String.self, forKey: .error)
@@ -187,6 +217,18 @@ public struct JBAgentRecord: Decodable, Identifiable, Sendable, Hashable {
     public var displayTitle: String {
         let name = (title?.isEmpty == false ? title : nil) ?? "Untitled agent"
         return Flavor.isPersonal && isMainAgent ? Flavor.mainAgentName + " · " + name : name
+    }
+    /// Harness slug for a coding agent ("claude", "codex", "opencode", "agy"), works even on older backends.
+    public var harness: String {
+        if let s = source, !s.isEmpty { return s.lowercased() }
+        let parts = id.split(separator: ":")
+        if parts.first == "code", parts.count >= 3 { return String(parts[2]).lowercased() }
+        let t = (title ?? "").lowercased()
+        if t.hasPrefix("claude") { return "claude" }
+        if t.hasPrefix("codex") { return "codex" }
+        if t.hasPrefix("opencode") { return "opencode" }
+        if t.hasPrefix("agy") || t.hasPrefix("antigravity") { return "agy" }
+        return ""
     }
     public var isSessionOnly: Bool { id.hasPrefix("session:") }
     public var isLive: Bool { live == true || ["running", "queued", "working", "waiting"].contains(status ?? "") }

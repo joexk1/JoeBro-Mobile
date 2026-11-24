@@ -9,7 +9,7 @@ struct ProviderLogoView: View {
     private static let logos: [(String, String)] = [
         ("openai|gpt-|^o[13]-|chatgpt|dall-e", "ProviderOpenAI"),
         ("anthropic|claude", "ProviderAnthropic"),
-        ("google|gemini|gemma", "ProviderGoogle"),
+        ("google|gemini|gemma|antigravity|\\bagy\\b", "ProviderGoogle"),
         ("meta|llama(?![.\\-_ ]?cpp)", "ProviderMeta"),
         ("mistral", "ProviderMistral"),
         ("qwen|alibaba", "ProviderQwen"),
